@@ -1,0 +1,94 @@
+{% load static %}
+
+    
+    <link rel="stylesheet" href="{% static 'resources/assets/folder2.css' %}">
+    <style>
+
+        body {
+            
+            font-size: 1.0rem!important;
+            line-height: 1.5rem;
+        }
+
+        .box > div:first-child {
+            
+            font-size: 1.0rem!important;
+            
+        }
+
+        .vids > div > div {
+          
+            font-size: 1.0rem!important;
+           
+        }
+
+        .actions > div {
+           
+            font-size: 0.9rem!important;
+        }
+    </style>
+
+    <div class="content">
+        <div class="box">
+            <div>
+                <div class="folderpath">
+                    <a href="{%url 'video:category_view' %}">
+                        Assets Library
+                    <img src="{% static 'resources/assets/assets2//chevron-right.svg' %}" alt="">
+                    </a>
+                    <a href="{%url 'video:subcategory_view' current_category.id %}">
+                        {{current_category.name}}
+                        <img src="{% static 'resources/assets/assets2/Chevron-down.svg' %}" alt="">
+                    </a>
+                </div>
+
+                <div class="newVideo" style="padding:8px">
+                    <a style="z-index:1002" style="z-index: 999;" hx-trigger="click" hx-get="{% url 'video:add_video_clip' current_category.id %}" hx-target="#confirmation-box" hx-swap="innerHTML">
+                        <img src="{% static 'resources/assets/assets2/add.svg' %}" alt="">
+                       <span style="padding-left:5px"> Upload Video</span>
+                    </a>
+                </div>
+                        
+            </div>
+            <div class="vids">
+                {% for video in videos %}
+                    <div>
+
+                        <div>
+
+                            <!-- <div><a href="{%url 'video:category_view_video' current_category.id video.id %}"><img src="{% static 'resources/assets/assets2/Video placeholder.svg' %}" alt=""></a></div> -->
+                            <div><a href="{%url 'video:category_view_video' current_category.id video.id %}">{{video.title}}</a></div>
+                        </div>
+                        <div class="log">
+                        <img src="{% static 'resources/assets/assets2/dots.svg' %}" class="menu" alt="">
+                            <div>
+                                <div class="actions">
+                                    <div>
+                                        
+                                        <a style="align-items:center;" hx-get="{% url 'video:rename_video_clip' video.id %}"  hx-target="#confirmation-box" 
+                                            hx-swap="innerHTML">
+                                            <img src="{% static 'resources/assets/assets1/rename.svg' %}" alt="">
+                                            Rename
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <a style="align-items:center;" hx-get="{% url 'video:delete_video' video.id %}"  hx-target="#confirmation-box" 
+                                        hx-swap="innerHTML">
+                                            <img src="{% static 'resources/assets/assets1/delete.svg' %}" alt="">
+                                            Delete
+                                        </a> 
+            
+            
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                {%endfor %}
+                
+            </div>
+        </div>
+    </div>
+    

@@ -1,0 +1,379 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {%include 'partials/head_c.html' %}
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.5.0/remixicon.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.min.css">
+
+    <link rel="stylesheet" href="{% static 'sceneselection/style.css'%}">
+    <script src="{% static 'sceneselection/script.js'%}"></script>
+    <style>
+        p{
+            text-transform: capitalize;
+        }
+        /* Style for the button */
+        .file-button {
+            background: #864af9;
+            border: none;
+            border-radius: 5px;
+            /* Rounded corners */
+            padding: 10px 10px;
+            color: white;
+            font-size: 18px;
+            font-family: 'Arial', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            /* Shadow effect */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            /* Animation on hover */
+        }
+
+        .center-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .card {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* margin: 0 auto; */
+            min-height: 370px;
+            max-height: 400px;
+            padding: 20px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .card-header {
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+
+        }
+
+        .card-header h5,
+        h6 {
+
+            font-family: "Montserrat", sans-serif;
+
+            font-weight: 400;
+        }
+
+        .card-body {
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        .card-body a {
+            margin-left: 12px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            color: #6c25be;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 15px;
+            border: 2px solid;
+            margin-bottom: 8px;
+            font-weight: 500;
+            margin-top: 4px;
+            margin-left: 73px !important;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: relative;
+            left: 19px;
+            top: 0;
+        }
+
+        .card-body.upload {
+            position: relative;
+            top: -25px;
+            left: 0;
+            padding-bottom: 2px;
+        }
+
+
+        @media (max-width:991px) {
+            .card-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .list-of-tags {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0;
+            align-items: center;
+        }
+
+        .list-of-tags li {
+            background-color: #f0f8ff;
+            list-style: none;
+            padding: 5px 10px;
+            border: 1px solid rgb(134, 74, 249);
+            border-radius: 5px;
+            margin: 2px;
+            cursor: pointer;
+        }
+
+        /* .list-of-tags span {
+            flex: 1;
+            outline: none;
+            border: none;
+            padding: 5px;
+            font-size: 16px;
+        } */
+        .details {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        #reset-btn {
+            border: 1px solid #864AF9;
+            background-color: transparent;
+            color: #864AF9;
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        #done-btn {
+            background-color: #864AF9;
+            color: white;
+            padding: 5px 15px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #reset-btn:hover {
+            background-color: #864AF9;
+            color: white;
+        }
+
+        #done-btn:hover {
+            background-color: #864AF9;
+        }
+
+        .details button {
+            padding: 5px 10px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .details button:hover {
+            background: #0056b3;
+        }
+
+        .guide {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .guide-title {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .guide-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 20px;
+            text-align: center;
+            border: 1px solid #a6a6a6;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: #f2f2f2;
+            color: #333;
+            user-select: none;
+        }
+
+        .guide-icon:hover::after {
+            content: attr(title);
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #a6a6a6;
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .details {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body style="position: relative; overflow-x: hidden;">
+    {% include 'sub_header.html' %}
+
+
+    <div class="progressbar"
+        style="display: flex; justify-content: center; align-items: center; margin-top: 84px; margin-bottom: 56px;">
+        <div
+            style="width: 624px; height: 10px; background: #EEEEEE; position: relative; display: flex; align-items: center;">
+            <div
+                style="position: absolute; width: 25px; height: 25px; background: #864AF9; border-radius: 90px; left: 0%;">
+            </div>
+            <div
+                style="position: absolute; width: 25px; height: 25px; background: #864AF9; border-radius: 90px; left: 208px">
+            </div>
+            <div
+                style="position: absolute; width: 25px; height: 25px; background: #EEEEEE; border-radius: 90px; left: 416px;">
+            </div>
+            <div
+                style="position: absolute; width: 25px; height: 25px; background: #EEEEEE; border-radius: 90px; left: 100%;">
+            </div>
+
+
+            <div
+                style="position: absolute; width: 220px; height: 10px; background: #864AF9; border-radius: 90px; left: 0;">
+            </div>
+
+
+            <div style="position: absolute; top: -50px; left: -75.96px;">Voice & Subtitle Design</div>
+            <div style="position: absolute; top: -50px; left: 160px;">Scene Selection</div>
+            <div style="position: absolute; top: -50px; left: 312px;">Background Music Selection</div>
+            <div style="position: absolute; top: -50px; left: 594px;">Download</div>
+        </div>
+    </div>
+    {% include 'messages.html' %}
+
+    <div class="card-container">
+        <div>
+
+            <div class="card">
+                <div class="card-header">
+                    {% include 'partials/back.html' %}
+
+                    <span style="font-size: 24px; font-weight: 700; line-height: 29.26px; text-align: center;">
+                        Upload Your Script
+                    </span>
+                    <h5></h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="." enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="Script-text-file-text"
+                            style="display: flex; align-items: center;justify-content: space-between; margin-bottom: 16px;">
+                            <div style="display:flex;">
+                                <div
+                                    style="  font-weight: bold; line-height: 26.1px; letter-spacing: 0.02em; text-align: left; margin-right: 10px; font-size: 15px;">
+                                    Script Text File:
+                                </div>
+                                <div class="vh-parent">
+                                    <div class="vh-child">
+                                        <span class="text3">
+                                            Please Make Sure Your Script Is On Txt File
+                                        </span>
+                                    </div>
+                                    ?
+                                </div>
+                            </div>
+
+                            <a href="{%  url 'video_text:download_file_' file_key=key %}" download=""
+                                class="download-btn" style="margin-right: 6px;">Click Here To Download An Empty
+                                Template</a>
+                        </div>
+                </div>
+
+
+                <div class="Script-text-file-Upload"
+                    style="width: 100%; height: 50px; border: 1px solid #000000B2; box-sizing: border-box; border-radius: 8px; padding: 8px; gap: 24px; display: flex; align-items: center; margin-bottom: 24px;">
+                    <div
+                        style="padding: 8px 24px; border-radius: 8px; cursor: pointer; background: #864AF9; width: fit-content; color: white; display: flex; align-items: center; gap: 10px; position: relative;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5M14.1667 6.66667L10 2.5M10 2.5L5.83333 6.66667M10 2.5V12.5"
+                                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span class="text2"
+                            style="font-size: 16px; line-height: 24px; text-align: center; font-weight: 400;">Choose
+                            file</span>
+                        <input required type="file" id="fileUpload" name="text_file" accept=".txt"
+                            style="width: 100%; height: 100%; position: absolute; opacity: 0; cursor: pointer; z-index: 2; left: 0; border-radius: 8px;">
+                    </div>
+                    <div class="text2" id="fileName" style="color: #00000080;">No file chosen</div>
+                </div>
+
+                <input type="text" name="purpose" hidden value='text_file'>
+                <div class="center-container">
+                    <button style="margin-top: 27px;" id="scriptUploadButton" class="file-button" type="submit">Load
+                        Script</button>
+                </div>
+                </form>
+            </div>
+        </div>
+        {% include 'upload.html' %}
+
+
+    </div>
+
+    
+
+    </div>
+    {% if textfile.text_file %}
+    
+    {%include 'vlc/frontend/VLSMaker/sceneselection/new_form.html' %}
+    {%include 'vlc/frontend/VLSMaker/sceneselection/subclipform.html' %}
+    {% endif %}
+    <div id="modal-cont">
+
+    </div>
+
+    <script>
+        const fileName = document.getElementById('fileName')
+        const fileUpload = document.getElementById('fileUpload');
+        fileUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                fileName.textContent = `${file.name.slice(0, 15)}`;
+            } else {
+                fileName.textContent = 'No file selected';
+            }
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,46 @@
+<!-- templates/404.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f7f7f7;
+            margin: 0;
+            color: #333;
+        }
+        h1 {
+            font-size: 5rem;
+            color: #e74c3c;
+        }
+        p {
+            font-size: 1.2rem;
+            margin: 10px 0 20px;
+        }
+        a {
+            background-color: #2ecc71;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        a:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <h1>404</h1>
+    <p>The page you are looking for could not be found.</p>
+    <a href="{% url 'home:home' %}">Return to Home</a>
+</body>
+</html>

@@ -1,0 +1,154 @@
+
+<form   class="popup-content" method="POST" enctype="multipart/form-data"
+ id="add-subclip-form"
+ 
+    style="grid-template-columns: 0.7fr 1fr;width:100%;">
+    <br>
+    {% csrf_token %}
+
+    <div id="submit-cont">
+        <div class="form-group">
+            <input id="slide_text" hidden  name="slide_text" value="{{selected_text}}" readonly required class="form-input">
+        </div>
+        
+        <input id="clipId" type="number" hidden name="clipId" value="{{clipId}}">
+        <!-- <input type="hidden" name="textfile_id" value="{{textfile.id}}"> -->
+
+        <input type="text" value="{{remaining_text}}" hidden id="remaining" name="remaining">
+        <div style="display: grid;grid-template-columns: 0.7fr 1fr;border-radius: 8px;border: 1px solid #00000080;overflow: hidden;"  class="form-grid-cont">
+        <div class="grid-item title  form-grid-item begin column-1"><span style="height:50px;align-items: center;">Upload Scene</span></div>
+        <div class="grid-item title form-grid-item end column-2"><span style="height:50px;align-items: center;margin-left: -18px;">Upload Scene From Assets Folder</span></div>
+        <div class="form-grid-item main-item">
+            <div  class="form-group" style="height:100%;">
+                <div class="upload-container">
+                <label for="slide_file" class="upload-label">
+                    <i class="ri-upload-line"></i>
+                    <span id="upload-text">Choose File</span>
+                    </label>
+                    <i id="clear-file" style="display:none" onclick="clearFileInput()" class="ri-close-circle-line"></i>
+                <input type="file" onchange="saveInput(this)" id="slide_file" name="slide_file" class="upload-input" accept="video/*">
+
+            </div>
+            
+            <p id="currentFile"></p>
+        
+        </div>
+        </div>
+        <div style="border-left:0.8px solid #864AF9" class="form-grid-item ">
+
+        <div  class="form-group">
+            <select id="selected_topic" onchange="fetchVideoClips(this)" name="selected_topic" class="form-select">
+                <option value="">Select Topic</option>
+                {%for cat in categories%}
+                    <option value="{{cat.id}}">{{cat.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <select id="videoSelect"  onclick="saveInput(this)" name="selected_video" class="form-select">
+                <option value="" disabled selected>Select A Video Clip</option>
+
+            </select>
+            <p style="color:red; font-size:13px;" id="error-slide"></p>
+        </div>
+        </div>
+    </div>
+    </div>
+    <div style="align-items: end;" class="form-group">
+        <button type="submit" id="submit-clip" class="submit-btn">Submit</button>
+    </div>
+</form>
+<script>
+function attachValidation(formId, clipId) {
+    const li = document.getElementById(`current_li_${clipId}`);
+    if (li) {
+        li.disabled = true;
+        li.style.cursor = 'wait';
+        console.log(li, ' has been disabled');
+    }
+
+    const form = document.getElementById(formId);
+
+    if (form) {
+        const fileInput = document.getElementById('slide_file');
+        const videoSelect = document.getElementById('videoSelect');
+
+        if ((!fileInput.value || fileInput.value.trim() === "") &&
+            (!videoSelect || !videoSelect.value || videoSelect.value.trim() === "")) {
+            document.getElementById('error-slide').textContent = 'Select A Clip';
+            videoSelect.focus();
+        } else {
+            document.getElementById('error-slide').textContent = ''; // Clear error message
+
+            const popup = document.getElementById('add-subclip-popup');
+            if (popup) popup.style.display = 'none';
+            const formData = new FormData(form);
+            const xhr = new XMLHttpRequest();
+
+            xhr.addEventListener('load', function () {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+
+                    if (response.success) {
+                        const newId = response.id;
+
+                        // Update the li element
+                        if (li) {
+                            li.id = `saved_li_${newId}`;
+                            li.dataset.id = newId;
+                            li.disabled = false;
+                            li.style.cursor = 'pointer';
+                        }
+                        sessionStorage.setItem(`${newId}`,videoSelect.value)
+                        // Show success message
+                        const successMessage = document.createElement('div');
+                        successMessage.textContent = 'Clip added successfully!';
+                        successMessage.style.position = 'fixed';
+                        successMessage.style.top = '20px';
+                        successMessage.style.right = '20px';
+                        successMessage.style.padding = '10px 15px';
+                        successMessage.style.backgroundColor = '#4CAF50';
+                        successMessage.style.color = 'white';
+                        successMessage.style.borderRadius = '5px';
+                        successMessage.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                        successMessage.style.zIndex = '1000';
+
+                        document.body.appendChild(successMessage);
+
+                        // Remove the success message after 2 seconds
+                        setTimeout(() => {
+                            document.body.removeChild(successMessage);
+                        }, 2000);
+
+                    } else {
+                        alert(response.error || 'Failed to add clip.');
+                    }
+                } else {
+                    alert('An error occurred while saving the clip.');
+                }
+
+                if (li) {
+                    li.disabled = false;
+                    li.style.cursor = 'pointer';
+                }
+            });
+
+            // Handle errors
+            xhr.addEventListener('error', function () {
+                alert('An error occurred during the request.');
+                if (li) {
+                    li.disabled = false;
+                    li.style.cursor = 'pointer';
+                }
+            });
+
+            // Open and send the request
+            xhr.open('POST', `/text/add_subcliphtmx/${clipId}/`);
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+            xhr.send(formData);
+        }
+    }
+}
+
+</script>

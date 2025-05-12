@@ -1,0 +1,885 @@
+<style>
+    #clear-file{
+        padding-right: 4px;
+        font-size: larger;
+    }
+    #currentFile{
+        font-size: small;
+        text-align: center;
+    }
+    [data-tooltip] {
+        position: relative;
+    }
+
+    [data-tooltip]:after {
+        content: attr(data-tooltip);
+        padding: 6px 8px;
+        position: absolute;
+        left: 50%;
+        bottom: 100%;
+        transform: translateX(-50%);
+        background-color: #000000aa;
+        width: max-content;
+        opacity: 0;
+        -webkit-transition: opacity 0.2s ease-out;
+        color: #ffffff;
+        border-radius: 6px;
+    }
+
+    [data-tooltip]:hover:after {
+        opacity: 1;
+    }
+
+    .free-plan-disabled-overlay-container {
+        position: relative;
+    }
+
+    /* .icon-wrapper {
+        position: relative;
+        display: inline-block;
+    } */
+
+    /* .close-btnx {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 30px;
+        height: 30px;
+        position: fixed;
+        right: 27%;
+        background-color: #864AF9;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .close-btnx i {
+        color: #fff;
+        font-size: 20px;
+    }
+
+    .close-btnx:hover {
+        background-color: #6a3cb8;
+        transform: scale(1.1);
+    }
+
+    .close-btnx:active {
+        transform: scale(0.95);
+    } */
+
+    /* .icon-wrapper i {
+        font-size: 24px;
+        color: #000;
+
+        cursor: pointer;
+    } */
+
+    .notification-number {
+        position: absolute;
+        left: 70%;
+        color: #fff;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 50%;
+        text-align: center;
+        display: none;
+        /* min-width: 18px; */
+        /* line-height: 1; */
+    }
+
+    .free-plan-disabled-overlay {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: #eeeeeebb;
+        z-index: 999;
+        cursor: not-allowed;
+    }
+
+    .slide-span {
+        align-items: center;
+    }
+</style>
+<style>
+    /* General Reset */
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Montserrat', sans-serif;
+        background-color: #f9f9f9;
+    }
+
+    /* #grid-containerid {
+        padding: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    } */
+
+    .scene-container {
+        width: 100%;
+        max-width: 1600px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    /* Title */
+    .select-scene-text {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .select-scene-text span {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    /* Grid Styling */
+    /* .grid-container {
+        display: grid;
+        grid-template-columns: 0.2fr 1fr 0.15fr;
+        gap: 0;
+        width: 100%;
+        border: 1px solid #e0e0e0;
+        background-color: #fff;
+        border-radius: 8px;
+    } */
+
+    .grid-item {
+        padding: 10px;
+        font-size: 16px;
+        font-weight: 500;
+        text-align: center;
+        border: none;
+        height: 50px;
+        border-bottom: 1px solid #dcdcdc;
+        /* border-left: 1px solid #dcdcdc; */
+    }
+
+
+    .grid-item.title {
+        background-color: #864AF9;
+        font-size: 24px;
+        color: white;
+        text-align: center;
+        padding: 10px;
+    }
+
+
+    /* .wrapper {
+        padding: 5px;
+        background-color: #fafafa;
+    } */
+
+    .tag-box ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .upload-container {
+        height: fit-content;
+        border-radius: 8px;
+        border: 1px dashed #19191980;
+        display: flex;
+        align-items: center;
+        position: relative;
+        font-size: 16px;
+        margin-top: 12px;
+        font-weight: 400;
+        letter-spacing: 0.02em;
+        text-align: center;
+        gap: 14px;
+        cursor: pointer;
+        /* Make the container clickable */
+    }
+
+    .upload-label {
+        display: block;
+        width: 100%;
+        cursor: pointer;
+        /* Ensure the label is clickable */
+        text-align: center;
+        font-size: 16px;
+        color: #191919;
+        padding: 16px 24px;
+    }
+
+    .upload-label i {
+        font-size: 20px;
+        color: #000;
+    }
+
+    .upload-input {
+        display: none;
+    }
+
+    .file-name {
+        font-size: 14px;
+        color: #666;
+        margin-top: 5px;
+    }
+
+    .tag-box li {
+        padding: 5px 10px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    /* .tag-box span {
+        font-weight: bold;
+    } */
+
+    /* Button Styling */
+    .button {
+        display: flex;
+        justify-content: flex-end;
+        padding: 16px;
+        /* border-top: 1px solid #e0e0e0; */
+    }
+
+    #proceed-button {
+        background: #864AF9;
+        color: white;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    #proceed-button:hover {
+        background: #6a36cc;
+    }
+
+    /* Icon Styling */
+    /* .icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    } */
+
+    .last-row {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* .icon-wrapper i {
+        font-size: 24px;
+        line-height: 1;
+    } */
+
+
+    .form-grid-cont {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        border-radius: 10px;
+
+    }
+
+    .form-grid-item.end {
+        border-top-right-radius: 6px;
+    }
+
+    .form-grid-item.begin {
+        border-top-left-radius: 6px;
+    }
+
+    .form-grid-item {
+        display: flex;
+        width: 100%;
+        /* height: fit-content; */
+        /* gap: 13px; */
+        /* align-items: center; */
+        /* flex-direction: column; */
+        flex-direction: column;
+
+    }
+
+    .form-group {
+        height: 100%;
+        padding: 12px 20px;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 24.38px;
+        text-align: left;
+        margin-bottom: -12px;
+    }
+
+
+
+    .form-input,
+    .form-select {
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 100%;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        border-color: #864AF9;
+        outline: none;
+    }
+
+    .select-scene-text span {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .grid-item {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #00000080;
+        border-right: 1px solid #00000080;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 24.38px;
+        text-align: left;
+    }
+
+    .grid-container {
+        margin-top: 2.5rem;
+        margin-bottom: 62px;
+        
+    }
+
+    .title {
+        background: #864AF9;
+        color: white;
+        border-top: none;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 29.26px;
+        text-align: center;
+    }
+
+    .fa-sync-alt {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #000;
+        font-size: 20px;
+        margin-left: 10px;
+    }
+
+    .Scene {
+        margin: 0 auto;
+        max-width: 95%;
+        margin-bottom: 30px;
+        border: 1px solid #0000004D;
+        box-sizing: border-box;
+        border-radius: 8px;
+        padding: 40px 40px;
+        background: white;
+        position: relative;
+    }
+</style>
+<div id="grid-containerid" class="grid-container">
+    <div class="scene-container">
+        <div class="Scene">
+            <div class="select-scene-text" style="display: flex; justify-content: center; margin-bottom: 30px;">
+                <span style="font-size: 24px; font-weight: 700; line-height: 29.26px; text-align: center;">
+                    Select Your Scenes
+                </span>
+            </div>
+            <div class="grid-container"
+                style="display: grid; grid-template-columns: 0.2fr 1fr 0.1fr; border: 1px solid #0000004D;">
+                <div class="grid-item title column-1"><span>Subtitle</span></div>
+                <div class="grid-item title column-2"><span>Subtitle Text</span></div>
+                <div class="grid-item title column-3" style="text-align: center; width: 140px;"><span>Reset Clips</span>
+                </div>
+                {% for clip in video_clips %}
+
+                <div class="grid-item slide-row grid-row" data-slide="1"><span>Subtitle {{ clip.line_number }}</span>
+                </div>
+                <div class="grid-item slide-text" id="grid_{{clip.id}}" data-slide="1" tabindex="0">
+                    <div class="wrapper" id="wrapper_{{clip.id}}">
+                        <div style="width: 100%;" class="tag-box">
+                            <ul style="margin: 0;" id="list-of-tags_{{clip.id}}" class="list-of-tags">
+
+                                {% for subclip in clip.subclips.all %}
+                                <li data-id="{{subclip.id}}"
+                                id="current_li_{{subclip.id}}" data-current_file="{{subclip.get_video_file_name}}" data-video_clip_id="{{subclip.video_clip.id}}"  data-cat_id="{{subclip.video_clip.category.id}}" data-subclip_id="{{subclip.id}}" data-main_id="{{subclip.main_line.id}}"
+                                    onclick="editCurrentLi(this)">
+                                    {{subclip.subtittle}}</li>
+                                {% endfor %}
+                                <span id="slide_span_{{clip.id}}" data-num="{{clip.get_number_of_subclip}}"
+                                    data-id="{{clip.id}}">{{ clip.remaining }}</span>
+                            </ul>
+                            <input id="remaining_{{clip.id}}" name="remaining_{{clip.id}}" hidden type="text">
+                        </div>
+                        <div id="error-message_{{clip.id}}" style="text-transform: capitalize;" class="error-message"></div>
+                    </div>
+
+                </div>
+                <input type="text" value="{{clip.slide}}" hidden name="slide_{{cilp.line_number}}"
+                    id="slide_{{clip.line_number}}">
+                <div class="grid-item slide-row grid-row  " data-slide="1">
+                    <!-- <div class="last-row"> -->
+                    <div class="icon-wrapper grid-item" id="icon_rapper_{{clip.id}}"
+                        onclick="subclipReset('{{clip.id}}','{{clip.total_clip}}','{{clip.line_number}}')"
+                        style="text-align: center; margin: 0 auto; border-right:none ; border-bottom:none ;">
+                        <i id="icon_{{clip.id}}" class="ri-loop-right-line fa-sync-alt"
+                            style="margin: 0 auto;font-size: 27px; font-weight: 600; cursor: pointer;"></i>
+                        <span class="notification-number">{{clip.get_number_of_subclip}}</span>
+                    </div>
+                    <!-- </div> -->
+
+
+
+                </div>
+                {% endfor %}
+                <form action="." method="post" id="processFile">
+                    {% csrf_token %}
+                    <input type="text" name="purpose" value="process" hidden>
+                </form>
+                <div class="button"
+                    style="position: absolute; right: 20px; bottom: 16px;height: 24px; width: fit-content; display: flex; justify-content: flex-end;">
+                    <div
+                        style="display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #864AF9; cursor: pointer;">
+                        <button type="button" onclick="highlightNoSubclipIcons(this)" id="proceed-button"
+                            style="text-decoration: none; padding: 10px 20px; color: white; font-family: Montserrat; font-size: 18px; font-weight: 500; line-height: 24px; text-align: left; background: none; border: none; cursor: pointer;">
+                            Proceed To Background Music Selection
+                        </button>
+                        <svg width="24" height="24" type="button" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        textfile_id = '{{textfile.id}}'
+        let num
+        let clip_id
+        let submitCheck
+
+        function subclipReset(clipID) {
+            const textfileID = "{{textfile.id}}"
+            const url = `/text/reset_subclip/${clipID}/`;
+
+            if (confirm("Are you sure you want to reset this clip?")) {
+                sessionStorage.clear();
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ textfile_id: textfileID })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // alert("Clip reset successfully!");
+                            location.reload();
+                        } else {
+                            alert("Failed to reset the clip. Please try again.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error resetting clip:", error);
+                        alert("An error occurred. Please try again later.");
+                    });
+            }
+        }
+
+        function highlightNoSubclipIcons(button) {
+            fetchNoSubclipIds().then((ids) => {
+                if (Array.isArray(ids) && ids.length > 0) {
+                    ids.forEach((id) => {
+                        const elementId = `icon_${id}`;
+                        const slide_span_ = document.getElementById(`slide_span_${id}`)
+                        const element = document.getElementById(elementId);
+
+                        if (element) {
+                            element.style.border = '2px solid red';
+                            slide_span_.style.border = '2px solid red';
+                            document.getElementById(`error-message_${id}`).textContent = 'Add Clip To The Remaning Text'
+                        } else {
+                            console.warn(`Element with ID ${elementId} not found.`);
+                        }
+                    });
+                } else {
+                    const form = document.getElementById('processFile');
+                    if (form) {
+                        button.disabled = true
+
+                        form.submit();
+                    } else {
+                        console.error("Form with ID 'processFile' not found.");
+                    }
+                }
+            }).catch((error) => {
+                console.error("Error fetching no subclip IDs:", error);
+            });
+        }
+
+        async function fetchNoSubclipIds() {
+            try {
+                textfileId = textfile_id
+                const url = `/text/check_text_clip/${textfileId}/`;
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const idsOfNoSubclip = await response.json();
+
+                console.log('IDs of clips with no subclips:', idsOfNoSubclip);
+
+                return idsOfNoSubclip;
+            } catch (error) {
+                console.error('Error fetching no subclip IDs:', error);
+            }
+        }
+        
+        function clearFileInput(){
+            document.getElementById('slide_file').value='';
+            document.getElementById('upload-text').textContent='Choose File'
+            document.getElementById('clear-file').style.display='none'
+
+
+        }
+        function openPopup(clipId, selectedText, remainingText) {
+            document.getElementById('add-subclip-popup').style.display = 'flex';
+            const formElement = document.getElementById('add-subclip-form')
+            formElement.action = `/text/add_subclip/${clipId}/`
+            const htmlContainer = document.getElementById('submit-cont');
+            clip_id = clipId
+            htmlContainer.innerHTML = `
+              <div class="form-group">
+                  <input id="slide_text" hidden name="slide_text" value="${selectedText}" readonly required class="form-input">
+              </div>
+              
+              <input id="clipId" type="number" hidden name="clipId" value="${clipId}">
+              <input type="hidden" name="textfile_id" value="{{textfile.id}}">
+      
+              <input type="text" value="${remainingText}" hidden id="remaining" name="remaining">
+              <div style="display: grid;grid-template-columns: 0.7fr 1fr;border-radius: 8px;border: 1px solid #00000080;overflow: hidden;"  class="form-grid-cont">
+              <div class="grid-item title  form-grid-item begin column-1"><span style="height:50px;align-items: center;">Upload Scene</span></div>
+              <div class="grid-item title form-grid-item end column-2"><span style="height:50px;align-items: center;margin-left: -18px;">Upload Scene From Assets Folder</span></div>
+              <div class="form-grid-item main-item">
+                  <div  class="form-group" style="height:100%;">
+                      <div class="upload-container">
+                      <label for="slide_file" class="upload-label">
+                          <i class="ri-upload-line"></i>
+                          <span id="upload-text">Choose File</span>
+                          </label>
+                          <i id="clear-file" style="display:none" onclick="clearFileInput()" class="ri-close-circle-line"></i>
+                      <input type="file" onchange="saveInput(this)" id="slide_file" name="slide_file" class="upload-input" accept="video/*">
+
+                  </div>
+                  
+                  <p id="currentFile"></p>
+              
+              </div>
+              </div>
+              <div style="border-left:0.8px solid #864AF9" class="form-grid-item ">
+      
+              <div  class="form-group">
+                  <select id="selected_topic_${clipId}" onchange="fetchVideoClips(this)" name="selected_topic" class="form-select">
+                      <option value="">Select Topic</option>
+                      {%for cat in video_categories%}
+                          <option value="{{cat.id}}">{{cat.name}}</option>
+                      {% endfor %}
+                  </select>
+              </div>
+              
+              <div class="form-group">
+                  <select id="videoSelect_${clipId}" onclick="saveInput(this)" name="selected_video" class="form-select">
+                      <option value="" disabled selected>Select A Video Clip</option>
+      
+                  </select>
+                  <p style="color:red; font-size:13px;" id="error-slide"></p>
+              </div>
+              </div>
+          </div>
+          `;
+
+            restoreForm();
+        }
+        
+        function fetchClipIds(textfileId) {
+            fetch(`/text/get_clips_id/${textfileId}/`)
+                .then(response => response.json())
+                .then(clipIds => {
+                    console.log('Fetched clip IDs:', clipIds);
+                    handleClips(clipIds);
+                })
+                .catch(error => console.error('Error fetching clip IDs:', error));
+        }
+        function saveInput(inputElement) {
+            const uploadElement = document.getElementById('upload-text');
+
+            if (inputElement.type === 'file') {
+                console.log(inputElement.value);
+
+                if (inputElement.value) {
+                    document.getElementById('error-slide').textContent = '';
+                    
+                    const fileName = inputElement.files.length > 0 ? inputElement.files[0].name : "Choode File";
+                    uploadElement.textContent=fileName.slice(0,15)
+                    document.getElementById('currentFile').textContent = ''
+                    document.getElementById('clear-file').style.display='flex'
+                   
+                    document.getElementById(`videoSelect_${clip_id}`).value=""
+                    document.getElementById(`selected_topic_${clip_id}`).value=""
+                    saveInput(document.getElementById(`videoSelect_${clip_id}`))
+                    saveInput(document.getElementById(`selected_topic_${clip_id}`))
+                }
+
+            } else {
+
+                console.log(inputElement.value);
+                
+                if (inputElement.value !== ''){
+                    document.getElementById('error-slide').textContent = '';
+
+                        console.log('first line is true')
+                    document.getElementById('currentFile').textContent = '';
+                    console.log('currentfile')
+                    document.getElementById("slide_file").value = '';
+                    console.log('slide_file')
+                    uploadElement.textContent='Choose File'
+                    console.log('uploadElement:',uploadElement)
+                    saveInput(document.getElementById("slide_file"))
+                    document.getElementById('clear-file').style.display='none'
+                    
+    
+                };
+
+            }
+
+        };
+        
+        
+        function handleClips(clipIds) {
+            clipIds.forEach(clipId => {
+                const wrapper = document.querySelector(`#wrapper_${clipId}`);
+                const span = wrapper.querySelector("span");
+                const ul = wrapper.querySelector(`#list-of-tags_${clipId}`);
+                const remainingInput = wrapper.querySelector(`#remaining_${clipId}`);
+                const errorMessage = wrapper.querySelector(`#error-message_${clipId}`);
+
+                span.dataset.clipId = clipId;
+                handleSelection(span, ul, remainingInput, errorMessage, clipId);
+            });
+        }
+        function restoreVideoSelectInputs() {
+            inputs = document.querySelectorAll('select')
+            inputs.forEach(input => {
+                const storedValue = sessionStorage.getItem(input.id);
+                if (storedValue && input.id.startsWith('videoSelect_')) {
+                    input.value = storedValue;
+                }
+            });
+        }
+
+
+        function handleSelection(span, ul, remainingInput, errorMessage, clipId) {
+            submitCheck=true
+            document.getElementById(`grid_${clipId}`).addEventListener("mouseup", function () {
+                const selection = window.getSelection();
+                if (selection && selection.toString().trim()) {
+                    const selectedText = selection.toString().trim();
+                    const fullText = span.innerText.trim();
+                    const words = fullText.split(/\s+/);
+                    const selectedWords = selectedText.split(/\s+/);
+
+                    const startsCorrectly = fullText.startsWith(selectedText);
+                    const isWordAligned = selectedWords.every(word => words.includes(word));
+
+                    if (startsCorrectly && isWordAligned) {
+                        errorMessage.innerText = "";
+
+                        clip_id = clipId
+                        const li = document.createElement("li");
+                        li.innerText = selectedText;
+                        li.dataset.clipId = clipId;
+                        li.dataset.num = span.dataset.num;
+                        li.dataset.currentFile = ''
+                        li.disabled=true
+                        li.style.cursor='wait'
+                        li.onclick = function () {
+                                editCurrentLi(li);
+                            };
+                            num = span.dataset.num
+                            li.id=`current_li_${clipId}`
+
+                        ul.insertBefore(li, span);
+
+                        const remainingText = fullText.slice(selectedText.length).trim();
+                        remainingInput.value = remainingText;
+                        span.innerText = remainingText;
+                        openPopup(clipId, selectedText, remainingText);
+                        document.getElementById('add-subclip-form').addEventListener('submit', (e) => {
+                            e.preventDefault();
+                            attachValidation('add-subclip-form', clipId);
+                        })
+
+
+                    } else {
+                        errorMessage.innerText = "Invalid highlighting. Highlight full words starting from the beginning.";
+                    }
+                }
+
+                selection.removeAllRanges();
+            });
+        }
+
+
+        fetchClipIds("{{textfile.id}}");
+
+    </script>
+
+
+
+<!-- edit -->
+    <script>
+        async function handleEditSelection(liElement, currentFile, clipId, videoId, catId) {
+            submitCheck=true
+            const editForm = document.getElementById('add-subclip-form')
+
+            const htmlContainer = document.getElementById('submit-cont');
+            const selectedText = liElement.textContent
+            num = clipId
+            clip_id = clipId
+            htmlContainer.innerHTML = `
+          <div class="form-group">
+              <input id="slide_text" name="slide_text" value="${selectedText}" readonly required hidden class="form-input">
+          </div>
+          
+          <input id="clipId" type="number" hidden name="clipId" value="${clipId}">
+          <input type="hidden" name="textfile_id" value="{{textfile.id}}">
+      
+    
+          <div style="display: grid;grid-template-columns: 0.7fr 1fr;border-radius: 8px;border: 1px solid #00000080;overflow: hidden;"  class="form-grid-cont">
+              <div class="grid-item title  form-grid-item begin column-1"><span style="height:50px;align-items: center;">Upload Scene</span></div>
+              <div class="grid-item title form-grid-item end column-2"><span style="height:50px;align-items: center;margin-left: -18px;">Upload Scene From Assets Folder</span></div>
+              <div class="form-grid-item main-item">
+                  <div  class="form-group" style="height:100%;">
+                      <div class="upload-container">
+                      <label for="slide_file" class="upload-label">
+                          <i class="ri-upload-line"></i>
+                          <span id="upload-text">Choose File</span>
+                          
+                            </label>
+                          <i id="clear-file" style="display:none" onclick="clearFileInput()" class="ri-close-circle-line"></i>
+
+                      <input type="file" onchange="saveInput(this)" id="slide_file" name="slide_file" class="upload-input" accept="video/*">
+                  </div>
+      
+                  <p id="currentFile"></p>
+              
+              </div>
+              </div>
+              <div style="border-left:0.8px solid #864AF9" class="form-grid-item ">
+      
+              <div  class="form-group">
+                  <select id="selected_topic_${clipId}" onchange="fetchVideoClips(this)" value="" name="selected_topic" class="form-select">
+                      <option value="">Select Topic</option>
+                      {%for cat in video_categories%}
+                          <option value="{{cat.id}}">{{cat.name}}</option>
+                      {% endfor %}
+                  </select>
+              </div>
+              
+              <div class="form-group">
+                  <select id="videoSelect_${clipId}" onclick="saveInput(this)" name="selected_video" class="form-select">
+                      <option value="" disabled selected>Select A Video Clip</option>
+      
+                  </select>
+                  <p style="color:red; font-size:13px;" id="error-slide"></p>
+              </div>
+              </div>
+          </div>
+      `;
+            if (currentFile) {
+                document.getElementById('currentFile').textContent = `Current File: ${currentFile}`
+            }
+            if (videoId){
+                console.log('videoId: ',videoId )
+                document.getElementById(`selected_topic_${clipId}`).value = catId
+                await fetchVideoClips(document.getElementById(`selected_topic_${clipId}`),videoId);
+                document.getElementById(`videoSelect_${clipId}`).value = videoId
+            }else{
+
+            }
+            editForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                attachValidation('add-subclip-form', clipId);
+
+            });
+
+        }
+
+
+        function editSubclip(liElement, currentFile, videoId, catId) {
+            clipid = liElement.dataset.id;
+            console.log(videoId, catId);
+            document.getElementById('add-subclip-popup').style.display = 'flex';
+
+            handleEditSelection(liElement, currentFile, clipid, videoId, catId);
+        }
+    </script>
+<!-- edit current_li_ -->
+    <script>
+        
+        function editCurrentLi(liItem) {  
+            if (liItem.disabled){
+
+            }else{
+            console.log(liItem)
+            clip_id=liItem.dataset.subclip_id;
+            num=clip_id
+            text= liItem.textContent
+            const video_clip_id= liItem.dataset.video_clip_id
+            const current_file= liItem.dataset.current_file
+            const cat_id= liItem.dataset.cat_id
+            const subclip_id= liItem.dataset.subclip_id
+            const main_id= liItem.dataset.main_id
+            const editForm =document.getElementById('add-subclip-form')
+            editForm.action = `/text/edit_subclip/${subclip_id}/`
+            document.getElementById('add-subclip-popup').style.display = 'flex';
+
+ 
+            handleEditSelection(liItem,current_file,subclip_id,+video_clip_id,cat_id)
+            }
+
+        }
+   
+   </script>

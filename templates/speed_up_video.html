@@ -1,0 +1,559 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    {% include 'partials/head_c.html' %}
+
+    <link rel="stylesheet" href="{% static 'download.css' %}" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.5.0/remixicon.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.min.css">
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            
+            margin: 0;
+            background: #ffffff !important;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            /* height: 100vh; */
+        }
+
+        .upload-container {
+            text-align: center;
+        }
+
+        #drop-area {
+            border-radius: 10px;
+            padding: 20px;
+            width: 300px;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+
+        #drop-area p {
+            margin: 0;
+        }
+
+        .video-container {
+            display: none;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .slider-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            /* Increased width for a longer slider */
+        }
+
+        #speed-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 20px;
+            /* Increased thickness */
+            border-radius: 10px;
+            /* Rounded edges for a thicker slider */
+            background: linear-gradient(to right, #864AF9 0%, #864AF9 0%, #ddd 0%, #ddd 100%);
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        #speed-slider:hover {
+            opacity: 1;
+        }
+
+        #speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 29px;
+            /* Larger thumb */
+            height: 29px;
+            /* Larger thumb */
+            border-radius: 50%;
+            background: #864AF9;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #speed-slider::-webkit-slider-thumb:hover {
+            background: #7a3fdf;
+            /* Slightly darker on hover */
+        }
+
+        #speed-slider::-moz-range-thumb {
+            width: 24px;
+            /* Larger thumb */
+            height: 24px;
+            /* Larger thumb */
+            border-radius: 50%;
+            background: #864AF9;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #speed-slider::-moz-range-thumb:hover {
+            background: #7a3fdf;
+            /* Slightly darker on hover */
+        }
+
+        #speed-value {
+            display: block;
+            margin-top: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .play-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background-color: #864AF9;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .play-btn:hover {
+            background-color: #7a3fdf;
+            transform: scale(1.1);
+        }
+
+        .play-btn i {
+            font-size: 24px;
+            color: white;
+        }
+
+
+        #reupload {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: #864AF9;
+            border:1px solid #864AF9;
+            border-radius: 8px;
+            justify-content: center;
+            text-align: center;
+            text-decoration: none;
+            box-sizing: border-box;
+            transition: 0.3s ease;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .upload-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    border: 2px dashed #bbb;
+    border-radius: 10px;
+    background-color: #f5f5f5;
+    text-align: center;
+    cursor: pointer;
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+}
+
+#drop-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: #888;
+}
+
+#drop-area i {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #888;
+}
+
+#drop-area p {
+    font-size: 16px;
+    font-weight: bold;
+    color: #444;
+    margin-bottom: 5px;
+}
+
+#drop-area span {
+    font-size: 14px;
+    color: #888;
+}
+
+    </style>
+</head>
+
+<body>
+    <div class="main-header">
+        {% include 'sub_header.html' %}
+
+    </div>
+    <div style="
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-top: 99px;
+    ">
+    <img src="https://vlsmlsaker.s3.amazonaws.com/assets/background/Ellipse%202.svg" alt="" style="
+        position: absolute;
+        z-index: -1;
+        width: 1000px;
+        height: auto;
+        filter: blur(400px);
+        opacity: 35%;
+    ">
+
+    <form id="speedUpForm" method="POST" action="." enctype="multipart/form-data">
+
+        {% csrf_token %}
+        <div class="container" style="display: flex; width: 100%; justify-content: center; margin-bottom: 50px;background:#ffffff">
+            <div style="
+            display: flex;
+            text-align: center;
+            min-width: 524px;
+            height: fit-content;
+            gap: 34px;
+            background:#ffffff;
+            border: 1px solid #0000004D;
+            border-radius: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 28px 24px;
+            ">
+                <div>
+                    <span
+                        style="font-family: Montserrat; font-size: 24px; font-weight: 700; line-height: 29.26px; text-align: center;color: #864AF9;">
+                        Speed Up Your Video
+                    </span>
+                </div>
+
+                <div
+                    style="width: 100%; border-radius: 8px; align-items: center; justify-content: center; display: flex;">
+                    <div id="videoPreviewContainer"
+                        style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; ">
+
+                        <div class="upload-container" id="upload-container">
+                            <div id="drop-area">
+                                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                                <p>Click to Upload or Drag Video Here</p>
+                                <span>No file chosen</span>
+                                <input type="file" id="file-input" name="file" hidden accept="video/*" />
+                            </div>
+                        </div>
+                        
+
+                        <div class="video-container" id="video-container">
+                            <div id="video-container-box" style="display: flex;
+                                    width: 100%; /* Ensure the container is flexible */
+                                    height: auto; /* Allow height to adjust automatically */
+                                    max-width: 100%; /* Prevent overflow horizontally */
+                                    max-height: 100vh; /* Prevent overflow vertically */
+                                    border-radius: 8px;
+                                    align-items: center;
+                                    justify-content: center;
+                                    overflow: hidden;"> <!-- Added overflow:hidden to prevent any overflow -->
+                                <video id="video-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto"
+                                    data-setup='{ "fluid" : true }'
+                                    style="width: 100%; height: auto; object-fit: contain;">
+                                </video>
+                            </div>
+                        </div>
+                        
+
+                    </div>
+                </div>
+
+                <div id="controls" style="display: none;" class="controls">
+                    <button id="reupload" type="button">Change Video</button>
+
+                    <div class="play-btn paused" style="display: none;" id="play-btn">
+                        <i class="ri-play-large-fill"></i>
+                    </div>
+                    <br />
+                    <label for="speed-slider">Speed:</label>
+                    <br />
+                    <div class="slider" style="width: 500px;">
+                        <input type="range" id="speed-slider" name="speed" min="1" max="4" step="0.01" value="1" />
+                        <span id="speed-value">1.00x</span>
+                    </div>
+                </div>
+                <button id="speedup" type="submit" style="
+                    background-color: #864AF9; 
+                    border: none;
+                    color: white;
+                    padding: 10px 20px;
+                    text-align: center;
+                    text-decoration: none;
+                    display: flex;
+                    font-size: 18px;
+                    font-family: arial;
+                    margin: 4px 2px;
+                    cursor: pointer;
+                    border-radius: 8px;
+                    transition: background-color 0.3s ease, color 0.3s ease;
+                    display: none;
+                    width: 100%;
+                    justify-content: center;
+                    ">
+                    Process
+                </button>
+            </div>
+
+        </div>
+    </form>
+    <br>
+    <br>
+    <br>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('file-input');
+            const uploadContainer = document.getElementById('upload-container');
+            const videoContainer = document.getElementById('video-container');
+            const controls = document.getElementById('controls');
+            const playBtn = document.getElementById('play-btn');
+            const speedSlider = document.getElementById('speed-slider');
+            const speedValue = document.getElementById('speed-value');
+            const speedup = document.getElementById('speedup');
+            const reupload = document.getElementById('reupload');
+            const playIcon = playBtn.querySelector('i');
+
+            let player = videojs('video-player', {
+                controls: true,
+                autoplay: false,
+                preload: 'auto'
+            });
+
+            reupload.addEventListener('click', () => {
+
+                videoContainer.style.display = 'none';
+                controls.style.display = 'none';
+                uploadContainer.style.display = 'flex';
+                speedup.style.display = 'none';
+
+                speedSlider.value = 1;
+                speedValue.textContent = `1.00x`;
+                speedSlider.style.background = `linear-gradient(to right, #864AF9 0%, #864AF9 ${1}%, #ddd ${1}%, #ddd 100%)`;
+                player.pause()
+            })
+            dropArea.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', handleFileUpload);
+            dropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropArea.style.backgroundColor = '#e9e9e9';
+            });
+
+            dropArea.addEventListener('dragleave', () => {
+                e.preventDefault();
+
+            dropArea.style.backgroundColor = ''});
+            dropArea.addEventListener('drop', function (e) {
+                e.preventDefault();
+                dropArea.style.backgroundColor = '';
+                handleFileUpload(e.dataTransfer);
+            });
+
+            function handleFileUpload(event) {
+                const file = event.files ? event.files[0] : event.target.files[0];
+
+                if (file && file.type.startsWith('video/')) {
+                fileInput.files = event.files;
+                    const videoURL = URL.createObjectURL(file);
+                    player.src({ type: file.type, src: videoURL });
+                    player.ready(() => {
+                        adjustVideoContainer();
+                    });
+
+                    uploadContainer.style.display = 'none';
+                    videoContainer.style.display = 'block';
+                    controls.style.display = 'flex';
+                    speedup.style.display = 'flex';
+                }else{
+                    alert('You have Uploaded Unsupported File Type')
+                }
+
+            }
+
+            function adjustVideoContainer() {
+                player.on('loadedmetadata', function () {
+                    const video = player.el().querySelector("video");
+                    const aspectRatio = video.videoWidth / video.videoHeight;
+                    const container = document.getElementById("video-container-box");
+
+                    console.log("Video Loaded");
+                    console.log("Width:", video.videoWidth, "Height:", video.videoHeight);
+                    console.log("Aspect Ratio:", aspectRatio.toFixed(2));
+
+                    // Reset any previous styles to avoid conflicts
+                    container.style.width = "";
+                    container.style.height = "";
+                    container.style.maxWidth = "100%";
+                    container.style.maxHeight = "100vh"; // Ensure it never overflows the viewport
+
+                    if (aspectRatio > 1) {
+                        container.style.width = "500px";
+                        // container.style.height = `500`;  
+                    } else {
+                        // **Portrait & Square Videos (9:16, 4:5, 1:1)**
+                        container.style.width = `${(60 * aspectRatio)}vh`;
+                        container.style.height = "60vh";
+                    }
+
+                    // Ensure video itself follows the container's size
+                    video.style.width = "100%";
+                    video.style.height = "100%";
+                    video.style.objectFit = "contain"; // ✅ Prevent cropping
+
+                    console.log(`Container Updated: Width=${container.style.width}, Height=${container.style.height}`);
+                });
+            }
+
+
+            playBtn.addEventListener('click', function () {
+                if (player.paused()) {
+                    player.play();
+                    playIcon.classList.replace('ri-play-large-fill', 'ri-pause-circle-fill');
+                } else {
+                    player.pause();
+                    playIcon.classList.replace('ri-pause-circle-fill', 'ri-play-large-fill');
+                }
+            });
+
+            speedSlider.addEventListener('input', function () {
+                const speed = speedSlider.value;
+                player.playbackRate(speed);
+                speedValue.textContent = `${parseFloat(speed).toFixed(2)}x`;
+                speedSlider.style.background = `linear-gradient(to right, #864AF9 0%, #864AF9 ${(speed - speedSlider.min) / (speedSlider.max - speedSlider.min) * 100}%, #ddd ${speed}%, #ddd 100%)`;
+            });
+
+            player.on('ended', function () {
+                playIcon.classList.replace('ri-pause-circle-fill', 'ri-play-large-fill');
+            });
+
+            document.getElementById('speedUpForm').addEventListener('submit', function (event) {
+                event.preventDefault();
+                startProcessingAnimation();
+                const formData = new FormData(this);
+
+                fetch('.', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                })
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'sped_up_video.mp4';
+                        document.body.appendChild(a);
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        a.remove();
+
+                        videoContainer.style.display = 'none';
+                        controls.style.display = 'none';
+                        uploadContainer.style.display = 'flex';
+                        speedup.style.display = 'none';
+
+                        speedSlider.value = 1;
+                        speedValue.textContent = `1.00x`;
+                        showSuccessMessage('Your Video Has Been Sped Up And Downloaded Successfully');
+                        stopProcessingAnimation();
+                        window.location = '/text'
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    document.cookie.split(';').forEach(cookie => {
+                        cookie = cookie.trim();
+                        if (cookie.startsWith(`${name}=`)) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        }
+                    });
+                }
+                return cookieValue;
+            }
+
+            function showSuccessMessage(message) {
+                const successMessage = document.createElement('div');
+                successMessage.textContent = message;
+                Object.assign(successMessage.style, {
+                    position: 'fixed',
+                    top: '95px',
+                    right: '20px',
+                    padding: '10px 15px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    borderRadius: '5px',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                    zIndex: '1000'
+                });
+                document.body.appendChild(successMessage);
+                setTimeout(() => document.body.removeChild(successMessage), 2000);
+            }
+
+            function startProcessingAnimation() {
+                const button_text = $('#speedup');
+                let dots = 0;
+                if (button_text.data('intervalId')) clearInterval(button_text.data('intervalId'));
+                const intervalId = setInterval(() => {
+                    dots = (dots + 1) % 4;
+                    button_text.text('Processing' + '.'.repeat(dots));
+                }, 500);
+                button_text.data('intervalId', intervalId);
+            }
+
+            function stopProcessingAnimation() {
+                const button_text = $('#speedup');
+                const intervalId = button_text.data('intervalId');
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    button_text.data('intervalId', null);
+                    button_text.text('Speed Up');
+                }
+            }
+        });
+
+    </script>
+</body>
+
+</html>
+

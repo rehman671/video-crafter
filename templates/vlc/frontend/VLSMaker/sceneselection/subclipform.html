@@ -1,0 +1,515 @@
+<div class="popup-form popup-modal" id="add-subclip-popup">
+    
+    <div class="popup-container" style="width: 615px;">
+        <div class="close-btnx close-btn" onclick="closeModal()">
+            <button class="close-popup">
+                X
+            </button>
+        </div>
+        <form class="popup-content" method="POST" enctype="multipart/form-data" id="add-subclip-form"
+            style="grid-template-columns: 0.7fr 1fr;width:100%;">
+
+            <br>
+            {% csrf_token %}
+
+            <div id="submit-cont">
+            </div>
+            <div style="align-items: end;" class="form-group">
+                <button type="submit" id="submit-clip" class="submit-btn">Submit</button>
+            </div>
+        </form>
+        <button style="display: none;" class="close-btn" onclick="closeModal()" id="close-popup-btn">Close</button>
+    </div>
+</div>
+
+<style>
+    .popup-modal {
+        display: none;
+        position: fixed;
+        /* Stays in the viewport */
+        top: 0;
+        left: 0;
+        width: 100%;
+        /* Full screen width */
+        height: 100%;
+        /* Full screen height */
+        background-color: rgba(0, 0, 0, 0.7);
+        /* Semi-transparent overlay */
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        /* Prevent interactions when hidden */
+        transition: opacity 0.3s ease-in-out;
+        /* Smooth fade-in/out transition */
+    }
+
+    /* Show the modal when not hidden */
+    .popup-modal:not(.hidden) {
+        display: none;
+        /* Center the modal */
+        opacity: 1;
+        /* Fully visible */
+        pointer-events: all;
+        /* Enable interactions */
+    }
+
+    /* The popup content */
+    .popup-container {
+        position: relative;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 615px;
+        width: 90%;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .close-btnx {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 30px;
+        height: 30px;
+        background-color: #864AF9;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        z-index: 1100;
+    }
+
+    .close-btnx i,
+    .close-btnx button {
+        color: #fff;
+        font-size: 20px;
+        background-color: red;
+        cursor: pointer;
+        border: none;
+        /* background: none; */
+        outline: none;
+    }
+
+
+
+
+    .popup-content {
+        margin-top: -37px;
+    }
+
+    /* Modal Header */
+    .popup-content .title {
+        border-left: 1px solid #00000080;
+        background: #864AF9;
+        color: white;
+        border-top: none;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 29.26px;
+        text-align: center;
+    }
+
+    /* Modal Form Elements */
+    .popup-content select,
+    .popup-content input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        /* margin-bottom: 15px; */
+        /* border: none; */
+        background-color: #f0f0f0;
+        /* Set your background color */
+        border: 1px solid #ccc;
+        /* Optional: border style */
+
+        border-radius: 4px;
+        font-size: 14px;
+        text-transform: capitalize;
+    }
+
+    select::-webkit-dropdown-arrow {
+        background-color: #f0f0f0;
+        /* Color of the dropdown arrow */
+    }
+
+    .submit-btn {
+        margin-top: 19px;
+        margin-bottom: -15px;
+        margin-left: 89%;
+        font-family: "Montserrat", sans-serif;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 24px;
+        color: white;
+        background: #864AF9;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 24px;
+        letter-spacing: 0.02em;
+        text-align: left;
+        cursor: pointer;
+        border: none;
+        transition: background 0.2s ease-in-out;
+    }
+
+    .submit-btn:hover {
+        background-color: #6a3cb8;
+    }
+
+    /* Ensure the container allows alignment */
+    .submit-btn-container {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+
+    .popup-container {
+        background: white;
+        border-radius: 8px;
+        padding: 30px 30px;
+        width: 100%;
+        max-width: 750px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        animation: slide-down 0.3s ease-in-out;
+    }
+
+
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .submit-btn {
+        background-color: #864AF9;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    .submit-btn:hover {
+        background-color: #864AF9;
+        opacity: 0.8;
+    }
+
+    .close-btn {
+        background-color: red;
+        color: white;
+        width: 18px;
+        height: 17px;
+        padding: 10px;
+        font-size: 19px;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+        left: 95.2%;
+        position: absolute;
+        top: -12%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* border-radius: 50%; */
+        cursor: pointer;
+        z-index: 1100;
+    }
+</style>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('add-subclip-form');
+        if (form) {
+            form.reset();
+        }
+    });
+
+    function fetchVideoClips(selected,videoId=null) {
+        id = selected.value;
+        let video_id = `videoSelect_${clip_id}`
+        saveInput(selected)
+        if (id ) {
+            populateVideoCategories(video_id, `/video/get_clip/${id}`)
+            if (videoId){
+                document.getElementById(video_id).value=videoId
+            }
+
+        }else {
+            document.getElementById(video_id).innerHTML=`<option selected disabled value="">Select A Video Clip</option>`
+        }
+    }
+
+    async function restoreForm() {
+        const inputs = document.querySelectorAll('select');
+
+        for (const input of inputs) {
+            const storedValue = sessionStorage.getItem(input.id);
+            if (storedValue && input.id.startsWith('selected_topic_')) {
+                input.value = storedValue;
+
+                const idParts = input.id.split('_');
+                const currentNumber = idParts[idParts.length - 2];
+
+                const url = `/video/get_clip/${storedValue}`;
+                const targetId = `videoSelect_${clip_id}`;
+                await populateVideoCategories(targetId, url);
+
+            }
+        }
+        inputs.forEach(input => {
+            const storedValue = sessionStorage.getItem(input.id);
+            if (storedValue && input.id.startsWith('videoSelect_')) {
+                input.value = storedValue;
+            }
+        });
+
+    };
+
+    function populateVideoCategories(selectElementId, apiUrl) {
+        const selectElement = document.getElementById(selectElementId);
+        selectElement.innerHTML=''
+        if (!selectElement) {
+            console.error(`Select element with ID "${selectElementId}" not found.`);
+            return;
+        }
+
+
+        // Fetch categories from the API
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(categories => {
+                categories.forEach(cat => {
+                    const option = document.createElement("option");
+                    option.value = cat.id;
+                    option.textContent = cat.title;
+                    selectElement.appendChild(option);
+                });
+                // restoreVideoSelectInputs();
+
+            })
+            .catch(error => {
+                console.error("Failed to fetch video categories:", error);
+            });
+    }
+
+    document.getElementById('close-popup-btn').addEventListener('click', function () {
+
+
+    });
+
+    function closeModal() {
+        const errorElements = document.querySelectorAll('[id^="error"]');
+        sessionStorage.clear();
+
+        errorElements.forEach(element => {
+            element.textContent = "";
+        });
+        document.getElementById('add-subclip-popup').style.display = 'none';
+        const form = document.getElementById('add-subclip-form');
+        form.reset();
+        const formClipID = document.getElementById('clipId').value;
+        const ulElement = document.getElementById(`list-of-tags_${formClipID}`);
+        const spanElement = document.getElementById(`slide_span_${formClipID}`);
+        if (ulElement && ulElement.children.length > 1) {
+            const secondToLastLi = ulElement.children[ulElement.children.length - 2];
+            const secondToLastLiText = secondToLastLi.textContent;
+
+            const spanText = spanElement.textContent.trim();
+            spanElement.textContent = `${secondToLastLiText} ${spanText}`
+            console.log("Last <li> text:", secondToLastLiText);
+
+            ulElement.removeChild(secondToLastLi);
+        } else {
+            console.log("No <li> items found to remove.");
+        }
+    }
+    
+
+function attachValidation(formId, clipId) {
+    const li = document.getElementById(`current_li_${clipId}`);
+    if (li) {
+        li.disabled=true
+        li.style.cursor='wait'
+        console.log(li, ' has been disabled');
+    }
+
+    const form = document.getElementById(formId);
+    
+    if (form) {
+        const formClipID = document.getElementById('clipId').value;
+        const fileInput = document.getElementById('slide_file');
+        const videoSelect = document.getElementById(`videoSelect_${formClipID}`);
+
+        // Validation to ensure file input or video select is filled
+        if ((!fileInput.value || fileInput.value.trim() === "") &&
+            (!videoSelect || !videoSelect.value || videoSelect.value.trim() === "")) {
+            document.getElementById('error-slide').textContent = 'Select A Clip';
+            videoSelect.focus();
+        } else {
+            // Disable the submit button and set cursor to 'wait'
+            // document.getElementById('submit-clip').disabled = true;
+            // document.getElementById('submit-clip').style.cursor = 'wait';
+
+            // Prepare form data for submission
+            const formData = new FormData(form);
+
+            if (submitCheck){
+                submitCheck=false
+                document.getElementById('add-subclip-popup').style.display = 'none';
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest', // For Django to identify AJAX request
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("Subclip created with ID:", data.subclip_id);
+                        
+                        if (li) {
+                            console.log('data: ', data);
+                            li.dataset.video_clip_id = data.video_clip_id;
+                            li.dataset.current_file = data.current_file;
+                            li.dataset.cat_id = data.cat_id;
+                            li.dataset.id = data.subclip_id;
+                            li.dataset.subclip_id = data.subclip_id;
+                            li.dataset.main_id = data.main_id;
+                            li.disabled = false;
+                            clipId = data.subclip_id;
+                            li.style.cursor = 'pointer';
+                            
+                        }
+    
+                        // Reset the form
+                        sessionStorage.clear();
+                        form.reset(); // Clear all inputs in the form
+                        console.log('Clip Submitted Successfully');
+                        
+                        form.disabled=false;
+                        form.style.display='default'
+    
+                    } else {
+                        document.getElementById('error-slide').textContent = data.error || "An error occurred.";
+                    }
+                })
+                .catch(error => {
+                    submitCheck =true
+
+                    console.error("Error submitting form:", error);
+                    document.getElementById('error-slide').textContent = "An error occurred.";
+                })
+                .finally(() => {
+                    // Re-enable the submit button
+                    document.getElementById('submit-clip').disabled = false;
+                    document.getElementById('submit-clip').style.cursor = 'pointer';
+    
+                    // Reset the file input field
+                    if (fileInput) {
+                        fileInput.value = ""; // This ensures the file input is cleared
+                    }
+                });
+           
+
+            }
+        }
+    }
+}
+
+// function attachValidation(formId, clipId) {
+//     const li = document.getElementById(`current_li_${clipId}`);
+//     if (li) {
+//         li.disabled = true;
+//         li.style.cursor = 'wait';
+//         console.log(li, ' has been disabled');
+//     }
+
+//     const form = document.getElementById(formId);
+//     if (form) {
+//         const formClipID = document.getElementById('clipId').value;
+//         const fileInput = document.getElementById('slide_file');
+//         const videoSelect = document.getElementById(`videoSelect_${formClipID}`);
+
+//         // Validation to ensure file input or video select is filled
+//         if ((!fileInput.value || fileInput.value.trim() === "") &&
+//             (!videoSelect || !videoSelect.value || videoSelect.value.trim() === "")) {
+//             document.getElementById('error-slide').textContent = 'Select A Clip';
+//             videoSelect.focus();
+//         } else {
+//             // Disable the form to prevent duplicate submissions
+//             form.disabled = true;
+
+//             // Prepare form data for submission
+//             const formData = new FormData(form);
+
+//             // Submit the form via AJAX
+//             document.getElementById('add-subclip-popup').style.display = 'none';
+//             fetch(form.action, {
+//                 method: 'POST',
+//                 body: formData,
+//                 headers: {
+//                     'X-Requested-With': 'XMLHttpRequest', // For Django to identify AJAX request
+//                 }
+//             })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     console.log("Subclip created with ID:", data.subclip_id);
+
+//                     // Update the corresponding <li> element
+//                     if (li) {
+//                         console.log('data: ', data);
+//                         li.dataset.video_clip_id = data.video_clip_id;
+//                         li.dataset.current_file = data.current_file;
+//                         li.dataset.cat_id = data.cat_id;
+//                         li.dataset.id = data.subclip_id;
+//                         li.dataset.subclip_id = data.subclip_id;
+//                         li.dataset.main_id = data.main_id;
+//                         li.disabled = false;
+//                         li.style.cursor = 'pointer';
+//                     }
+
+//                     // Reset the form
+//                     sessionStorage.clear();
+//                     form.reset();
+//                     console.log('Clip Submitted Successfully');
+//                 } else {
+//                     document.getElementById('error-slide').textContent = data.error || "An error occurred.";
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error("Error submitting form:", error);
+//                 document.getElementById('error-slide').textContent = "An error occurred.";
+//             })
+//             .finally(() => {
+//                 // Re-enable the form and reset the file input
+//                 form.disabled = false;
+//                 if (fileInput) {
+//                     fileInput.value = ""; // Clear file input
+//                 }
+//                 if (li) {
+//                     li.disabled = false;
+//                     li.style.cursor = 'pointer';
+//                 }
+//             });
+//         }
+//     }
+// }
+
+</script>

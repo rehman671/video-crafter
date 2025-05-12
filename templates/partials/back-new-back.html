@@ -1,0 +1,46 @@
+
+
+<div style="display: flex;justify-content: center;margin: 20px 0; margin-bottom: 40px;">
+    <a href="#"
+    id="previousButton" 
+         class="button"
+         style="text-decoration: none;background-color: transparent; color: #864AF9;border: 1px solid #864AF9; padding: 5px 24px;
+          font-size: 18px;
+    font-weight: 500;
+    line-height: 21.94px;
+    
+     text-align: center;
+      display: flex;
+       align-items: center;
+    justify-content: center;
+    gap: 10px;
+         ">
+         <span>
+
+             Go Back To Change Scenes
+         </span>
+      </a>
+</div>
+
+
+
+        <script>
+                // document.getElementById('previousButton').addEventListener('click', function() {
+                //     window.history.back();
+                // });
+                document.getElementById('previousButton').addEventListener('click', function() {
+                // Get the referrer URL
+                var referrer = document.referrer;
+                
+                // Check if the previous page URL contains 'progress'
+                if (referrer.includes('progress')) {
+                    // Go back two steps
+                    window.history.go(-2);
+                } else {
+                    // Go back one step
+                    window.history.back();
+                }
+            });
+            
+            
+            </script>

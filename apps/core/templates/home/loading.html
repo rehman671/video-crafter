@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+  <link rel="stylesheet" href="{% static 'styles/music.css' %}">
+  <link rel="stylesheet" href="{% static 'styles/fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+  <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <style>
+    .container {
+      display: flex;
+      width: 100%;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 50px;
+    }
+
+    .loading-box {
+      display: flex;
+      text-align: center;
+      width: 524px;
+      height: 109px;
+      background: white;
+      border: 1px solid #0000004D;
+      border-radius: 8px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-direction: column;
+    }
+
+    .loading-text {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 29.26px;
+      text-align: center;
+    }
+
+    .current-step {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
+      margin-top: 10px;
+      color: #666;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin: 0 2px;
+      background: #000;
+      border-radius: 50%;
+      animation: dot-bounce 1.4s infinite ease-in-out both;
+    }
+
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+    .dot:nth-child(3) { animation-delay: 0s; }
+
+    @keyframes dot-bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    #percent {
+      padding-left: 10px;
+    }
+
+    .progress-bar-container {
+      width: 524px;
+      height: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: #4CAF50;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .error-message {
+      color: #d9534f;
+      font-size: 14px;
+      margin-top: 15px;
+      max-width: 500px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+    <header class="header">
+        <div class="main-div">
+            <div class="sub-main-div">
+                <img src="{% static 'images/logo.svg' %}" alt="Logo">
+                <a href="/home/preview.html" class="anchor-sub-main"></a>
+            </div>
+            <div class="right">
+                <span class="right-span">Credits Remaining: <span id="number">{{ user_subscription.unused_credits }}</span></span>
+                <div class="line"></div>
+                <div class="img" id="pfp" onclick="toggleDropdown()">
+                    <div class="img-sub-div">
+                        <div class="img-sub">
+                            <img src="{% static 'images/profile.svg' %}" alt="Profile">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pfpdropdown" class="not-present">
+                    <div class="not-present-sub">
+                        <span class="not-present-sub-span1">{{ user_subscription.user.first_name }}</span>
+                        <span class="not-present-sub-span2">{{ user_subscription.user.email }}</span>
+                    </div>
+                    <div class="profile-main-div">
+                        <div class="profile-sub-div">
+                            <div class="dropdownText">
+                                <span class="dropdownText" style="width: fit-content;">Credit Left</span>
+                                <span class="dropdownText" style="width: fit-content; color: #19191980;">{{ user_subscription.unused_credits }}</span>
+                            </div>
+                        </div>
+                        <span class="dropdownText">
+                                                        <a href="{% url 'asset_library' %}">Manage Asset Library</a>
+
+                        </span>
+                        <span class="dropdownText">
+                            <a href="/manage/recent-videos.html">Manage Video Drafts</a>
+                        </span>
+                        <span class="dropdownText">
+                            <a href="/manage/manage-subscription.html">Manage Subscription</a>
+                        </span>
+                    </div>
+                    <div class="profile-last-div">
+                        <span class="dropdownText"><a href="/">Log Out</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="progressbar">
+        <div class="sub-div">
+            <div class="progress-fill" style="width:66.66666666666667%"></div>
+            <div class="sub-div2 completed"></div>
+            <div class="sub-div3 completed"></div>
+            <div class="sub-div4 active"></div>
+            <div class="sub-div5 "></div>
+            <div class="voice-subtitle ">Voice & Subtitle Design</div>
+            <div class="sceneselection ">Scene Selection</div>
+            <div class="bgmselection active-text">Background Music Selection</div>
+            <div class="download ">Download</div>
+        </div>
+    </div>
+  <div class="container">
+    <div class="loading-box">
+      <span class="loading-text">
+        Processing Video
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span id="percent">0%</span>
+      </span>
+    </div>
+    <div class="error-message" id="error-message" style="display: none;"></div>
+  </div>
+
+  <script>
+    // Get video ID from URL
+    const videoId = {{ video_id }};
+    console.log("Loading video ID:", videoId);
+
+    if (!videoId) {
+      document.getElementById('error-message').textContent = "Error: No video ID provided";
+      document.getElementById('error-message').style.display = "block";
+    }
+
+    let checkStatusInterval;
+    const percentText = document.getElementById('percent');
+    const errorMessage = document.getElementById('error-message');
+
+    function checkProcessingStatus() {
+      fetch(`/videos/${videoId}/processing-status/`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Processing status:', data);
+          
+          // Update just the progress percentage text
+          let progress = data.progress || 0;
+          percentText.textContent = `${progress}%`;
+          
+          // Handle errors
+          if (data.status === 'error') {
+            clearInterval(checkStatusInterval);
+            errorMessage.textContent = data.error_message || "An error occurred during processing";
+            errorMessage.style.display = "block";
+            return; // Exit early
+          }
+          
+          // Handle completion
+          if (data.status === 'completed' || progress >= 100) {
+            clearInterval(checkStatusInterval);
+            console.log('Processing completed, redirecting to background music page');
+            window.location.href = `/background-music/${videoId}/`;
+            return; // Exit early
+          }
+          
+          // If processing is still ongoing, continue checking
+          if (data.status === 'processing') {
+            // Continue with periodic checks
+            console.log(`Processing continuing at ${progress}%`);
+          }
+        })
+        .catch(error => {
+          console.error('Error checking status:', error);
+          errorMessage.textContent = "Error checking status: " + error.message;
+          errorMessage.style.display = "block";
+          
+          // Don't clear interval on network errors, keep trying
+          // If you want to stop after repeated failures, implement a counter here
+        });
+    }
+
+    // Start processing the video
+    function startVideoProcessing() {
+      fetch(`/videos/${videoId}/process-video/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken()
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Processing started:', data);
+        
+        // Check status initially
+        checkProcessingStatus();
+        
+        // Then set up periodic checks every 2 seconds
+        checkStatusInterval = setInterval(checkProcessingStatus, 2000);
+      })
+      .catch(error => {
+        console.error('Error starting processing:', error);
+        errorMessage.textContent = "Error starting video processing: " + error.message;
+        errorMessage.style.display = "block";
+      });
+    }
+
+    // Helper function to get CSRF token
+    function getCsrfToken() {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+          return value;
+        }
+      }
+      return '';
+    }
+
+    // Initialize processing when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("DOM loaded, starting video processing for ID:", videoId);
+      if (videoId) {
+        // Start the processing immediately
+        startVideoProcessing();
+      }
+    });
+
+    // For profile dropdown
+    function toggleDropdown() {
+      var dropdown = document.getElementById('pfpdropdown');
+      dropdown.classList.toggle('not-present');
+      dropdown.classList.toggle('present');
+    }
+  </script>
+</body>
+</html>

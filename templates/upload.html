@@ -1,0 +1,214 @@
+<style>
+    .center-containered {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    #uploadStatus {
+        text-align: center;
+        margin-bottom: 12px;
+    }
+
+    #progressWrapper {
+        width: 250px;
+        display: none;
+        margin-top: -5px;
+        background-color: #f3f3f3;
+        position: relative; /* Position relative to hold absolute children */
+        border-radius: 12px;
+    }
+
+    #progressBar {
+        width: 0%;
+        background-color: #864AF9;
+        text-align: center;
+        line-height: 7px;
+        color: white;
+        border-radius: 12px;
+
+    }
+
+    #percent {
+        position: absolute;
+        top: -26px;
+        right: -10px;
+        transform: translateX(-50%);
+        line-height: 30px;
+        color: black;
+    }
+
+    #videoUploadButton {
+        margin-top: 6px;
+    }
+</style>
+
+<div class="card" id="uploadCard" style="position: relative;">
+    {% if request.user.subscription.plan.name|lower == 'free' %}
+        <div data-tooltip="Only Available On Paid Plans" style="cursor: not-allowed; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-color: #eeeeeebb; z-index: 99; border-radius: 8px;"></div>
+    {% endif %}
+    <div class="card-header">
+        <span style="font-size: 24px; font-weight: 700; line-height: 29.26px; text-align: center; padding-top: 15px; display: inline-block;">
+            Upload To Your Asset Folder
+        </span>
+        <h5>These Files Will be Saved In Your Asset Library Which You Can Manage Through The Profile Icon Above</h5>
+    </div>
+    <div class="card-body upload">
+        <form method="POST" id="uploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="Script-text-file-text" style="display: flex; align-items: center; margin-bottom: 16px;">
+
+                <div style="  font-weight: bold; line-height: 26.1px; letter-spacing: 0.02em; text-align: left; margin-right: 10px; font-size: 15px;">
+                    Upload Folder:
+                </div>
+                <div class="vh-parent">
+                    <div class="vh-child">
+                        <span class="text3">
+                            Please Make Sure Your Folder Contains Video Files
+                        </span>
+                    </div>
+                    ?
+                </div>
+            </div>
+            </div>
+            <div class="Script-text-file-Upload" style="width: 100%; height: 50px; border: 1px solid #000000B2; box-sizing: border-box; border-radius: 8px; padding: 8px; gap: 24px; display: flex; align-items: center; margin-bottom: 24px;">
+                <div style="padding: 8px 24px; border-radius: 8px; cursor: pointer; background: #864AF9; width: fit-content; color: white; display: flex; align-items: center; gap: 10px; position: relative;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5M14.1667 6.66667L10 2.5M10 2.5L5.83333 6.66667M10 2.5V12.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>                                
+                    <span class="text2" style="font-size: 16px; line-height: 24px; text-align: center; font-weight: 400;">Choose file</span>
+                    <input id="fileInput" type="file" name="folder" webkitdirectory multiple style="width: 100%; height: 100%; position: absolute; opacity: 0; cursor: pointer; z-index: 2; left: 0; border-radius: 8px;">
+
+                </div>
+
+                <div class="text2" id="fileName2" style="color: #00000080;">No folder chosen</div>
+            </div>
+            <input type="text" id="directories" name="directories" hidden />
+
+    
+            <div id="centered-c" class="center-containered" >
+                <div id="uploadStatus" style="text-align: center;"></div>
+                    
+                <div id="progressWrapper"  style="display:none;   background-color: #f3f3f3; margin-bottom: 2px;">
+                    <div id="progressBar" style="width: 0%; height: 10px; text-align: center; line-height: 30px; color: white;">
+                    </div>
+                    <div id="percent"></div>
+                </div>
+                <button class="file-button" id="videoUploadButton" type="submit">Upload and Process</button>
+            </div>
+            
+
+        </form>
+    </div>
+</div>
+
+<script>
+const uploadCard=document.getElementById('uploadCard')
+document.querySelector("#fileInput").addEventListener("change", function() {
+    let files = document.querySelector("#fileInput").files;
+    let directories = {};  // This will store folder paths and their corresponding files
+    document.getElementById('uploadStatus').textContent =''
+    // Loop through all selected files
+    for (let file of files) {
+        const folderPath = file.webkitRelativePath.split('/').slice(0, -1).join('/');
+        if (!directories[folderPath]) {
+            directories[folderPath] = [];  // Initialize array for this folder
+        }
+        directories[folderPath].push(file.name);  // Add file name to the folder
+    }
+
+    // Send folder structure to backend in a hidden input field
+    document.querySelector("#directories").value = JSON.stringify(directories);
+});
+const fileName2= document.getElementById('fileName2')
+
+const fileUpload2 = document.getElementById('fileInput');
+    fileUpload2.addEventListener('change', (event) => {
+        const folderName = event.target.files[0].webkitRelativePath.split('/')[0];
+
+      const file = event.target.files[0]
+      if (file) {
+          fileName2.textContent =folderName.slice(0,15);
+        } else {
+            fileName2.textContent = 'No files selected';
+        }
+    });
+const uploadForm = document.getElementById('uploadForm');
+const progressBar = document.getElementById('progressBar');
+const percent = document.getElementById('percent');
+const uploadStatus = document.getElementById('uploadStatus');
+
+uploadForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    const centeredContainer =document.getElementById('centered-c')
+    const files = document.getElementById('fileInput').files;
+    if (files.length === 0) {
+        alert('Please select files to upload.');
+        return;
+    }
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        formData.append('folder', files[i]);
+    }
+
+    // Add the directory structure data to the FormData object
+    formData.append('directories', document.getElementById('directories').value);
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', function(e) {
+        if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            progressBar.style.width = percentComplete + '%';
+
+            document.getElementById('progressWrapper').style.display='block'
+            document.getElementById('videoUploadButton').disabled=true
+            
+            document.getElementById('videoUploadButton').textContent='Uploading Files...'
+            document.getElementById('videoUploadButton').style.cursor='wait'
+            document.getElementById('scriptUploadButton').style.marginTop='29px'
+
+            
+            percent.textContent = Math.round(percentComplete) + '%';
+        }
+    });
+
+    // Complete event listener
+    xhr.addEventListener('load', function() {
+        if (xhr.status === 200) {
+            document.getElementById('progressWrapper').style.display='none'
+
+            uploadStatus.textContent = 'Upload completed successfully!';
+            // Example with relative URL
+
+
+            window.location.reload();
+
+            
+        } else {
+            document.getElementById('progressWrapper').style.display='none'
+
+            uploadStatus.textContent = 'Upload failed. Please try again.';
+            document.getElementById('videoUploadButton').textContent='Upload Folder'
+            document.getElementById('videoUploadButton').disabled=false
+
+
+        }
+    });
+
+    // Error event listener
+    xhr.addEventListener('error', function() {
+        uploadStatus.textContent = 'An error occurred during the upload.';
+    });
+
+    // Send the file and directory data
+    xhr.open('POST', '{% url "video:upload_video_folder" %}');
+    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+    xhr.send(formData);
+});
+
+</script>
+

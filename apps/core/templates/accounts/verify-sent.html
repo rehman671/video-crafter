@@ -1,0 +1,169 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/reset.css' %}">
+    <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
+    <title>VideoCrafter.io - Verify Email</title>
+    <style>
+        body {
+            font-family: 'Helvetica', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .verify-email_container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .verify-email_backgroundImage {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            opacity: 0.7;
+        }
+        
+        .verify-email_formContainer {
+            position: relative;
+            z-index: 2;
+            width: 90%;
+            max-width: 500px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .verify-email_form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .verify-email_logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        
+        .verify-email_logo > div {
+            margin-bottom: 20px;
+        }
+        
+        .signup_logoSvg {
+            max-width: 180px;
+            height: auto;
+        }
+        
+        .verify-email_logoText {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            margin-bottom: 16px;
+            font-size: 16px;
+            color: #444;
+            line-height: 1.6;
+            max-width: 400px;
+        }
+        
+        a {
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+            color: #0056b3;
+        }
+        
+        .login-link {
+            color: #864AF9;
+            font-weight: 500;
+        }
+        
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background-color: #e8f5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .success-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: #4caf50;
+        }
+        
+        @media (max-width: 768px) {
+            .verify-email_formContainer {
+                width: 90%;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="verify-email_container">
+
+            <div class="verify-email_formContainer">
+                <form class="verify-email_form">
+                    <div class="verify-email_logo">
+                        <div>
+                            <a href="{% url 'index' %}">
+                                <img
+                                    src="{% static 'images/logo.svg' %}"
+                                    alt="Company logo"
+                                    class="signup_logoSvg"
+                                />
+                            </a>
+                        </div>
+                        <div class="success-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                            </svg>
+                        </div>
+                        <span class="verify-email_logoText">Verification Email Sent</span>
+                        <p>
+                            A verification link has been sent to your email address. Please check your inbox and click the link to verify your account.
+                        </p>
+                        <p>
+                            Once you've verified your email, you can
+                            <a href="{% url 'login' %}" class="login-link">Login</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

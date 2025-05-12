@@ -1,0 +1,108 @@
+{%load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    {%include 'partials/head_c.html' %}
+
+    <link rel="stylesheet" href="{% static 'loading.css' %}">
+
+</head>
+<body  style="position: relative; overflow-x: hidden;">
+    <div class="bg"></div>
+    {% include 'sub_header.html' %}
+    
+    {% if al_the_way == 'bg_music' %}
+    <div class="progressbar" style="display: flex; justify-content: center; align-items: center; margin-top: 84px; margin-bottom: 56px;">
+        <div style="width: 624px; height: 10px; background: #EEEEEE; position: relative; display: flex; align-items: center;">
+            <div style="position: absolute; width: 25px; height: 25px; background: #864AF9; border-radius: 90px; left: 0%;"></div>
+            <div style="position: absolute; width: 25px; height: 25px; background: #864AF9; border-radius: 90px; left: 208px"></div>
+            <div style="position: absolute; width: 25px; height: 25px; background: #864AF9; border-radius: 90px; left: 416px;"></div>
+            <div style="position: absolute; width: 25px; height: 25px; background: #EEEEEE; border-radius: 90px; left: 100%;"></div>
+
+
+            <div style="position: absolute; width: 536px; height: 10px; background: #864AF9; border-radius: 90px; left: 0;"></div>
+
+
+            <div style="position: absolute; top: -50px; left: -75.96px;">Voice & Subtitle Design</div>
+            <div style="position: absolute; top: -50px; left: 160px;">Scene Selection</div>
+            <div style="position: absolute; top: -50px; left: 312px;">Background Music Selection</div>
+            <div style="position: absolute; top: -50px; left: 594px;">Download</div>
+        </div>
+    </div>
+    {% else %}
+    <div class="progressbar" style="display: flex; justify-content: center; align-items: center; margin-top: 84px; margin-bottom: 56px;">
+        <div style="width: 624px; height: 10px; background: #EEEEEE; position: relative; display: flex; align-items: center;">
+            <div style="position: absolute; width: 25px; height: 25px; background: #864AF9; border-radius: 90px; left: 0%;"></div>
+            <div style="position: absolute; width: 25px; height: 25px; background: #864AF9; border-radius: 90px; left: 208px"></div>
+            <div style="position: absolute; width: 25px; height: 25px; background: #EEEEEE; border-radius: 90px; left: 416px;"></div>
+            <div style="position: absolute; width: 25px; height: 25px; background: #EEEEEE; border-radius: 90px; left: 100%;"></div>
+
+
+            <div style="position: absolute; width: 328px; height: 10px; background: #864AF9; border-radius: 90px; left: 0;"></div>
+
+
+            <div style="position: absolute; top: -50px; left: -75.96px;">Voice & Subtitle Design</div>
+            <div style="position: absolute; top: -50px; left: 160px;">Scene Selection</div>
+            <div style="position: absolute; top: -50px; left: 312px;">Background Music Selection</div>
+            <div style="position: absolute; top: -50px; left: 594px;">Download</div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <div class="container" style="display: flex; width: 100%; justify-content: center;">
+        <div style="display: flex; text-align: center; width: 524px; height: 109px; background: white; border: 1px solid #0000004D; border-radius: 8px; justify-content: center; align-items: center;">
+            <span style="font-family: Montserrat;font-size: 20px;font-weight: 700;line-height: 29.26px;text-align: center;">
+                Loading<span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="padding-left: 10px;" id="percent"> </span>
+            </span>
+            
+        </div>
+        
+    </div>
+    
+    {% include 'vlc/update_text_file.html' %}
+    <script>
+        
+        function fetchProgress() {
+            fetch('/text/progress/{{text_file_id}}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error){
+                        // window.location.href = '/text';  
+                        openPopup();
+                    }else {
+
+                        let progress = data.progress;
+                        const percent =document.getElementById('percent');
+                        percent.innerText= progress +'%'
+                        if (progress < 100) {
+                            setTimeout(fetchProgress, 1000); // Poll every second
+                        } 
+                        else {
+                            if ("{{al_the_way }}" =='bg_music'){
+    
+                                window.location.href = '/text/download_video/{{text_file_id}}';  // Redirect to view video page
+                            }
+                            else {
+    
+                                window.location.href = '/text/process-background-music/{{text_file_id}}';  // Redirect to view video page
+                            }
+                        }
+                    }
+                });
+        }
+
+        // Start fetching progress when the page loads
+        window.onload = function() {
+            fetchProgress();
+        };
+    </script>
+    <script src="{% static 'loading.js' %}"></script>
+
+</body>
+</html>

@@ -1,0 +1,510 @@
+{% load static%}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folder List Card</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{% static 'css/music.css' %}">
+
+    <style>
+        /* body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        } */
+
+        .folder-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            height: 80%;
+        }
+        .folder-card-2{
+            height: 80%;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #e0e0e0;
+        }
+        /* .folder-header {
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .folder-header div {
+            font-weight: 600;
+            font-size: 16px;
+        } */
+        .folder-header {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .folder-header div:first-child {
+        flex-grow: 1;
+        /* font-weight: 600; */
+        font-size: 16px;
+        text-align: left;
+    }
+
+
+    .folder-header div:nth-child(2),
+    .folder-header div:nth-child(3) {
+        /* font-weight: 600; */
+        /* font-size: 16px; */
+        text-align: right;
+        margin-left: 20px; /* space between "Items" and "Modified" */
+    }
+
+    .folder-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e0e0e0;
+        position: relative;
+    }
+
+    .folder-left {
+        display: flex;
+        align-items: center;
+        flex-grow: 1;
+    }
+
+    .folder-right {
+        display: flex;
+        align-items: center;
+        position: relative;
+        justify-content: flex-end;
+    }
+
+        .folder-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .folder-item:last-child {
+            border-bottom: none;
+        }
+
+        .folder-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .folder-right .ri-star-line {
+            /* color: #ffc107; */
+            cursor: pointer;
+            margin-right: 15px;
+            padding-left: 20px;
+        }
+
+        .folder-left input[type="checkbox"] ,.folder-check{
+            width: 18px;
+            height: 18px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .folder-name {
+            font-weight: 500;
+        }
+
+        .folder-date {
+            color: #6c757d;
+            font-size: 14px;
+            margin-left: 20px;
+        }
+
+        .folder-right {
+            position: relative;
+            padding-right: 20px;
+            padding-left: 20px;
+        }
+
+        .ri-more-2-fill {
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .dropdown { 
+            display: none;
+            position: absolute;
+            top: 25px;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.04); /* 4% transparent background */
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            min-width: 120px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .dropdown ul li {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        .dropdown ul li:hover {
+            background-color: #f1f1f1;
+        }
+        a {
+            text-decoration: none; 
+            color: inherit;        
+            outline: none; 
+            display: inline;        
+        }
+ * Video tag, initially hidden */
+#video {
+    border-radius: 10px;
+}
+.video-card-wrapper {
+    width: 100%;
+    height: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Centered video card */
+.video-card {
+    width: 80%; /* Adjust as per your need */
+    max-width: 600px; /* To restrict excessive width on large screens */
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f2f2f2; /* Ash color */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.alert {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #f5c6cb;
+    margin-top: 20px;
+}
+
+.alert button {
+    margin-right: 10px;
+    padding: 8px 12px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.alert button:hover {
+    background-color: #c82333;
+}
+/* Modal Background */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Sit on top of the page */
+    z-index: 1000; /* Ensure it appears above other elements */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px; /* Set a fixed width */
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content button {
+    margin: 10px;
+    padding: 10px 15px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal-content button:hover {
+    background-color: #c82333;
+}
+
+    </style>
+</head>
+<body>
+    {% include 'sub_header.html' %}
+    <br>
+    <div id="confirmation-box"></div>
+    <div id="add-clip-modal"></div>
+    {% if not category_id %}
+    <div class="video-card-wrapper">
+        <div class="folder-card">
+            <div class="folder-header">
+                    <div><a href="{%url 'video:category_view' %}">Assets Library<i class="ri-arrow-drop-down-line"></i></a></div>
+                    <div class="folder-right">
+                        <div> <i class="ri-star-fill"></i> Favorites</div>
+                    
+                    
+                    <div id="add-folder"> 
+                        <i class="ri-save-2-line"></i>
+                        Create New Folder</div>
+                    </div>
+            </div>
+
+            <div class="folder-header">
+                    <div><input class="folder-check" type="checkbox"> Folder Name</div>
+                    <div class="folder-right">
+
+                        <div>Items</div>
+                        <div>Modified At</div>
+                        <div style="width: 145px;"></div>
+                    </div>
+            </div>
+            {%for folder in main_categories %}
+            <div class="folder-item">
+                <a href="{%url 'video:subcategory_view' folder.id %}">
+                    <div class="folder-left">
+                        <input type="checkbox">
+                        <span class="folder-name">{{folder.name}}</span>
+                    </div>
+                </a>
+                <div class="folder-right">
+                    <span>{{folder.get_clip_number}}</span>
+                    <span class="folder-date"> {{folder.update_at}}</span>
+                    <i class="ri-star-line"></i>
+                    <i class="ri-more-2-fill" onclick="toggleDropdown(this)"></i>
+                    <div class="dropdown">
+                        <ul>
+                            <li>
+                                <a hx-get="{% url 'video:delete_category' folder.id %}" hx-target="#confirmation-box" 
+                                hx-swap="innerHTML">
+                                    Delete
+                                </a> 
+                            </li>
+                            <li>
+                                <a href="" hx-get="{% url 'video:add_video_clip' folder.id %}" 
+                                hx-target="#add-clip-modal" 
+                                hx-swap="innerHTML" 
+                                >Add Video</a>
+                            </li>
+
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+
+        </div>
+    </div>
+
+    {%elif  category_id  and not video_id %}
+    <div class="video-card-wrapper">
+
+        <div class="folder-card">
+            <div class="folder-header">
+                <div>
+                    <a href="{%url 'video:category_view' %}">Assets Library<i class="ri-arrow-drop-right-line"></i></a>
+                    <a href="{%url 'video:subcategory_view' current_category.id %}">{{current_category.name}}<i class="ri-arrow-drop-down-line"></i></a>
+
+                </div>
+                
+                <div class="folder-right">
+                        <div> <i class="ri-star-fill"></i> Favorites</div>
+                    
+                    
+                    <div id="add-folder"> 
+                        <i class="ri-save-2-line"></i>
+                        Create New Folder</div>
+                    </div>
+                </div>
+            {% if subcategories %}
+            <div class="folder-header">
+                    <div><input class="folder-check" type="checkbox"> Folder Name</div>
+                    <div class="folder-right">
+
+                        <div>Items</div>
+                        <div>Modified At</div>
+                        <div style="width: 145px;"></div>
+                    </div>
+            </div>
+
+            {%for folder in subcategories %}
+            <div class="folder-item">
+                <a href="{%url 'video:subcategory_view' folder.id %}">
+                    <div class="folder-left">
+                        <input type="checkbox">
+                        <span class="folder-name">{{folder.name}}</span>
+                    </div>
+                </a>
+                <div class="folder-right">
+                    <span>{{folder.get_clip_number}}</span>
+                    <span class="folder-date"> {{folder.update_at}}</span>
+                    <i class="ri-star-line"></i>
+                    <i class="ri-more-2-fill" onclick="toggleDropdown(this)"></i>
+                    <div class="dropdown">
+                        <ul>
+                            <li>
+                                <a href="" hx-get="{% url 'video:add_video_clip' folder.id %}" 
+                                hx-target="#add-clip-modal" 
+                                hx-swap="innerHTML" 
+                                >Add Video</a>
+                            </li>
+                            <li><a hx-get="{% url 'video:delete_category' folder.id %}"  hx-target="#confirmation-box" 
+                                hx-swap="innerHTML">Delete</a> </li>
+                        </ul>
+                    </div>
+                </div>
+                
+            </div>
+                {% endfor %}
+            {% endif %}
+        
+            {% if videos %}
+            <h5 style="padding: 0;">Videos</h5>
+            {% for video in videos %}
+                <div class="folder-item"></div>
+                    <a href="{%url 'video:category_view_video' current_category.id video.id %}">
+                        <div class="folder-left">
+                            <i class="bi bi-play" style="font-weight: bold; padding: 5px;margin-right: 5px;background-color: #d9d9d9;font-size: 16px;"></i>
+                            <span class="folder-name" style="font-size: 16px;">{{video.title}}</span>
+                        </div>
+                    </a>
+                    <div class="folder-right">
+                        <i class="ri-more-2-fill" onclick="toggleDropdown(this)"></i>
+                        <div class="dropdown">
+                            <ul>
+                                <li><a hx-get="{% url 'video:delete_video' video.id %}"  hx-target="#confirmation-box" 
+                                    hx-swap="innerHTML">Delete</a> </li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            
+        </div>
+        {%endif%}
+    </div>
+        
+
+            
+            
+            
+        {%elif  category_id  and  video_id %}
+        
+        <div class="folder-card">
+            <div>
+                <a href="{%url 'video:category_view' %}">Assets Library<i class="ri-arrow-drop-right-line"></i></a> 
+                <a href="{%url 'video:subcategory_view' current_category.id %}">{{current_category.name}}<i class="ri-arrow-drop-right-line"></i></a>
+                <a href="{%url 'video:category_view_video' current_category.id video.id %}">{{video.title}}<i class="ri-arrow-drop-down-line"></i></a>
+
+            </div>
+            <hr>
+            <div class="video-card-wrapper">
+                <div class="video-card">
+                    <video id="video" width="100%" controls >
+                        <source src="{{video.video_file.url}}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                
+
+            </div>
+        </div>
+    {%endif %}
+
+     <script>
+        document.getElementById('add-folder').addEventListener('click',()=>{
+            document.getElementById('uploader').style.display='block'
+        })
+        
+        function toggleDropdown(element) {
+
+            const dropdowns = document.querySelectorAll('.action');
+            dropdowns.forEach(function(dropdown) {
+                dropdown.style.display = 'none';
+            });
+
+            // Open the clicked dropdown
+            const dropdown = element.nextElementSibling;
+            dropdown.style.display = 'block';
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.ri-more-2-fill')) {
+                const dropdowns = document.getElementsByClassName("dropdown");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    dropdowns[i].style.display = 'none';
+                }
+            }
+        }
+    function playVideo() {
+        const video = document.getElementById('video');
+        const placeholder = document.querySelector('.video-placeholder');
+        
+        placeholder.style.display = 'none';  // Hide the placeholder
+        video.style.display = 'block';      // Show the video
+        video.play();                       // Play the video
+    }
+
+    </script>
+    <script src="{% static 'htmx.js' %}"></script>
+    <script>
+        function openModal() {
+            document.getElementById("add-clip-modal").style.display = "block";
+        }
+    
+        function closeModal() {
+            document.getElementById("add-clip-modal").style.display = "none";
+        }
+    
+        // Close the modal if the user clicks anywhere outside of the modal
+        // window.onclick = function(event) {
+        //     const modal = document.getElementById("add-clip-modal");
+        //     if (event.target === modal) {
+        //         closeModal();
+        //     }
+        // }
+    </script>
+    
+</body>
+</html>

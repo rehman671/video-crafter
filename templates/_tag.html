@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tag Input Example</title>
+    <style>
+        .list-of-tags {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 12px 0;
+            padding: 7px;
+            border-radius: 5px;
+            border: 1px solid #a6a6a6;
+        }
+
+        .list-of-tags li {
+            list-style: none;
+            background: #f2f2f2;
+            padding: 5px 8px 5px 10px;
+            margin: 4px 3px;
+            border: 1px solid #e3d1e1;
+            border-radius: 3px;
+        }
+
+        .list-of-tags input {
+            flex: 1;
+            outline: none;
+            border: none;
+            padding: 5px;
+            font-size: 16px;
+        }
+        .details {
+            display: flex;
+            justify-content: flex-end;  
+            gap: 10px;  
+        }
+
+        #reset-btn {
+            border: 1px solid #864AF9; 
+            background-color: transparent;
+            color: #864AF9;  
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        #done-btn {
+            background-color: #864AF9; 
+            color: white;  
+            padding: 5px 15px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #reset-btn:hover {
+            background-color: #864AF9; 
+            color: white;
+        }
+
+        #done-btn:hover {
+            background-color: #864AF9; 
+        }
+
+        .details button {
+            padding: 5px 10px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .details button:hover {
+            background: #0056b3;
+        }
+        .guide {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .guide-title {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .guide-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 20px;
+            text-align: center;
+            border: 1px solid #a6a6a6;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: #f2f2f2;
+            color: #333;
+            user-select: none;
+        }
+        .guide-icon:hover::after {
+            content: attr(title);
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #a6a6a6;
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+        .error-message {
+                color: red;
+                font-size: 12px;
+                margin-top: 5px;
+            }
+        .details {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <h2>Tags</h2>
+        
+        <div class="guide">
+            <span class="guide-title">Separate Words To Add Multiple Cips </span>
+            <span class="guide-icon" title="To Select Multiple Clips On This Line, Place Your Cursor Where You Want To Separate The Words, Type ',' To Separate The Words. When Done, Click The Done Button.">?</span>
+        </div>
+    
+        <div class="tag-box">
+            <ul id="list-of-tags" class="list-of-tags">
+                <input class="tag-input" value="The first tag second tag third tag" type="text">
+            </ul>
+        </div>
+        <div id="error-message" class="error-message"></div>
+        <div class="details">
+            <button id="reset-btn" type="button">Reset</button>
+            <button id="done-btn" type="button">Proceed To add 1 Clip</button>
+        </div>
+    </div>
+    <script>
+       const listOfTags = document.getElementById('list-of-tags');
+        const input = listOfTags.querySelector('input');
+        const resetBtn = document.getElementById('reset-btn');
+        const doneBtn = document.getElementById('done-btn');
+        const initialValue = input.value;
+        const errorMessage = document.getElementById('error-message');
+        function createTag(text) {
+            const li = document.createElement('li');
+            li.textContent = text;
+            listOfTags.insertBefore(li, input);
+        }
+
+        function updateClipCount() {
+            const tags = document.querySelectorAll('.list-of-tags li'); 
+            const remainingText = input.value.trim();
+
+            let clipCount = tags.length;  
+            if (remainingText) {
+                clipCount += 1;  
+            }
+            
+            const doneBtn = document.getElementById('done-btn');
+            doneBtn.textContent = `Proceed To Add ${clipCount} Clip${clipCount > 1 ? 's' : ''}`;
+        }
+
+        function handleKeyPress(e) {
+            const value = input.value;
+            let cursorPosition = input.selectionStart;  // Store initial cursor position
+
+            // Function to find the beginning of the current or previous word
+            function moveToWordStart(pos) {
+                while (pos > 0 && value[pos - 1] === ' ') {
+                    pos--;  // Skip spaces before the word
+                }
+                while (pos > 0 && value[pos - 1] !== ' ') {
+                    pos--;  // Move to the start of the word
+                }
+                return pos;
+            }
+
+            // Function to find the end of the current or next word
+            function moveToWordEnd(pos) {
+                while (pos < value.length && value[pos] === ' ') {
+                    pos++;  // Skip spaces between words
+                }
+                while (pos < value.length && value[pos] !== ' ') {
+                    pos++;  // Move to the end of the word
+                }
+                return pos;
+            }
+
+            // Handling the left arrow key
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                // Move cursor to the beginning of the previous word
+                cursorPosition = moveToWordStart(cursorPosition);
+                input.setSelectionRange(cursorPosition, cursorPosition);  // Update cursor position
+            }
+            // Handling the right arrow key
+            else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                // Move cursor to the end of the next word
+                cursorPosition = moveToWordEnd(cursorPosition);
+                input.setSelectionRange(cursorPosition, cursorPosition);  // Update cursor position
+            }
+            // Handling the comma key
+            else if (e.key === ',') {
+                const isAtValidPosition =
+                    cursorPosition === value.length ||  // At the end of the string
+                    value[cursorPosition - 1] === ' ' ||  // After a space
+                    (cursorPosition > 0 && value[cursorPosition] === ' ');  // Before a space
+
+                if (!isAtValidPosition) {
+                    e.preventDefault(); // Prevent action if not at a valid position
+                    errorMessage.textContent = 'Wrong Position To Separate Words';
+                    return;
+                }
+
+                e.preventDefault();
+                const beforeCursor = value.substring(0, cursorPosition).trim();
+                if (beforeCursor) createTag(beforeCursor);
+                errorMessage.textContent = '';
+
+                input.value = value.substring(cursorPosition).trim();
+                updateClipCount();  // Update clip count when a comma is pressed
+            }
+            // Handling the Enter key
+            else if (e.key === 'Enter') {
+                const isAtValidPosition =
+                    cursorPosition === value.length ||  // At the end of the string
+                    value[cursorPosition - 1] === ' ' ||  // After a space
+                    (cursorPosition > 0 && value[cursorPosition] === ' ');  // Before a space
+
+                if (!isAtValidPosition) {
+                    e.preventDefault(); // Prevent action if not at a valid position
+                    errorMessage.textContent = 'Wrong Position To Separate Words';
+                    return;
+                }
+
+                e.preventDefault();
+                const beforeCursor = value.substring(0, cursorPosition).trim();
+                const afterCursor = value.substring(cursorPosition).trim();
+
+                if (beforeCursor) createTag(beforeCursor);
+                if (afterCursor) createTag(afterCursor);
+                errorMessage.textContent = '';
+
+                input.value = '';  // Clear the input field
+                updateClipCount();  // Update clip count when Enter is pressed
+            }
+        }
+
+     
+        function preventUnwantedKeys(e) {
+            const allowedKeys = [
+                'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', ','
+            ];
+
+            
+            if (!allowedKeys.includes(e.key)) {
+                e.preventDefault();
+            }
+        }
+
+        function resetTags() {
+            // Clear all tags and restore the initial input value
+            const tags = listOfTags.querySelectorAll('li');
+            tags.forEach(tag => tag.remove());
+            input.value = initialValue;
+            errorMessage.textContent=''
+            doneBtn.textContent='Proceed To add 1 Clip'
+
+        }
+
+        function convertRemainingToTag() {
+            const value = input.value.trim();
+            if (value) {
+                createTag(value); // Convert remaining text to a single tag
+                input.value = ''; // Clear the input field
+                errorMessage.textContent=''
+
+            }
+        }
+
+        input.addEventListener('keydown', handleKeyPress);
+        input.addEventListener('keydown', preventUnwantedKeys);
+        resetBtn.addEventListener('click', resetTags);
+        doneBtn.addEventListener('click', convertRemainingToTag);
+
+        input.addEventListener('paste', e => e.preventDefault());
+
+    </script>
+</body>
+</html>

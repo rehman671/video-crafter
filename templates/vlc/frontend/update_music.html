@@ -1,0 +1,458 @@
+
+<form method="POST" action="{% url 'video_text:process_background_music' textfile_id %}" id="bg_form" enctype="multipart/form-data">
+    <div class="file-upload-container" id="targetDiv" style="display: flex; width: 100%; height: fit-content; justify-content: center; gap: 48px; flex-direction: column;">
+        {% csrf_token %}
+        <input type="text", hidden name="purpose" value='update'>
+        
+
+        <div id="musicContainer" style="display: flex; flex-direction: column; gap: 24px; width: 100%;">
+            
+            {% for music in musics %}
+
+            <div class="uploadmp3"id="uploadmp3-{{ forloop.counter }}" style="display: flex; width: 100%; height: fit-content; justify-content: center; gap: 24px; flex-direction: column;">
+                <div class="delete-container" style="justify-content:space-between;">
+                    <div class="text"style="display: flex;" >
+                        <span>Upload MP3 <span>{{ forloop.counter }}</span>:</span>
+                        <p style="font-size: 10px; font-family: 'Montserrat'; display: flex; position: relative; top: 55%;left: 0;" id="mp3_{{ forloop.counter }}_current">Current: {{ music.get_music_file_name}}</p>                          
+
+                    </div>
+                    <button  class="delete" onclick="deleteMusicButton('{{ music.id }}')"  type="button"  style="background-color:#864af9;color:white;border:none">Delete</button>
+                </div>
+
+                <div style="width: 100%; box-sizing: border-box; height: fit-content; padding: 16px 24px; border-radius: 8px; border: 1px dashed #19191980; display: flex; align-items: center; position: relative; font-size: 16px; font-weight: 400; line-height: 23.2px; letter-spacing: 0.02em; text-align: center; gap: 14px;">
+                    <svg id="svg{{ forloop.counter }}" class="svgIcon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5M14.1667 6.66667L10 2.5M10 2.5L5.83333 6.66667M10 2.5V12.5" stroke="#191919B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <input class="fileInput"  name="saved-mp3-{{ music.id }}" type="file" accept="audio/mpeg"  id="fileUpload_{{textfile_id}}_{{ forloop.counter }}" style="position: absolute; width: 100%; height: 100%; left: 0; opacity: 0;">                                
+                    <div class="output" id="uploadText{{ forloop.counter }}" style="font-size: 16px; font-weight: 400; line-height: 23.2px; letter-spacing: 0.02em; text-align: center;">
+                        Change
+                    </div>
+
+                </div>
+                <div class="text">
+                    <span>What Second Should This MP3 Play From? <span style="font-size: 12px;font-weight: 500;line-height: 14.63px;text-align: left;">In Minutes</span></span>
+                </div>
+                <div style="display: flex; gap: 24px; width: 100%;">
+                    <div style="display: flex; flex-direction: column; width: 100%; gap: 16px;">
+                        <span class="text" style="width: 100%; text-align: left;">Start:</span>
+                        <input type="text" onchange="saveInput(this)" placeholder="00:00" required class="time startTime" id="from_when_{{textfile_id}}_{{ forloop.counter }}" name="saved-starts-{{ music.id }}"  style="padding: 12px 24px; border: 1px solid #E3E3E3; border-radius: 4px;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; width: 100%; gap: 16px;">
+                        <span class="text" style="width: 100%; text-align: left;">End:</span>
+                        <input type="text" onchange="saveInput(this)" placeholder="00:00" class="time endTime" required name="saved-ends-{{ music.id }}"  id="to_when_{{textfile_id}}_{{ forloop.counter }}" style="padding: 12px 24px; border: 1px solid #E3E3E3; border-radius: 4px;">
+                    </div>
+                </div>
+            
+                <div>
+                    <div class="Font-Size-text" style="display: flex; align-items: center; margin-bottom: 8px; justify-content: space-between;">
+                        <div style="font-size: 18px; font-weight: 600; line-height: 21.94px; letter-spacing: 0.02em; text-align: left; margin-right: 10px;">
+                            MP3 {{ forloop.counter }} Volume:
+                        </div>
+                        <span id="SliderValue_{{ forloop.counter }}" style="font-size: 18px; font-weight: 600; line-height: 21.94px; letter-spacing: 0.02em; text-align: left; color: #000000B2;">50%</span>
+                    </div>
+                    <div class="Font-Size-Slider" style="width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 36.89px;">
+                        <input type="range" onchange="saveInput(this)" name="saved-volume-{{ music.id }}" min="0" max="100" value="50" class="slider" id="mySlider_{{textfile_id}}_{{ forloop.counter }}" style="width: 100%;">
+                    </div>
+                </div>
+            </div>
+            <input hidden type="text" name="mp3_{{ forloop.counter }}_status" id="mp3_{{ forloop.counter }}_status" value="unchanged">
+
+            
+            {% endfor %}
+
+        </div>
+        <input name="no_of_mp3" value="{{n_musics}}" id="no_of_mp3" type="number" hidden>
+
+            
+
+                
+
+                <button type="button" id="addMusicBtn" class="button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 12H19M12 5V19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>                    
+                    Upload Another MP3
+                </button>
+
+                <div id ="submit_form" style="width: 100%; display: flex; justify-content: flex-end;">
+                    <button type="submit" class="button" style="text-decoration: none; ">
+                        Create Video
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div id="proceed" style="width: 100%; display: none; justify-content: flex-end;">
+                    <a href="{% url 'video_text:download_video' textfile_id %}?bg_music=false" class="button" style="text-decoration: none; ">
+                        Clear All
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                </div> 
+            
+    </div>
+    
+</form>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    function deleteMusicButton(musicId) {
+        // Send AJAX request to delete the background music
+        $.ajax({
+            url: '/text/delete-background-music/' + musicId + '/',  // URL for delete view
+            type: 'DELETE',  // HTTP DELETE method
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'  // CSRF token for security
+            },
+            success: function(response) {
+                // On success, refresh the page
+                location.reload();  // Refresh the page
+            },
+            error: function(xhr, status, error) {
+                // Handle any errors
+                alert("Error deleting music: " + error);
+            }
+        });
+    }
+</script>
+
+<script>
+    window.onload = function() {
+      // Get all inputs on the page
+      document.getElementById('bg_form').reset()
+      const inputs = document.querySelectorAll('input');
+
+      inputs.forEach(input => {
+        if (input.type === 'file') {
+
+        } else {
+          // Restore other inputs' values
+          const storedValue = sessionStorage.getItem(input.id);
+          if (storedValue) {
+            input.value = storedValue;
+
+            // Check if the input is a slider (assuming the input.id starts with 'mySlider')
+            if (input.id.startsWith('mySlider')) {
+              const idParts = input.id.split('_');
+              const currentNumber = idParts[idParts.length - 1]; // Get the last part which is the number
+
+              document.getElementById('SliderValue_' + currentNumber).textContent = storedValue + '%'
+              document.getElementById(input.id).style.background = `linear-gradient(to right, #864AF9 ${storedValue}%, #D9D9D9 ${storedValue}%)`;
+            }
+          }
+        }
+      });
+    };
+
+
+
+
+    let currentNumber = document.getElementById('no_of_mp3').value
+    document.getElementById('addMusicBtn').addEventListener('click', function() {
+      // Increment the number
+      currentNumber++;
+      document.getElementById('no_of_mp3').value = currentNumber
+      console.log(document.getElementById('no_of_mp3').value)
+      const htmlCode = `
+  <div class="uploadmp3" id="uploadmp3-${currentNumber}" style="display: flex; width: 100%; height: fit-content; justify-content: center; gap: 24px; flex-direction: column;">
+      <div class="delete-container" style="justify-content:space-between;">
+          <div class="text">
+              <span>Upload MP3 <span>${currentNumber}</span>:</span>
+          </div>
+          <button class="delete" type="button" onclick="deleteButton(${currentNumber})" style="background-color:#864af9;color:white;border:none;">Delete</button>
+      </div>
+      <div style="width: 100%; box-sizing: border-box; height: fit-content; padding: 16px 24px; border-radius: 8px; border: 1px dashed #19191980; display: flex; align-items: center; position: relative; font-size: 16px; font-weight: 400; line-height: 23.2px; letter-spacing: 0.02em; text-align: center; gap: 14px;">
+          <svg id="svg${currentNumber}" class="svgIcon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5M14.1667 6.66667L10 2.5M10 2.5L5.83333 6.66667M10 2.5V12.5" stroke="#191919B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <input class="fileInput"  name="bg_music_${currentNumber}" type="file" accept="audio/mpeg"  id="fileUpload_{{textfile_id}}_${currentNumber}" style="position: absolute; width: 100%; height: 100%; left: 0; opacity: 0;" />                                
+          <div class="output" id="uploadText${currentNumber}" style="font-size: 16px; font-weight: 400; line-height: 23.2px; letter-spacing: 0.02em; text-align: center;">
+              Choose File
+          </div>
+      </div>
+      <div class="text">
+          <span>What Second Should This MP3 Play From? <span style="font-size: 12px;font-weight: 500;line-height: 14.63px;text-align: left;">In Minutes</span></span>
+      </div>
+      <div style="display: flex; gap: 24px; width: 100%;">
+          <div style="display: flex; flex-direction: column; width: 100%; gap: 16px;">
+              <span class="text" style="width: 100%; text-align: left;">Start:</span>
+              <input onchange="saveInput(this)" type="text" placeholder="00:00" class="time startTime" id="from_when_{{textfile_id}}_${currentNumber}" name="from_when_${currentNumber}" style="padding: 12px 24px; border: 1px solid #E3E3E3; border-radius: 4px;" />
+          </div>
+          <div style="display: flex; flex-direction: column; width: 100%; gap: 16px;">
+              <span class="text" style="width: 100%; text-align: left;">End:</span>
+              <input onchange="saveInput(this)" type="text" placeholder="00:00" class="time endTime" name="to_when_${currentNumber}" id="to_when_{{textfile_id}}_${currentNumber}" style="padding: 12px 24px; border: 1px solid #E3E3E3; border-radius: 4px;" />
+          </div>
+      </div>
+      
+      <div>
+          <div class="Font-Size-text" style="display: flex; align-items: center; margin-bottom: 8px; justify-content: space-between;">
+              <div style="font-size: 18px; font-weight: 600; line-height: 21.94px; letter-spacing: 0.02em; text-align: left; margin-right: 10px;">
+                  MP3 ${currentNumber} Volume:
+              </div>
+              <span id="SliderValue_${currentNumber}" style="font-size: 18px; font-weight: 600; line-height: 21.94px; letter-spacing: 0.02em; text-align: left; color: #000000B2;">50%</span>
+          </div>
+          <div class="Font-Size-Slider" style="width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 36.89px;">
+              <input onchange="saveInput(this)" type="range" name="bg_level_${currentNumber}" min="0" max="100" value="50" class="slider" id="mySlider_{{textfile_id}}_${currentNumber}" style="width: 100%;" />
+          </div>
+      </div>
+  </div>
+`;
+
+      document.getElementById('musicContainer').insertAdjacentHTML('beforeend', htmlCode);
+      addInputValidation(currentNumber);
+      inputHander(currentNumber)
+      handleSlider(currentNumber)
+
+      // Add file upload event listener
+      const fileInput = document.getElementById(`fileUpload_{{textfile_id}}_${currentNumber}`);
+      const uploadText = document.getElementById(`uploadText${currentNumber}`);
+      fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) {
+          uploadText.textContent = fileInput.files[0].name;
+        } else {
+          uploadText.textContent = 'Choose File';
+        }
+      });
+    });
+
+    function deleteButton(c_number) {
+      // Target the div by the id
+      const container = document.getElementById(`uploadmp3-${c_number}`);
+
+      // Remove the div from the DOM
+      if (container) {
+        container.remove();
+      }
+    }
+
+    function inputHander(c_number) {
+
+      const fileInput = document.getElementById(`fileUpload_{{textfile_id}}_${c_number}`);
+      const uploadText = document.getElementById(`uploadText${c_number}`);
+      const startTimeInput = document.getElementById(`from_when_{{textfile_id}}_${c_number}`);
+      const endTimeInput = document.getElementById(`to_when_{{textfile_id}}_${c_number}`);
+      const currentFileP = document.getElementById(`mp3_${c_number}_current`)
+      fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) {
+          uploadText.textContent = fileInput.files[0].name.slice(0, 15);
+          startTimeInput.required = true;
+          endTimeInput.required = true;
+          if (currentFileP) {
+            currentFileP.remove();
+          };
+
+        } else {
+          uploadText.textContent = 'Choose File';
+          startTimeInput.required = false
+          endTimeInput.required = false
+        }
+      });
+    };
+
+    function saveInput(inputElement) {
+      if (inputElement.type === 'file') {
+        // For file inputs, save the file name
+        if (inputElement.files.length > 0) {
+          // sessionStorage.setItem(inputElement.id, inputElement.files[0].name);
+        }
+      } else {
+        // For other inputs, save the value
+        sessionStorage.setItem(inputElement.id, inputElement.value);
+      }
+    }
+    // handleSlider('main')
+    // function addInputValidation(number) {
+    //   const startTimeInput = document.getElementById(`from_when_{{textfile_id}}_${number}`);
+    //   const endTimeInput = document.getElementById(`to_when_{{textfile_id}}_${number}`);
+
+    //   [startTimeInput, endTimeInput].forEach(input => {
+    //     input.addEventListener('input', function() {
+    //       let value = input.value.replace(/[^0-9:]/g, ''); // Remove unwanted characters
+    //       if (value.length === 2 && !value.includes(':')) {
+    //         value += ':';
+    //       }
+    //       if (value.length > 5) {
+    //         value = value.substring(0, 5);
+    //       }
+    //       input.value = value;
+
+    //       // Validate numbers on each side of the colon
+    //       const parts = value.split(':');
+    //       if (parts[0] && parseInt(parts[0], 10) > 59) {
+    //         input.value = `59:${parts[1] || ''}`;
+    //       }
+    //       if (parts[1] && parseInt(parts[1], 10) > 59) {
+    //         input.value = `${parts[0] || ''}:59`;
+    //       }
+    //     });
+    //   });
+    // }
+    
+    function addInputValidation(number) {
+    const startTimeInput = document.getElementById(`from_when_{{textfile_id}}_${number}`);
+    const endTimeInput = document.getElementById(`to_when_{{textfile_id}}_${number}`);
+
+    [startTimeInput, endTimeInput].forEach(input => {
+        input.addEventListener('input', function() {
+            let value = input.value;
+            let cursorPosition = input.selectionStart;
+
+            value = value.replace(/[^0-9:]/g, '');
+
+            if (value.length === 2 && !value.includes(':')) {
+                value += ':';
+                if (cursorPosition === 2) {
+                    cursorPosition = 3;
+                }
+            }
+
+            if (value.length > 5) {
+                value = value.substring(0, 5);
+                if (cursorPosition > 5) {
+                    cursorPosition = 5;
+                }
+            }
+
+            const parts = value.split(':');
+            if (parts[0] && parseInt(parts[0], 10) > 59) {
+                value = `59:${parts[1] || ''}`;
+                if (cursorPosition > 2) {
+                    cursorPosition = 3;
+                }
+            }
+            if (parts[1] && parseInt(parts[1], 10) > 59) {
+                value = `${parts[0] || ''}:59`;
+                if (cursorPosition > 5) {
+                    cursorPosition = 5;
+                }
+            }
+
+            input.value = value;
+            input.selectionStart = cursorPosition;
+            input.selectionEnd = cursorPosition;
+        });
+
+        input.addEventListener('keydown', function(event) {
+            if (event.key === 'Backspace') {
+                let cursorPosition = input.selectionStart;
+                let value = input.value;
+
+                if (cursorPosition > 0 && value[cursorPosition - 1] === ':') {
+                    event.preventDefault(); // Prevent default backspace behavior
+                    input.selectionStart = cursorPosition - 1;
+                    input.selectionEnd = cursorPosition - 1;
+                    input.value = value.substring(0, cursorPosition - 1) ;
+                }
+            }
+        });
+    });
+}
+    
+function checkInputs() {
+      const inputs = document.querySelectorAll('.fileInput');
+      const submitForm = document.getElementById('submit_form');
+      const proceed = document.getElementById('proceed');
+
+      // Check if any file input is not empty
+      let anyFilled = Array.from(inputs).some(input => input.files.length > 0);
+
+      if (anyFilled) {
+        submitForm.style.display = 'flex';
+        proceed.style.display = 'none';
+      } else {
+        submitForm.style.display = 'none';
+        proceed.style.display = 'flex';
+      }
+    }
+
+    // Attach event listeners to all file inputs
+    // Function to handle file upload
+    function handleFileUpload(currentNumber) {
+      const fileInput = document.getElementById(`bg_music_{{textfile_id}}_${currentNumber}`);
+
+      // Event listener for file selection
+      fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+
+        if (file) {
+          // Store file metadata in sessionStorage for future reference
+          sessionStorage.setItem(`selectedFileName_${currentNumber}`, file.name);
+
+          // Prepare the form data
+          let formData = new FormData();
+          formData.append('file', file);
+
+          // Send the file to the server using AJAX (fetch API)
+          fetch('/upload/', {
+              method: 'POST',
+              body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+              console.log(`File ${file.name} uploaded successfully for bg_music_${currentNumber}`);
+            })
+            .catch(error => {
+              console.error('Error uploading file:', error);
+            });
+        }
+      });
+
+      // Check if the user previously uploaded a file (from sessionStorage)
+      const savedFileName = sessionStorage.getItem(`selectedFileName_${currentNumber}`);
+      if (savedFileName) {
+        alert(`Previously uploaded file for bg_music_${currentNumber}: ${savedFileName}. Please re-upload if necessary.`);
+      }
+    }
+
+
+    document.querySelectorAll('.fileInput').forEach(input => {
+      input.addEventListener('change', checkInputs);
+    });
+
+    function handleSlider(c_number) {
+      const slider = document.getElementById(`mySlider_{{textfile_id}}_${c_number}`);
+      const sliderValue = document.getElementById(`SliderValue_${c_number}`);
+      var value = slider.value;
+
+      sliderValue.textContent = `${value}%`;
+      slider.style.background = `linear-gradient(to right, #864AF9 ${value}%, #D9D9D9 ${value}%)`;
+
+      slider.addEventListener('input', function() {
+        var value = slider.value;
+        sliderValue.textContent = `${slider.value}%`;
+        // document.getElementById('bg_level').value=slider.value/100
+
+        slider.style.background = `linear-gradient(to right, #864AF9 ${value}%, #D9D9D9 ${value}%)`;
+        // console.log(document.getElementById('bg_level').value)
+
+      });
+
+    }
+    
+  </script>
+  {% if textfile.background_musics.all %}
+    <script>
+      const loopLength = "{{ n_musics }}";
+      const textfileId = "{{ textfile_id }}";
+      for (let i = 0; i < loopLength; i++) {
+        addInputValidation(i + 1)
+        inputHander(i + 1)
+        handleSlider(i + 1)
+        handleSlider(i + 1)
+
+      }
+    </script>
+
+  {% else %}
+
+    <script>
+      addInputValidation(1)
+      addInputValidation(2)
+      inputHander(1)
+      inputHander(2)
+      handleSlider(1)
+      handleSlider(2)
+    </script>
+  {% endif %}

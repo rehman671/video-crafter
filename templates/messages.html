@@ -1,0 +1,65 @@
+<style>
+  #django-messages {
+    border-radius: 5px;
+    margin: 20px auto;
+    color: #4a148c;
+    width: max-content;
+  }
+
+  .message {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    text-align: center;
+  }
+
+  .message.success {
+    border: 1px solid #d1c4e9;
+    background-color: #ede7f6;
+    color: #4a148c;
+  }
+
+  .message.error {
+    border: 1px solid #f48fb1;
+    background-color: #fce4ec;
+    color: #c2185b;
+  }
+
+  .message.info {
+    border: 1px solid #64b5f6;
+    background-color: #bbdefb;
+    color: #0d47a1;
+  }
+
+  .message.warning {
+    border: 1px solid #ffd54f;
+    background-color: #fff9c4;
+    color: #f57f17;
+  }
+</style>
+
+{% if messages %}
+<div id="django-messages">
+  {% for message in messages %}
+  <div class="message {{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+</div>
+
+{% endif %}
+
+<script>
+  // Wait for the document to be fully loaded
+  document.addEventListener('DOMContentLoaded', function () {
+    // Set a timeout to remove the messages after 5 seconds (5000ms)
+    setTimeout(function () {
+      const messages = document.getElementById('django-messages');
+      if (messages) {
+        messages.style.transition = 'opacity 0.5s ease';
+        messages.style.opacity = 0; // Fade out effect
+        setTimeout(function () {
+          messages.remove(); // Completely remove the messages from the DOM
+        }, 500); // Wait for the fade-out to complete
+      }
+    }, 5000); // 5-second delay before starting the fade-out
+  });
+</script>

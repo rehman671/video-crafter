@@ -1,0 +1,31 @@
+{% include 'messages.html' %}
+<div class="plan-interval-selector">
+    {% for plan in plans %}
+      <button class="button">{{ plan.name }}</button>
+    {% endfor %}
+  </div>
+  <div class="columns plan-selector">
+  {% for product in products %}
+    <div class="column">
+      <div {% if product.metadata.is_default %}class="is-selected"{% endif %}>
+        <span class="icon">
+          <i class="fa {% if product.metadata.is_default %}fa-check{% else %}fa-circle{% endif %}">
+          </i>
+        </span>
+        <p class="plan-name">{{ product.metadata.name }}</p>
+        <p class="plan-description">{{ product.metadata.description }}</p>
+        <div class="plan-price">
+          <span class="price">{{ product.metadata.monthly_price }}</span> / month
+        </div>
+        <ul class="features">
+           {% for feature in product.metadata.features %}
+           <li>
+             <span class="icon"><i class="fa fa-check"></i></span>
+             <span class="feature">{{ feature }}</span>
+           </li>
+           {% endfor %}
+        </ul>
+      </div>
+    </div>
+  {% endfor %}
+  </div>

@@ -1,0 +1,29 @@
+
+{% extends 'partials/short_modal.html' %}
+<!-- Container for the modal -->
+{%block modal_heading %}
+Add New Name:
+{%endblock modal_heading %}
+
+{%block instruction %}
+{%endblock  %}
+{% block action %}
+            
+<button class="upload-btn" id="SaveName">Save</button>
+
+{% endblock action %}
+{%block form_d %}
+
+<form hx-post="{{request.path}}" hx-on="htmx:afterRequest: window.location.reload()" id="video_form"  enctype="multipart/form-data">
+{%endblock form_d %}
+{% block content %}            
+<input
+type="text"
+id="NewName"
+name="newName"
+placeholder="Add New Name"
+class="input-field"
+style="width:90%"
+/>
+
+{% endblock content %}            

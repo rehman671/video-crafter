@@ -1,0 +1,170 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {%include 'partials/head_c.html' %}
+    
+<style>
+   body {
+
+font-size: 1.0rem!important;
+
+}
+
+
+.box > div:first-child {
+
+font-size: 1.0rem!important;
+
+}
+
+.box > .log > div {
+
+font-size: 1.0rem!important;
+}
+
+.log > div > .actions > div {
+font-size: 0.9rem!important;
+
+}
+
+.box > div > .newFolder {
+font-size: 1.0rem!important;
+
+}
+    a {
+    text-decoration: none; 
+    color: inherit;        
+    outline: none; 
+    display: flex;     
+    align-items:center;
+    cursor: pointer;
+}
+.newFolder:hover,.newVideo:hover{
+  background-color: #00000010;
+
+}
+.loader {
+display: none;
+position: fixed;
+z-index: 9999;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+width: 50px;
+height: 50px;
+border: 5px solid #f3f3f3;
+border-top: 5px solid #9662f9;
+border-radius: 50%;
+animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+/* Centered video card */
+.video-card {
+/* width: 80%; Adjust as per your need */
+max-width: 400px; /* To restrict excessive width on large screens */
+padding: 20px;
+border-radius: 10px;
+background-color: #f2f2f2; /* Ash color */
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+display: flex;
+justify-content: center;
+align-items: center;
+flex-direction: column;
+}
+.actions{
+display:none
+}
+
+
+</style>
+    
+</head>
+<body>
+<div class="loader"></div>
+    {% include 'sub_header.html' %}
+{% include 'messages.html'%}
+
+
+
+
+    <link rel="stylesheet" href="{% static 'resources/assets/folder1.css' %}">
+
+    <style>
+        
+    </style>
+
+    <div class="content">
+        <div class="box">
+            <div>
+                <div class="folderpath">
+                    <a >Recently Processed Videos</a>
+                    <!-- <img src="{% static 'resources/assets/assets1/Chevron-down.svg' %}" alt=""> -->
+                </div>
+                <div class="newFolder" style="padding:8px">
+                    
+                    <!-- <a > 
+                        <img src="{% static 'resources/assets/assets1/create.svg' %}" alt="">
+                        <span  style="padding-left: 5px;">Import Folder</span> 
+                    </a> -->
+                </div>
+            </div>
+            <div class="log">
+                <div>
+                    <div>
+                        <input type="checkbox" name="selectall" id="" style="opacity:0;">
+                        <div>Text Files</div>
+                    </div>
+                    <div>Clips</div>
+                    <div>Created At</div>
+                </div>
+                {% for textfile in textfiles %}
+                <div>
+                    
+                    <div>
+                        <input type="checkbox" name="selectall" id=""style="opacity:0;">
+                        <div>
+                            
+                            <a href="{%url 'video_text:download_video' textfile.id %}">
+                                {{textfile.file_text}}
+                            </a>
+                        </div>
+                    </div>
+                    <div>{{textfile.clip_number}}</div>
+                    <div>{{textfile.created_at }}</div>
+                    <img src="{% static 'resources/assets/assets1/dots.svg' %}"class="menu" alt="">
+                    <div class="actions">
+                        <div>
+                            <a hx-get="{% url 'video_text:delete_textfile' textfile.id %}"  hx-target="#confirmation-box" 
+                            hx-swap="innerHTML">
+                                <img src="{% static 'resources/assets/assets1/rename.svg' %}" alt="">
+                                Delete
+                            </a>
+                        </div>
+                       
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <div id="confirmation-box"></div>
+
+
+<script src="{% static 'htmx.js' %}"></script>
+
+<script src="{% static 'resources/assets.js' %}"></script>
+    
+</body>
+</html> 

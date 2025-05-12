@@ -1,0 +1,460 @@
+<style>
+    @media only screen and (max-width: 600px) {
+  .lead-table {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    max-width: 700px;
+  }
+}
+
+@media only screen and (min-width: 600px) {
+  .lead-table {
+    border-radius: 20px;
+  }
+}
+.lead-table {
+    border-radius: 20px;
+  }
+  .lead-table th {
+    font-size: 24px;
+  }
+  .lead-table td {
+    padding: 15px 20px;
+  }
+  .lead-table {
+  border-collapse: collapse;
+  margin-bottom: 40px;
+  width: 100%;
+  border-radius: 15px;
+  overflow-x: auto;
+  display: block;
+}
+.lead-table,
+.lead-table td,
+.lead-table th {
+  border: 1px solid rgba(17, 17, 17, 0.3);
+}
+.lead-table th {
+  background: #864AF9;
+  color: #fff;
+  font-weight: 600;
+  padding: 15px 20px;
+  vertical-align: middle;
+}
+.lead-table td {
+  padding: 10px 15px;
+  vertical-align: middle;
+  color: #000;
+  font-weight: 500;
+  font-size: larger;
+}
+.lead-table tr {
+  height: 100px;
+}
+.lead-table tr td:first-child {
+  width: 135px;
+}
+.lead-table tr td:nth-child(3),
+.lead-table tr td:nth-child(2) {
+  width: 300px;
+}
+.lead-table tr td:last-child {
+  width: 300px;
+  height: 50px;
+  text-align: center;
+}
+.lead-table tr td:nth-child(3) {
+  background: #e3e3e3;
+}
+.lead-table thead tr {
+  height: 70px;
+}
+.delete-row-btn img {
+  font-size: 40px;
+  width: 50px;
+  height: 50px;
+}
+
+</style>
+{% load static %}
+<div id="separateSlide" class="wrapper">
+    
+    <div class="guide">
+        <span class="guide-title">Separate Words To Add Multiple Cips </span>
+        <span class="guide-icon" title="To Select Multiple Clips On This Line, Place Your Cursor Where You Want To Separate The Words, Type '/' To Separate The Words. When Done, Click The Done Button.">?</span>
+    </div>
+
+    <div class="tag-box">
+        <ul id="list-of-tags" class="list-of-tags">
+            <input class="tag-input" id="words" value="" type="text">
+        </ul>
+        <input id="id" name="id" hidden type="number">
+    </div>
+    <div id="error-message" class="error-message"></div>
+    <div class="details">
+        <button id="reset-btn" type="button">Reset</button>
+        <button id="done-btn" type="button"></button>
+    </div>
+</div>
+
+<script>
+    const listOfTags = document.getElementById('list-of-tags');
+    const input = listOfTags.querySelector('span');
+    const resetBtn = document.getElementById('reset-btn');
+    const doneBtn = document.getElementById('done-btn');
+    let initialValue = input.value;
+
+    const errorMessage = document.getElementById('error-message');
+    function createTag(text) {
+        const li = document.createElement('li');
+        li.textContent = text;
+
+        listOfTags.insertBefore(li, input);
+        getNumberOfListItems();
+    }
+
+    function getNumberOfListItems() {
+        const ulElement = document.getElementById("list-of-tags");
+        if (ulElement) {
+            const liCount = ulElement.getElementsByTagName("li").length;
+            console.log(`Number of <li> items: ${liCount}`);
+            document.getElementById('no_of_slides').value=liCount;
+            return liCount;
+        } else {
+            console.error("Element with ID 'list-of-tags' not found.");
+            return 0;
+        }
+    }
+    function getListItemsText() {
+        const ulElement = document.getElementById("list-of-tags");
+        if (ulElement) {
+            const liElements = ulElement.getElementsByTagName("li");
+            const liTexts = Array.from(liElements).map(li => li.textContent.trim());
+            console.log(liTexts); // Output the array of text content
+            return liTexts;
+        } else {
+            console.error("Element with ID 'list-of-tags' not found.");
+            return [];
+        }
+    }
+
+
+
+    function updateClipCount() {
+        const tags = document.querySelectorAll('.list-of-tags li'); 
+        const remainingText = input.value.trim();
+
+        let clipCount = tags.length;  
+        if (remainingText) {
+            clipCount += 1;  
+        }
+        
+        const doneBtn = document.getElementById('done-btn');
+        doneBtn.textContent = `Proceed To Add ${clipCount} Clip${clipCount > 1 ? 's' : ''}`;
+    }
+
+    function handleKeyPress(e) {
+        const value = input.value;
+        let cursorPosition = input.selectionStart;  
+
+        function moveToWordStart(pos) {
+            while (pos > 0 && value[pos - 1] === ' ') {
+                pos--;  
+            }
+            while (pos > 0 && value[pos - 1] !== ' ') {
+                pos--;  
+            }
+            return pos;
+        }
+
+        function moveToWordEnd(pos) {
+            while (pos < value.length && value[pos] === ' ') {
+                pos++;  
+            }
+            while (pos < value.length && value[pos] !== ' ') {
+                pos++;  
+            }
+            return pos;
+        }
+
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            cursorPosition = moveToWordStart(cursorPosition);
+            input.setSelectionRange(cursorPosition, cursorPosition); 
+        }
+        else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            cursorPosition = moveToWordEnd(cursorPosition);
+            input.setSelectionRange(cursorPosition, cursorPosition);  
+        }
+        else if (e.key === '/') {
+            const isAtValidPosition =
+                cursorPosition === value.length || 
+                value[cursorPosition - 1] === ' ' ||  
+                (cursorPosition > 0 && value[cursorPosition] === ' '); 
+
+            if (!isAtValidPosition) {
+                e.preventDefault(); 
+                errorMessage.textContent = 'Wrong Position To Separate Words';
+                return;
+            }
+
+            e.preventDefault();
+            const beforeCursor = value.substring(0, cursorPosition).trim();
+            if (beforeCursor) createTag(beforeCursor);
+            errorMessage.textContent = '';
+
+            input.value = value.substring(cursorPosition).trim();
+            updateClipCount();  
+        }
+        
+    }
+
+ 
+    function preventUnwantedKeys(e) {
+        const allowedKeys = [
+            'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '/'
+        ];
+
+        
+        if (!allowedKeys.includes(e.key)) {
+            e.preventDefault();
+        }
+    }
+
+    function resetTags() {
+        
+        const tags = listOfTags.querySelectorAll('li');
+        tags.forEach(tag => tag.remove());
+        input.value = initialValue;
+        errorMessage.textContent=''
+        doneBtn.textContent='Proceed To add 1 Clip'
+        document.getElementById('no_of_slides').value=1
+
+
+
+    }
+
+    function convertRemainingToTag() {
+        const value = input.value.trim();
+        if (value) {
+            createTag(value);
+            input.value = ''; 
+
+        }
+        document.getElementById('popup-submit').style.display='flex'
+        errorMessage.textContent=''
+        document.getElementById('separateSlide').style.display='none'
+        document.getElementById('lead-form').style.display='flex'
+        let no_of_slides=document.getElementById('no_of_slides').value
+        let textList=getListItemsText();
+        for (let i = 1; i <= no_of_slides; i++) {
+                        addSlide(i,textList[i-1]);
+                    }
+        restoreForm()
+        
+                }
+
+    async function restoreForm(){
+                const inputs = document.querySelectorAll('select');
+
+        for (const input of inputs) {
+            const storedValue = sessionStorage.getItem(input.id);
+            if (storedValue && input.id.startsWith('topic_folder_')) {
+                input.value = storedValue;
+
+                const idParts = input.id.split('_');
+                const currentNumber = idParts[idParts.length - 2]; 
+
+                const url = `/video/get_clip/${storedValue}`;
+                const targetId = `videoSelect_${currentNumber}_${textfile_id}-${clip_id}`;
+               await populateVideoCategories(targetId,url);  
+
+            }
+        }
+        inputs.forEach(input => {
+            const storedValue = sessionStorage.getItem(input.id);
+            if (storedValue && input.id.startsWith('videoSelect_')) {
+                input.value = storedValue;
+            }
+        });
+    
+      };
+
+    function addSlide(currentNumber,text) {
+
+    var table = document.getElementById('leadsTable').getElementsByTagName('tbody')[0];
+    var newRow = table.insertRow(-1);
+    var slideCell = newRow.insertCell(0);
+    console.log('This is textfile_id: ', textfile_id)
+    slideCell.innerText = `Clip ${currentNumber}`;
+    newRow.innerHTML += 
+        `<td>
+          <input style="font-size: 19px;" type="text"  name="slide_text_${currentNumber}" value="${text}" placeholder="Type Your Sentence Here" class="form-control no-border" aria-describedby="textarea" readonly />
+        </td>
+        <td style="background: none;">
+           <div class="custum-browse custum-browse-v2 d-flex align-items-center">
+             <div class="brws">
+               <input class="br-input" type="file" id="slide_file_${currentNumber}_${textfile_id}" name="slide_file_${currentNumber}"accept="image/*,video/*"  >
+                  <a href="#!" class="btn get-start browse-btn">
+                 <img src="{% static 'lead-maker/images/upload-icn-black.svg' %}" alt=""> Choose file
+               </a>
+             </div>
+            
+           </div>
+         </td>
+         <td>
+            <div style="width: 100%; position: relative;">
+                            <select id="topic_folder_${currentNumber}_${textfile_id}-${clip_id}" name="topic_folder_${currentNumber}"
+                            onchange="fetchVideoClips(this)"
+                                    style="appearance: none; background: #EEEEEE; width: 100%; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: none; color: #333;">
+                            <option value="">Select Topic</option>
+                            {%for cat in video_categories%}
+                                <option value="{{cat.id}}">{{cat.name}}</option>
+                            {% endfor %}
+                            </select>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                            <path d="M6 9L12 15L18 9" stroke="#050315" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg> 
+                        </div>
+                        <div id="div_${currentNumber}" style="width: 100%; position: relative;">
+                            <select class="selected_clip"
+                                    name="selected_video_${currentNumber}"
+                            onchange="saveInput(this)"
+
+                                    id="videoSelect_${currentNumber}_${textfile_id}-${clip_id}" 
+                                    style="appearance: none; background: #EEEEEE; width: 100%; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: none; color: #333; padding-right: 40px;"> <!-- Add padding-right to ensure space for the arrow -->
+                                <option value="">Select a video</option>
+                                
+                            </select>
+                            <svg id="" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" 
+                                 style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                                <path d="M6 9L12 15L18 9" stroke="#050315" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <p style="display:none; color:red;" id="error_${currentNumber}">Choose a clip</p>
+                        
+         </td>`;
+         
+
+         const fileInputs = document.querySelectorAll('.br-input');
+    
+         const noFileTexts = document.querySelectorAll('.btn.get-start.browse-btn');
+    
+         console.log(fileInputs,noFileTexts);
+    fileInputs.forEach((input, index) => {
+      input.addEventListener('change', (event) => {
+        const fileName = event.target.files.length > 0 ? event.target.files[0].name.slice(0,12) : 'Choose file';
+        noFileTexts[index].lastChild.textContent = fileName;
+      });
+    });
+    }
+
+    function submitForm(){
+    
+        let formValid=false
+        for (let i=1;i <= getListItemsText().length;i++){
+            console.log('i: ',i)
+            const videoSelect= document.getElementById(`videoSelect_${i}_${textfile_id}-${clip_id}`)
+            const videoFile=document.getElementById(`slide_file_${i}_${textfile_id}`)
+            if (videoSelect.value || videoFile.files.length > 0 ){
+                formValid=true
+                document.getElementById(`error_${i}`).style.display='none'
+                videoSelect.style.border='none'
+            }else{
+                formValid= false
+                document.getElementById(`error_${i}`).style.display='flex'
+                videoSelect.style.border='1px solid red'
+                videoSelect.focus()
+                return;
+            }
+        }
+        if (formValid){
+
+            document.getElementById('lead-form').submit()
+        }
+    }
+    function fetchVideoClips(selected){
+        id = selected.value;
+        const selectedId = selected.id;
+        const splitArray = selectedId.split('_'); 
+        const currentNumber = splitArray[splitArray.length - 2];
+        let video_id=`videoSelect_${currentNumber}_${textfile_id}-${clip_id}`
+        saveInput(selected)
+        if (id){
+            populateVideoCategories(video_id,`/video/get_clip/${id}`)
+
+        }
+    }
+
+    function populateVideoCategories(selectElementId, apiUrl) {
+        const selectElement = document.getElementById(selectElementId);
+
+        if (!selectElement) {
+            console.error(`Select element with ID "${selectElementId}" not found.`);
+            return;
+        }
+
+
+        // Fetch categories from the API
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(categories => {
+                categories.forEach(cat => {
+                    const option = document.createElement("option");
+                    option.value = cat.id;         
+                    option.textContent = cat.title; 
+                    selectElement.appendChild(option);
+                });
+            restoreVideoSelectInputs();
+
+            })
+            .catch(error => {
+                console.error("Failed to fetch video categories:", error);
+            });
+    }
+
+    function saveInput(inputElement) {
+            
+            sessionStorage.setItem(inputElement.id, inputElement.value);
+            console.log(inputElement.value)
+            if (inputElement.id.startsWith('videoSelect_') && inputElement.value !==''){
+                const cNumber= inputElement.id.split('_')[1]
+                console.log(cNumber);
+                // document.getElementById(`video_${cNumber}_status`).value='empty';
+
+
+            };
+            
+    };
+        
+    function restoreVideoSelectInputs() {
+    inputs=document.querySelectorAll('select')
+        inputs.forEach(input => {
+            const storedValue = sessionStorage.getItem(input.id);
+            if (storedValue && input.id.startsWith('videoSelect_')) {
+                input.value = storedValue;
+            }
+        });
+    }
+
+
+    input.addEventListener('keydown', handleKeyPress);
+    input.addEventListener('keydown', preventUnwantedKeys);
+    resetBtn.addEventListener('click', resetTags);
+    doneBtn.addEventListener('click', convertRemainingToTag);
+    
+    input.addEventListener('paste', e => e.preventDefault());
+    document.getElementById('close').addEventListener('click',()=>{
+        document.getElementById('modal-cont').style.display='none'
+        document.getElementById('popup-modal').style.display='none'
+        document.getElementById('lead-form').style.display='none'
+        document.getElementById('separateSlide').style.display='flex'
+    })
+</script>

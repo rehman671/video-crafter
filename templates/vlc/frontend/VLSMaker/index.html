@@ -1,0 +1,1618 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+<style>
+  @font-face {
+    font-family: 'Montserrat';
+    src: url('{% static "fonts/Montserrat.ttf" %}') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Montserrat-Bold';
+    src: url('{% static "fonts/Montserrat-Bold.ttf" %}') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Montserrat-SemiBold';
+    src: url('{% static "fonts/Montserrat-SemiBold.ttf" %}') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Montserrat-ExtraBold';
+    src: url('{% static "fonts/Montserrat-ExtraBold.ttf" %}') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Arial'; 
+    src: url('{% static "fonts/Arial.ttf" %}') format('truetype');
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Helvetica';  
+    src: url('{% static "fonts/Helvetica.otf" %}') format('opentype');
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'tiktokfont';  
+    src: url('{% static "fonts/tiktokfont.otf" %}') format('opentype');
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'OpenSans-Semibold';  
+    src: url('{% static "fonts/OpenSans-Semibold.ttf" %}') format('truetype');
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Roboto-Medium';  
+    src: url('{% static "fonts/Roboto-Medium.ttf" %}') format('truetype');
+    font-style: normal;
+    font-display: swap;
+  }
+</style>
+<style>
+ 
+.container2 {
+  margin-bottom: -25vh;
+    margin-right: .5rem;
+}
+
+.text-wrapper2 {
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+font-size: 22px;
+}
+
+.text-wrapper2 span {
+display: inline-block;
+border-radius: 5px;
+background-color: #ffffff;
+color: #000000;
+padding: 5px;
+text-align: center;
+}
+
+.text-wrapper2 span:nth-child(2) {
+position: relative;
+border-radius: 0px 0px 5px 5px;
+padding: 5px;
+}
+
+</style>
+  {% include 'partials/head_c.html' %}
+
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  <style>
+    .video-card {
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #f2f2f2;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      margin-bottom: 30px;
+      box-sizing: border-box;
+    }
+    
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]:after {
+    content: attr(data-tooltip);
+    padding: 6px 8px;
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    background-color: #000000aa;
+    width: max-content;
+    opacity: 0;
+    /* -webkit-transition: opacity 0.2s ease-out; */
+    color: #ffffff;
+    border-radius: 6px;
+    font-size: small;
+
+}
+
+[data-tooltip]:hover:after {
+    opacity: 1;
+}
+
+
+    .card-text {
+      text-align: left;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body style="position: relative; overflow-x: hidden;">
+  <div class="bg"></div>
+
+  {% include 'sub_header.html' %}
+
+  <div class="progressbar" style="display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 84px;
+                margin-bottom: 56px">
+    <div style="width: 624px;
+                  height: 10px;
+                  background: #EEEEEE;
+                  position: relative;
+                  display: flex;
+                  align-items: center">
+      <div style="position: absolute;
+                    width: 25px;
+                    height: 25px;
+                    background: #864AF9;
+                    border-radius: 90px;
+                    left: 0%;
+                    transform: translateX(-100%)"></div>
+      <div style="position: absolute;
+                    width: 25px;
+                    height: 25px;
+                    background: #EEEEEE;
+                    border-radius: 90px;
+                    left: 208px"></div>
+      <div style="position: absolute;
+                    width: 25px;
+                    height: 25px;
+                    background: #EEEEEE;
+                    border-radius: 90px;
+                    left: 416px"></div>
+      <div style="position: absolute;
+                    width: 25px;
+                    height: 25px;
+                    background: #EEEEEE;
+                    border-radius: 90px;
+                    left: 100%"></div>
+      <div style="position: absolute; top: -50px; left: -75.96px;">
+        Voice & Subtitle Design
+      </div>
+      <div style="position: absolute; top: -50px; left: 160px;">Scene Selection</div>
+      <div style="position: absolute; top: -50px; left: 312px;">
+        Background Music Selection
+      </div>
+      <div style="position: absolute; top: -50px; left: 594px;">Download</div>
+    </div>
+  </div>
+
+  {% include 'messages.html' %}
+
+  <div style="display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-bottom: 10px;
+               ">
+    <form action="{% url 'video_text:add_text' %}" method="post" enctype="multipart/form-data" class="form"
+      id="text_form" style="
+                   border: 1px solid #0000004D;
+                   border-radius: 8px;
+                   padding: 40px 24px;
+                   background: white;">
+      {% csrf_token %}
+
+      <div style="font-size: 24px;
+                    font-weight: 700;
+                    line-height: 29.26px;
+                    letter-spacing: -0.03em;
+                    text-align: center;
+                    margin-bottom: 40px">
+        <span> Create Your Perfect Video Creative:
+          <br />
+          Upload, Customize, and Convert!</span>
+      </div>
+      <div class="card-text" style="text-align: start; display: flex;">
+        <h3>Tutorial Video:</h3>
+      </div>
+      <div class="video-card">
+        <div style="display: flex;
+                      width: 100%;
+                      height: 376px;
+                      border-radius: 8px;
+                      align-items: center;
+                      justify-content: center">
+          <div id="videoPreviewContainer" style="width: 100%;
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        overflow: hidden"></div>
+        </div>
+      </div>
+
+      <div style="font-size: 18px;
+                    font-weight: 600;
+                    line-height: 21.94px;
+                    text-align: left;
+                    margin-bottom: 24px">Pick Your Dimensions</div>
+      <div class="options video-sizes" style="display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    height: 290px;
+                    gap: 10px;
+                    margin-bottom: 48px">
+        <div class="box" data-resolution="1:1" style="display: flex;
+                      justify-content: center;
+                      background: white;
+                      text-align: center;
+                      border-radius: 8px;
+                      border: 1px solid #864AF9;
+                      padding: 12px 8px;
+                      cursor: pointer">
+          <input type="radio" name="resolution" value="1:1" checked hidden />
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <div style="font-size: 18px;
+                          font-weight: 500;
+                          line-height: 21.94px;
+                          letter-spacing: -0.03em;
+                          text-align: center;
+                          margin-bottom: 30px">Square</div>
+            <div style="height: 100px;
+                          width: 100px;
+                          background: #D9D9D9;
+                          border-radius: 8px;
+                          margin-bottom: 8px;
+                          border: 2px dashed"></div>
+            <div class="text" style="font-size: 16px;
+                          font-weight: 400;
+                          line-height: 21.79px;
+                          letter-spacing: -0.03em;
+                          text-align: center;
+                          margin-bottom: 12px">1:1</div>
+            <div class="circle-outer" style="width: 15px;
+                          height: 15px;
+                          border-radius: 90px;
+                          border: 3px solid #864AF9;
+                          display: flex;
+                          justify-content: center;
+                          align-items: center;
+                          padding: 7px">
+              <div class="circle-inner" style="width: 100%;
+                            height: 100%;
+                            border-radius: 90px;
+                            background: #864AF9"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Option 2: TikTok/Short -->
+        <div class="box" data-resolution="4:5" style="display: flex;
+                      justify-content: center;
+                      background: white;
+                      text-align: center;
+                      border-radius: 8px;
+                      border: 1px solid #88888877;
+                      padding: 12px 8px;
+                      cursor: pointer">
+          <input type="radio" name="resolution" value="4:5" hidden />
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <div style="font-size: 18px;
+                          font-weight: 500;
+                          line-height: 21.94px;
+                          letter-spacing: -0.03em;
+                          text-align: center;
+                          margin-bottom: 30px">Vertical/Portrait</div>
+            <div style="height: 100px;
+                          width: 80px;
+                          background: #D9D9D9;
+                          border-radius: 8px;
+                          margin-bottom: 8px;
+                          border: 2px dashed"></div>
+            <div class="text" style="font-size: 16px;
+                          font-weight: 400;
+                          line-height: 21.79px;
+                          letter-spacing: -0.03em;
+                          text-align: center;
+                          margin-bottom: 12px">4:5</div>
+            <div class="circle-outer" style="width: 15px;
+                          height: 15px;
+                          border-radius: 90px;
+                          border: 3px solid #D9D9D9;
+                          display: flex;
+                          justify-content: center;
+                          align-items: center;
+                          padding: 7px">
+              <div class="circle-inner" style="width: 100%;
+                            height: 100%;
+                            border-radius: 90px;
+                            background: #D9D9D9"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Option 3: YouTube -->
+        <div class="box" data-resolution="16:9" style="display: flex;
+                      justify-content: center;
+                      background: white;
+                      text-align: center;
+                      border-radius: 8px;
+                      border: 1px solid #88888877;
+                      padding: 12px 8px;
+                      cursor: pointer">
+          <input type="radio" name="resolution" value="16:9" hidden />
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <div style="font-size: 18px;
+                          font-weight: 500;
+                          line-height: 21.94px;
+                          letter-spacing: -0.03em;
+                          text-align: center;
+                          margin-bottom: 30px">YouTube</div>
+            <div style="height: 100px;
+                          width: 155px;
+                          background: #D9D9D9;
+                          border-radius: 8px;
+                          margin-bottom: 8px;
+                          border: 2px dashed"></div>
+            <div class="text" style="font-size: 16px;
+                          font-weight: 400;
+                          line-height: 21.79px;
+                          letter-spacing: -0.03em;
+                          text-align: center;
+                          margin-bottom: 12px">16:9</div>
+            <div class="circle-outer" style="width: 15px;
+                          height: 15px;
+                          border-radius: 90px;
+                          border: 3px solid #D9D9D9;
+                          display: flex;
+                          justify-content: center;
+                          align-items: center;
+                          padding: 7px">
+              <div class="circle-inner" style="width: 100%;
+                            height: 100%;
+                            border-radius: 90px;
+                            background: #D9D9D9"></div>
+            </div>
+          </div>
+        </div>
+<!-- 
+        <div data-tooltip="Coming Soon" id="tiktok_reel"  data-resolution="9:16" style="display: flex;cursor: not-allowed;background-color: #eeeeeebb; 
+                      justify-content: center;
+                      display: none;
+                      text-align: center;
+                      border-radius: 8px;
+                      border: 1px solid #88888877;
+                      padding: 12px 8px;
+                      cursor: not-allowed;">
+          <input type="radio" name="resolution" value="9:16" hidden />
+          <div  style="display: flex; flex-direction: column; align-items: center;">
+            <div style="font-size: 18px;
+                          font-weight: 500;
+                          line-height: 21.94px;
+                          letter-spacing: -0.03em;
+                          text-align: center;
+                          margin-bottom: 30px">TikTok/Reels</div>
+            <div style="height: 100px;
+                          width: 56.25px;
+                          background: #D9D9D9;
+                          border-radius: 8px;
+                          margin-bottom: 8px;
+                          border: 2px dashed"></div>
+            <div class="text" style="font-size: 16px;
+                          font-weight: 400;
+                          line-height: 21.79px;
+                          letter-spacing: -0.03em;
+                          text-align: center;
+                          margin-bottom: 12px">9:16</div>
+            <div class="circle-outer" style="width: 15px;
+                          height: 15px;
+                          border-radius: 90px;
+                          border: 3px solid #D9D9D9;
+                          display: flex;
+                          justify-content: center;
+                          align-items: center;
+                          padding: 7px">
+              <div class="circle-inner" style="width: 100%;
+                            height: 100%;
+                            border-radius: 90px;
+                            background: #D9D9D9"></div>
+            </div>
+          </div>
+        </div> -->
+        
+        <div class="box"  data-resolution="9:16" style="display: flex;cursor:pointer; background-color: white; 
+                      justify-content: center;
+                      
+                      text-align: center;
+                      border-radius: 8px;
+                      border: 1px solid #88888877;
+                      padding: 12px 8px;
+                      cursor: pointer;">
+          <input type="radio" name="resolution" value="9:16" hidden />
+          <div  style="display: flex; flex-direction: column; align-items: center;">
+            <div style="font-size: 18px;
+                          font-weight: 500;
+                          line-height: 21.94px;
+                          letter-spacing: -0.03em;
+                          text-align: center;
+                          margin-bottom: 30px">TikTok/Reels</div>
+            <div style="height: 100px;
+                          width: 56.25px;
+                          background: #D9D9D9;
+                          border-radius: 8px;
+                          margin-bottom: 8px;
+                          border: 2px dashed"></div>
+            <div class="text" style="font-size: 16px;
+                          font-weight: 400;
+                          line-height: 21.79px;
+                          letter-spacing: -0.03em;
+                          text-align: center;
+                          margin-bottom: 12px">9:16</div>
+            <div class="circle-outer" style="width: 15px;
+                          height: 15px;
+                          border-radius: 90px;
+                          border: 3px solid #D9D9D9;
+                          display: flex;
+                          justify-content: center;
+                          align-items: center;
+                          padding: 7px">
+              <div class="circle-inner" style="width: 100%;
+                            height: 100%;
+                            border-radius: 90px;
+                            background: #D9D9D9"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display:flex; flex-direction: column; gap: 24px;">
+        <div style="width: 100%;
+                      display: flex;
+                      flex-direction: column">
+
+          <div class="11Labs-Api-key-text" style="display: flex;
+                        align-items: center;
+                        margin-bottom: 16px">
+            <div style="font-size: 18px;
+                          font-weight: 600;
+                          line-height: 26.1px;
+                          letter-spacing: 0.02em;
+                          text-align: left;
+                          margin-right: 10px">ElevenLabs Api Key:</div>
+            <div class="vh-parent">
+              <div class="vh-child">
+                <span class="text3">
+                  An unique code from your Eleven Labs account that lets VideoCrafter.io use your selected AI voices.
+                  Find it in your Eleven Labs account under API settings.
+                </span>
+              </div>
+              ?
+            </div>
+          </div>
+          <div class="11Labs-Api-key-textarea" style="margin-bottom: 24px;">
+            <input id="api_key" type="text" class="text3" name="elevenlabs_apikey" placeholder="ElevenLabs Api Key"
+              style="width: 100%;
+                            height: 56px;
+                            border: 1px solid #E3E3E3;
+                            box-sizing: border-box;
+                            border-radius: 8px;
+                            padding: 12px 24px;
+                            display: flex;
+                            align-items: center;
+                            transition: 0.3s ease" />
+            <div style="width:700px; overflow-wrap: break-word;">
+              <p id="api_key_error" style="color:red;"></p>
+            </div>
+
+          </div>
+          <div class="Voice-ID-text" style="display: flex;
+                        align-items: center;
+                        margin-bottom: 16px">
+            <div style="font-size: 18px;
+                          font-weight: 600;
+                          line-height: 26.1px;
+                          letter-spacing: 0.02em;
+                          text-align: left;
+                          margin-right: 10px">Voice ID:</div>
+            <div class="vh-parent">
+              <div class="vh-child">
+                <span class="text3">
+                  The specific identifier for the voice you want to use. Each voice in your Eleven Labs account has its
+                  own unique ID.
+                </span>
+              </div>
+              ?
+            </div>
+          </div>
+
+          <div class="Voice-ID-textarea" style="margin-bottom: 24px;">
+            <input type="text" id="voice_id" class="text3" placeholder="Enter Voice ID" name="voiceid" style="width: 100%;
+                            height: 56px;
+                            border: 1px solid #E3E3E3;
+                            box-sizing: border-box;
+                            border-radius: 8px;
+                            padding: 12px 24px;
+                            display: flex;
+                            align-items: center;
+                            transition: 0.3s ease" />
+            <p id="voice_id_error" style="color:red; "></p>
+          </div>
+
+          <div class="Line" style="width: 100%;
+                        border: 1px solid #E3E3E3;
+                        margin-bottom: 24px"></div>
+          <div style="font-size: 24px;
+                        font-weight: 600;
+                        line-height: 29.26px;
+                        text-align: left;
+                        letter-spacing: 0px;
+                        margin-bottom: 24px">Subtitle Design</div>
+          <div class="Upload-Font-File-text" style="display: flex;
+                        align-items: center;
+                        margin-bottom: 8px">
+            <div style="font-size: 18px;
+                          font-weight: 600;
+                          line-height: 21.94px;
+                          letter-spacing: 0.02em;
+                          text-align: left;
+                          margin-right: 10px">Choose Font:</div>
+          </div>
+          <div class="Upload-Font-File-Upload" style="width: 100%;
+                        height: 56px;
+                        border: 1px solid #E3E3E3;
+                        box-sizing: border-box;
+                        border-radius: 8px;
+                        padding: 8px;
+                        gap: 24px;
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 24px">
+            <div style="width: fit-content;
+                          color: black;
+                          display: flex;
+                          align-items: center;
+                          gap: 10px;
+                          position: relative;
+                          flex-grow: 1">
+              <select id="font_select" required name="font_select" style="width: 100%;
+                               padding: 8px 24px;
+                               font-size: 16px;
+                               border-radius: 8px;
+                               border:none;
+                               cursor: pointer">
+                <option class="text3" id="font_s" style="color:#cccccc" value="" disabled selected>Select A Font
+                </option>
+                <option class="text3" style="font-family:Arial;" value="Arial">Arial</option>
+                <option class="text3" style="font-family:OpenSans-Semibold" value="OpenSans-Semibold">
+                  Open Sans Condensed
+                </option>
+                <option class="text3" style="font-family:Helvetica" value="Helvetica">
+                  Helvetica 
+                </option>
+                <option class="text3" style="font-family:Roboto-Medium" value="Roboto-Medium">
+                  Roboto Medium
+                </option>
+                <option class="text3" style="font-family:tiktokfont; display: none;" value="tiktokfont">
+                  Proxima Nova Semibold (Only For TikTok)
+                </option>
+                <!-- <option class="text3" style="font-family:Montserrat; " value="Montserrat">Montserrat</option> -->
+                <option class="text3" style="font-family:Montserrat;"
+                   value="Montserrat-SemiBold">Montserrat SemiBold</option>
+                <option class="text3" style="font-family:Montserrat-Bold;
+                                 " value="Montserrat-Bold">Montserrat Bold</option>
+                <option class="text3" style="font-family:Montserrat-ExtraBold;
+                                 " value="Montserrat-ExtraBold">Montserrat ExtraBold</option>
+              </select>
+            </div>
+
+          </div>
+          <p id="font_error" style="color:red; margin-top:-20px; "></p>
+
+
+          <div class="Font-Color-text" style="display: flex;
+                        align-items: center;
+                        margin-bottom: 8px;
+                        justify-content: space-between">
+            <div style="font-size: 18px;
+                          font-weight: 600;
+                          line-height: 21.94px;
+                          letter-spacing: 0.02em;
+                          text-align: left;
+                          margin-right: 10px">Font Color:</div>
+          </div>
+
+          <div class="Font-Color-textarea" style="margin-bottom: 24px;
+                        display: flex;
+                        align-items: center;
+                        position: relative">
+            <div id="color1" style="width: 35px;
+                          height: 35px;
+                          background: #FFFFFF;
+                          border-radius: 4px;
+                          border: 1px solid #000000B2;
+                          position: absolute;
+                          left: 10px">
+              <input type="color" name="font_color" id="colorPicker1" value="#ffffff" style="position: absolute;
+                              padding: 0;
+                              width: 35px;
+                              height: 35px;
+                              opacity: 0" />
+            </div>
+            <input id="colortext1" type="text" class="focusdefault" placeholder="#ffffff" style="width: 100%;
+                            height: 56px;
+                            border: 1px solid #000000B2;
+                            box-sizing: border-box;
+                            border-radius: 8px;
+                            padding: 12px 24px;
+                            display: flex;
+                            align-items: center;
+                            transition: 0.3s ease;
+                            padding-left: 55px" />
+          </div>
+          <div class="Subtitle-text" style="display: flex;
+                        align-items: center;
+                        margin-bottom: 8px;
+                        justify-content: space-between">
+            <div style="font-size: 18px;
+                          font-weight: 600;
+                          line-height: 21.94px;
+                          letter-spacing: 0.02em;
+                          text-align: left;
+                          margin-right: 10px">Subtitles Background Color:</div>
+          </div>
+          <div class="Subtitle-textarea" style="margin-bottom: 48px;
+                        display: flex;
+                        align-items: center;
+                        position: relative">
+            <div id="color2" style="width: 35px;
+                          height: 35px;
+                          background: #000000;
+                          border-radius: 4px;
+                          border: 1px solid #000000B2;
+                          position: absolute;
+                          left: 10px">
+              <input type="color" name="subtitle_box_color" id="colorPicker2" value="#000000" style="position: absolute;
+                              padding: 0;
+                              width: 35px;
+                              height: 35px;
+                              opacity: 0" />
+            </div>
+            <input id="colortext2" type="text" class="focusdefault" placeholder="#000000" style="width: 100%;
+                            height: 56px;
+                            border: 1px solid #000000B2;
+                            box-sizing: border-box;
+                            border-radius: 8px;
+                            padding: 12px 24px;
+                            display: flex;
+                            align-items: center;
+                            transition: 0.3s ease;
+                            padding-left: 55px" />
+          </div>
+
+          <div class="Font-Size-text" style="display: flex;
+                        align-items: center;
+                        margin-bottom: 8px;
+                        justify-content: space-between">
+            <div style="font-size: 18px;
+                          font-weight: 600;
+                          line-height: 21.94px;
+                          letter-spacing: 0.02em;
+                          text-align: left;
+                          margin-right: 10px">Font Size: <span id="recommended-font-size" style="font-size: 16px;
+                          font-weight: 400;
+                          line-height: 26.1px;
+                          letter-spacing: 0.02em;
+                          margin-right: 10px">(Recommended Font Size: 22)</span></div>
+            <span id="SliderValue" style="font-size: 18px;
+                           font-weight: 600;
+                           line-height: 21.94px;
+                           letter-spacing: 0.02em;
+                           text-align: left;
+                           color: #000000B2">0</span>
+          </div>
+
+
+
+
+          <div class="Font-Size-Slider" style="width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        margin-bottom: 30.89px">
+            <input type="range" name="font_size1" min="0" max="25" value="22" class="slider" id="mySlider"
+              style="width: 100%" />
+            <input type="number" hidden name="font_size" value="50" class="slider" id="font_size" style="width: 100%" />
+          </div>
+          <!-- Slider for Border Radius -->
+          <div class="slider-container"
+            style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 12px;">
+              <label for="subtitleBorderRadiusSlider"
+                style="font-size: 18px; font-weight: 600;letter-spacing: 0.02em;">Subtitle Box Roundness:</label>
+              <span id="subtitleBorderRadiusValue" class="subtitle-border-radius-value"
+                style="font-size: 18px; font-weight: 600;letter-spacing: 0.02em; color: #000000B2;">26</span>
+            </div>
+            <input type="range" name="box_radius" id="subtitleBorderRadiusSlider" class="subtitle-border-radius-slider"
+              min="0" max="50" value="26"
+              style="width: 100%; margin-top: 10px; -webkit-appearance: none; appearance: none; margin: 0; height: 20px; border-radius: 10px; 
+    background: linear-gradient(to right, #864AF9 0%, #864AF9 26%, #D9D9D9 26%, #D9D9D9 100%); outline: none; cursor: pointer; position: relative;">
+          </div>
+
+          <style>
+            #subtitleBorderRadiusSlider::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              appearance: none;
+              width: 28px;
+              height: 28px;
+              border-radius: 50%;
+              background: #864AF9;
+              /* Match the gradient color */
+              cursor: pointer;
+              border: none;
+            }
+
+            #subtitleBorderRadiusSlider::-moz-range-thumb {
+              width: 20px;
+              height: 20px;
+              border-radius: 50%;
+              background: #864AF9;
+              /* Match the gradient color */
+              cursor: pointer;
+              border: none;
+            }
+
+            #subtitleBorderRadiusSlider::-ms-thumb {
+              width: 20px;
+              height: 20px;
+              border-radius: 50%;
+              background: #864AF9;
+              /* Match the gradient color */
+              cursor: pointer;
+              border: none;
+            }
+          </style>
+        </div>
+
+
+        <!-- Slider for Opacity -->
+        <div  class="slider-container"
+          style="width: 100%; display: none; flex-direction: column; align-items: center; margin-bottom: 20px;">
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 12px;">
+            <label for="subtitleOpacitySlider"
+              style="font-size: 18px; font-weight: 600;letter-spacing: 0.02em;">Subtitle Box Opacity:</label>
+            <span id="subtitleOpacityValue" class="subtitle-opacity-value"
+              style="font-size: 18px; font-weight: 600;letter-spacing: 0.02em; color: #000000B2;">70%</span>
+          </div>
+          <input name="subtitle_opacity" type="range" id="subtitleOpacitySlider" class="subtitle-opacity-slider" min="0"
+            max="100" step="1" value="100"
+            style="width: 100%; margin-top: 10px; -webkit-appearance: none; appearance: none; margin: 0; height: 20px; border-radius: 10px; 
+            background: linear-gradient(to right, #864AF9 0%, #864AF9 70%, #D9D9D9 70%, #D9D9D9 100%); outline: none; cursor: pointer; position: relative;">
+        </div>
+
+        <style>
+          #subtitleOpacitySlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #864AF9;
+            cursor: pointer;
+            border: none;
+          }
+
+          #subtitleOpacitySlider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #864AF9;
+            /* Match the gradient color */
+            cursor: pointer;
+            border: none;
+          }
+
+          #subtitleOpacitySlider::-ms-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #864AF9;
+            /* Match the gradient color */
+            cursor: pointer;
+            border: none;
+          }
+        </style>
+      </div>
+      <br>
+      <br>
+      <div class="Preview" style="width: 100%; margin-bottom: 28px;" id="Preview">
+        <div class="Preview-text"
+          style="display: flex; align-items: center; margin-bottom: 24px; justify-content: space-between;">
+          <div
+            style="font-size: 24px; font-weight: 600; line-height: 29.26px; letter-spacing: 0.02em; text-align: left; margin-right: 10px;">
+            Preview</div>
+        </div>
+        <div id="preview-box"
+          style="margin:0 auto;width: 80%; height: 600px; background: #EEEEEE; border-radius: 8px; display: flex; justify-content: center; align-items: center; position: relative; flex-direction: column; margin: 0 auto;">
+          <span id="videoText"
+            style="font-size: 48px; font-weight: 700; line-height: 1.2; letter-spacing: -0.8px; text-align: center; color: #00000080;">
+            Your Selected Video <br /> Scene Will Go Here
+          </span>
+          <div id="previewBackground" class="previewBackground2"
+            style="width: fit-content; height: fit-content; background: #000000; position: absolute; bottom: 20px; border-radius: 8px; padding: 12px; display: flex; align-items: center;  justify-content: center;">
+            <span id="previewText"
+              style="font-size: 20px; font-weight: 600; line-height: 24.38px; text-align: center; color: white; opacity: 1;width:350px;">
+              This Is How Your Original Subtitle Text Will Be Displayed
+            </span> 
+          </div>
+          
+          <div id='tiktokPreview' style="display: none;" class="container2">
+            <p class="text-wrapper2" style="font-family: 'tiktokfont';">
+              <span style="background: #ffffff; color: #000000;">This Is How Your Original</span>
+              <span style="background: #ffffff; color: #000000;">Subtitle Text Will Show.</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <button id="submit_form" type="submit" class="done-button">
+        <span id="button-text" style="font-size: 18px;
+                           font-weight: 500;
+                           line-height: 21.94px;
+                           text-align: left">Proceed To Scene Selection</span>
+      </button>
+  </div>
+  </div>
+
+  </form>
+
+  </div>
+  <script src="{% static 'js/script.js'%}"></script>
+  <script>
+    // document.getElementById('tiktok_reel').addEventListener('click', function (e) {
+    //   e.preventDefault();
+    //   alert('TikTok/Reels is coming soon!');
+    //   return
+    // });
+    document.addEventListener('DOMContentLoaded', function () {
+      function updateSliderBackground(slider) {
+        const value = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+        slider.style.background = `linear-gradient(to right, #864AF9 ${value}%, #D9D9D9 ${value}%)`;
+      }
+
+      const borderRadiusSlider = document.getElementById('subtitleBorderRadiusSlider');
+      const opacitySlider = document.getElementById('subtitleOpacitySlider');
+
+      const previewBox = document.querySelector('.previewBackground2');
+      previewBox.style.borderRadius = borderRadiusSlider.value + 'px';
+
+      updateSliderBackground(borderRadiusSlider);
+      updateSliderBackground(opacitySlider);
+
+      borderRadiusSlider.addEventListener('input', function () {
+        const borderRadiusValue = borderRadiusSlider.value;
+        previewBox.style.borderRadius = borderRadiusValue + 'px';
+        document.querySelector('#subtitleBorderRadiusValue').textContent = borderRadiusValue;
+        updateSliderBackground(borderRadiusSlider);
+      });
+
+      opacitySlider.addEventListener('input', function () {
+        const opacityValue = opacitySlider.value;
+        document.querySelector('#subtitleOpacityValue').textContent = opacityValue + '%';
+        previewBox.style.opacity = opacityValue / 100;
+        updateSliderBackground(opacitySlider);
+      });
+    });
+  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      const text_form = document.getElementById('text_form');
+      window.onpageshow = function (event) {
+        if (event.persisted) {
+
+          // If the page is loaded from cache (e.g., via back button)
+          // text_form.reset();  // Reset the form fields
+          const slider2 = document.getElementById('mySlider')
+          //text_form.style.height = '2290px'; // Reset any custom heights
+          slider2.style.background = `linear-gradient(to right, #864AF9 ${slider.value * 4}%, #D9D9D9 ${slider.value * 4}%)`;
+          // document.getElementById(input.id).style.background = `linear-gradient(to right, #864AF9 ${storedValue}%, #D9D9D9 ${storedValue}%)`; 
+
+
+          stopProcessingAnimation('#button-text'); // Stop the processing animation
+          // button_text.text('Proceed To Scene Selection')
+
+        }
+      };
+
+      const submitButton = $('#submit_form');
+      const apiKeyInput = $('#api_key');
+      const voiceIdInput = $('#voice_id');
+      const apiKeyError = $('#api_key_error');
+      const voiceIdError = $('#voice_id_error');
+      const font_select = document.getElementById('font_select');
+      const font_error = $('#font_error');
+      const button_text = $('#button-text')
+      // Always enable the submit button
+      submitButton.prop('disabled', false);
+
+      function startProcessingAnimation(selector) {
+        const button_text = $(selector);
+        let dots = 0;
+
+        // Clear any existing interval to avoid multiple intervals running
+        if (button_text.data('intervalId')) {
+          clearInterval(button_text.data('intervalId'));
+        }
+
+        // Set the interval to change the text every 500 milliseconds
+        const intervalId = setInterval(function () {
+          dots = (dots + 1) % 4; // Cycle between 0, 1, 2, and 3
+          let loadingText = 'Processing' + '.'.repeat(dots); // Add dots dynamically
+          button_text.text(loadingText);
+        }, 500); // 500 milliseconds = 0.5 seconds
+
+        // Store the interval ID in the button text element for later use
+        button_text.data('intervalId', intervalId);
+      }
+
+      // To stop the animation, you can create a separate function
+      function stopProcessingAnimation(selector) {
+        const button_text = $(selector);
+        const intervalId = button_text.data('intervalId');
+
+        // Clear the interval if it exists
+        if (intervalId) {
+          clearInterval(intervalId);
+          button_text.data('intervalId', null); // Remove the stored interval ID
+          button_text.text('Proceed To Scene Selection'); // Optionally reset the text or set it to another value
+        }
+      }
+
+
+
+      // function validateAPIKey(event) {
+      //   startProcessingAnimation('#button-text'); // Start the processing animation
+
+      //   event.preventDefault(); // Prevent the default form submission
+
+      //   const apiKey = apiKeyInput.val().trim();
+      //   const voiceId = voiceIdInput.val().trim();
+      //   const font_ = font_select.value;
+
+
+      //   // Remove any previous error messages
+      //   apiKeyError.text('');
+      //   voiceIdError.text('');
+      //   font_error.text('');
+      //   //text_form.style.height = '2290px';
+
+      //   if (apiKey && voiceId && font_) {
+      //     // Send AJAX request to validate the API key and voice ID
+      //     $.ajax({
+      //       url: '/text/validate_api_key/', // URL for the Django view
+      //       type: 'POST',
+      //       data: {
+      //         'eleven_labs_api_key': apiKey,
+      //         'voice_id': voiceId,
+      //         'csrfmiddlewaretoken': '{{ csrf_token }}' // Include CSRF token for security
+      //       },
+      //       success: function (response) {
+      //         console.log(response); // Log the entire response to the console
+
+      //         if (response.valid) {
+      //           text_form.submit();
+      //         } else {
+      //           stopProcessingAnimation('#button-text');
+
+
+      //           if (response.status == 402) {
+      //             apiKeyInput.focus();
+      //             apiKeyError.text(response.error);
+      //           } else if (response.status === 401) {
+      //             apiKeyInput.focus();
+      //             apiKeyError.text(response.error);
+      //           } else if (response.status === 400) {
+      //             voiceIdInput.focus();
+      //             voiceIdError.text(response.error);
+      //           } else {
+      //             apiKeyInput.focus();
+      //             apiKeyError.text(response.error);
+      //           }
+      //         }
+      //       },
+      //       error: function (xhr, status, error) {
+      //         console.log("Error Status: ", status);
+      //         console.log("Error: ", error);
+      //         stopProcessingAnimation('#button-text');
+      //         apiKeyError.text('Error validating the API key.');
+      //         apiKeyInput.focus();
+      //         button_text.text('Proceed To Scene Selection');
+      //         if (response.status == 402) {
+      //             apiKeyInput.focus();
+      //             apiKeyError.text(response.error);
+      //           } else if (response.status === 401) {
+      //             apiKeyInput.focus();
+      //             apiKeyError.text(response.error);
+      //           } else if (response.status === 400) {
+      //             voiceIdInput.focus();
+      //             voiceIdError.text(response.error);
+      //           } else {
+      //             apiKeyInput.focus();
+      //             apiKeyError.text(response.error);
+      //           }
+      //       }
+      //     });
+      //   } else {
+      //     stopProcessingAnimation('#button-text');
+
+      //     if (!apiKey) {
+      //       apiKeyInput.focus();
+      //       apiKeyError.text('API key is required.');
+      //     } else if (!voiceId) {
+      //       voiceIdInput.focus();
+      //       voiceIdError.text('Voice ID is required.');
+      //     } else if (!font_) {
+      //       font_select.required = true;
+      //       font_select.focus();
+      //       font_error.text('Please Select A Font From The Dropdown');
+      //     }
+      //   }
+      // }
+  function validateAPIKey(event) {
+    startProcessingAnimation('#button-text'); // Start animation
+    event.preventDefault(); // Prevent form submission
+
+    const apiKey = apiKeyInput.val().trim();
+    const voiceId = voiceIdInput.val().trim();
+    const font_ = font_select.value;
+
+    // Reset error messages
+    apiKeyError.text('');
+    voiceIdError.text('');
+    font_error.text('');
+
+    if (apiKey && voiceId && font_) {
+        $.ajax({
+            url: '/text/validate_api_key/', 
+            type: 'POST',
+            data: {
+                'eleven_labs_api_key': apiKey,
+                'voice_id': voiceId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function (response) {
+                console.log(response);
+                if (response.valid) {
+                    text_form.submit();
+                } else {
+                    stopProcessingAnimation('#button-text');
+                    handleAPIError(response);
+                }
+            },
+            error: function (xhr) {
+                // console.log("Error Status: ", xhr.status);
+                console.log("Error: ", xhr.responseText);
+                stopProcessingAnimation('#button-text');
+
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    handleAPIError(response);
+                } catch (e) {
+                    apiKeyError.text('Error validating the API key.');
+                }
+            }
+       
+          });
+    } else {
+       
+      stopProcessingAnimation('#button-text');
+
+        if (!apiKey) {
+            apiKeyInput.focus();
+            apiKeyError.text('API key is required.');
+        } else if (!voiceId) {
+            voiceIdInput.focus();
+            voiceIdError.text('Voice ID is required.');
+        } else if (!font_) {
+            font_select.required = true;
+            font_select.focus();
+            font_error.text('Please select a font.');
+        }
+    }
+}
+
+function handleAPIError(response) {
+    let errorMessage = "Unknown error occurred.";
+
+    if (response && typeof response === "object") {
+        if (response.error) {
+            errorMessage = response.error; // Use only the error message from Django
+        } 
+    }
+
+    // Apply error messages to the correct field
+    if (response.status === 402) {
+        apiKeyInput.focus();
+        apiKeyError.text(errorMessage);
+    } else if (response.status === 401) {
+        apiKeyInput.focus();
+        apiKeyError.text(errorMessage);
+    } else if (response.status === 400) {
+        voiceIdInput.focus();
+        voiceIdError.text(errorMessage);
+    } else {
+        apiKeyInput.focus();
+        apiKeyError.text(errorMessage);
+    }
+}
+
+      submitButton.on('click', validateAPIKey);
+
+      function updateFontFunc(updateValue) {
+
+        const slider = document.getElementById("mySlider");
+        const sliderValue = document.getElementById("SliderValue");
+        const previewText = document.getElementById("previewText");
+        slider.value = updateValue
+        sliderValue.textContent = slider.value;
+
+        previewText.style.fontSize = `${slider.value * 0.8}px`;
+        document.getElementById('font_size').value = slider.value * 2
+        document.getElementById('recommended-font-size').textContent = `(Recommended Font Size: ${updateValue})`
+
+
+        const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+        slider.style.background = `linear-gradient(to right, #864AF9 0%, #864AF9 ${value}%, #D9D9D9 ${value}%, #D9D9D9 100%)`;
+        slider.style.background.border = ``;
+
+        console.log('======> slider value', slider.value)
+        console.log('======> font size value value', document.getElementById('font_size').value)
+      }
+
+
+      document.querySelectorAll('.box').forEach((box) => {
+        box.addEventListener('click', () => {
+          const resolution = box.getAttribute('data-resolution');
+          const previewBox = document.getElementById('preview-box');
+          const videoText = document.getElementById('videoText');
+
+          // Adjust box size and text size based on aspect ratio
+          if (resolution === '1:1') {
+            previewBox.style.width = '600px';
+            previewBox.style.height = '600px';
+            videoText.style.fontSize = '48px';
+
+            previewText.style.width = `350px`;
+
+
+            updateFontFunc("22")
+          } else if (resolution === '4:5') {
+            previewBox.style.width = '480px';
+            previewBox.style.height = '600px';
+            videoText.style.fontSize = '42px';
+
+            previewText.style.width = `350px`;
+
+            updateFontFunc("22")
+          } else if (resolution === '16:9') {
+            previewBox.style.width = '680px';
+            previewBox.style.height = '382px';
+            videoText.style.fontSize = '38px';
+
+            previewText.style.width = `350px`;
+            updateFontFunc("22")
+          } else if (resolution === '9:16') {
+            previewBox.style.width = '382px';
+            previewBox.style.height = '680px';
+            // videoText.style.fontSize = '34px';
+
+            previewText.style.width = `300px`;
+
+            updateFontFunc("16")
+
+            previewText.style.fontSize = `18px`;
+          }
+
+          // Center the preview box
+          previewBox.style.margin = '0 auto';
+        });
+      });
+
+
+
+
+
+    });
+  </script>
+  
+   <script>
+    
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const previewBackground= document.getElementById('previewBackground')
+      const Preview = document.getElementById('Preview');
+      const previewBox = document.getElementById('preview-box');
+      const previewText = document.getElementById('previewText');
+      const tiktokPreview = document.getElementById('tiktokPreview');
+      const videoText = document.getElementById('videoText');
+
+        // Function to hide/show specific labels and their associated input elements
+        function updateResolutionSettings(resolution) {
+            // Get the containers for the elements to hide/show
+            const fontSelectLabel = document.querySelector('.Upload-Font-File-text'); 
+            const fontSelectDropdown = document.querySelector('.Upload-Font-File-Upload'); 
+            const fontSizeLabel = document.querySelector('.Font-Size-text'); 
+            const fontSizeSlider = document.querySelector('.Font-Size-Slider'); 
+            const borderRadiusLabel = document.querySelector('.slider-container label'); 
+            const borderRadiusSlider = document.querySelector('.slider-container'); 
+
+            // Get the preview box and its content
+
+            if (resolution === '9:16') { // TikTok/Reels
+                // Hide the labels and their associated input elements
+                fontSelectLabel.style.display = 'none';
+                fontSelectDropdown.style.display = 'none';
+                fontSizeLabel.style.display = 'none';
+                fontSizeSlider.style.display = 'none';
+                borderRadiusLabel.style.display = 'none';
+                borderRadiusSlider.style.display = 'none';
+                previewBackground.style.display='none'
+                videoText.style.display='none'
+                tiktokPreview.style.display='flex'
+                Preview.style.marginTop = '-2rem';
+                const fontSelect = document.getElementById('font_select');
+                fontSelect.value = 'tiktokfont';
+                previewBox.style.background = `url("{% static 'assets/background/tiktok.png' %}") center/cover no-repeat`;
+                // console.log("{% static 'assets/background/tiktok.png' %}")
+
+            } else {
+                // Show the labels and their associated input elements
+                Preview.style.marginTop = '0';
+                fontSelectLabel.style.display = 'flex'; 
+                fontSelectDropdown.style.display = 'flex'; 
+                fontSizeLabel.style.display = 'flex'; 
+                fontSizeSlider.style.display = 'block';
+                borderRadiusLabel.style.display = 'block';
+                borderRadiusSlider.style.display = 'block';
+                previewBackground.style.display='flex'
+                tiktokPreview.style.display='none'
+                videoText.style.display='flex'
+                previewBox.style.background = "#EEEEEE";
+                }
+        }
+
+        // Add event listeners to the resolution options
+        document.querySelectorAll('.box').forEach((box) => {
+            box.addEventListener('click', () => {
+                const resolution = box.getAttribute('data-resolution');
+                updateResolutionSettings(resolution);
+
+                if (resolution === '1:1') {
+                    previewBox.style.width = '600px';
+                    previewBox.style.height = '600px';
+                    videoText.style.fontSize = '48px';
+                    document.getElementById('previewText').style.width = '350px';
+                    updateFontFunc("22");
+                } else if (resolution === '4:5') {
+                    previewBox.style.width = '480px';
+                    previewBox.style.height = '600px';
+                    videoText.style.fontSize = '42px';
+                    document.getElementById('previewText').style.width = '350px';
+                    updateFontFunc("22");
+                } else if (resolution === '16:9') {
+                    previewBox.style.width = '680px';
+                    previewBox.style.height = '382px';
+                    videoText.style.fontSize = '38px';
+                    document.getElementById('previewText').style.width = '350px';
+                    updateFontFunc("22");
+                } else if (resolution === '9:16') {
+                    previewBox.style.width = '382px';
+                    previewBox.style.height = '680px';
+                    // videoText.style.marginTop='10rem';
+                    
+                    updateFontFunc("16");
+                }
+
+                // Center the preview box
+                previewBox.style.margin = '0 auto';
+            });
+        });
+
+        // Function to update the font size and slider background
+        function updateFontFunc(updateValue) {
+            const slider = document.getElementById("mySlider");
+            const sliderValue = document.getElementById("SliderValue");
+            const previewText = document.getElementById("previewText");
+            
+
+            slider.value = updateValue;
+            sliderValue.textContent = slider.value;
+            if (previewText){
+              previewText.style.fontSize = `${slider.value * 0.8}px`;
+
+            }
+
+            document.getElementById('font_size').value = slider.value * 2;
+            document.getElementById('recommended-font-size').textContent = `(Recommended Font Size: ${updateValue})`;
+
+            const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+            slider.style.background = `linear-gradient(to right, #864AF9 0%, #864AF9 ${value}%, #D9D9D9 ${value}%, #D9D9D9 100%)`;
+        }
+    });
+</script>
+
+<!-- <script>
+ document.addEventListener('DOMContentLoaded', function () {
+    const colorPicker1 = document.getElementById('colorPicker1'); 
+    const colorPicker2 = document.getElementById('colorPicker2');
+    const colortext1 = document.getElementById('colortext1');
+    const colortext2 = document.getElementById('colortext2'); 
+    const colorBox1 = document.getElementById('color1'); 
+    const colorBox2 = document.getElementById('color2'); 
+    const subtitleSpans = document.querySelectorAll('#tiktokPreview span'); 
+    const previewBackground = document.getElementById('previewBackground'); 
+    const previewText = document.getElementById('previewText'); 
+    const fontSelect = document.getElementById('font_select'); 
+    const tiktokFontOption = document.querySelector('option[value="tiktokfont"]'); // TikTok font option
+
+    // Default colors for TikTok/Reels (9:16)
+    const tiktokDefaultFontColor = '#000000'; 
+    const tiktokDefaultBgColor = '#ffffff'; 
+
+    // Default colors for other dimensions (e.g., 1:1, 4:5, 16:9)
+    const defaultFontColor = '#ffffff'; 
+    const defaultBgColor = '#000000'; 
+
+    // Function to set default colors for TikTok/Reels
+    function setTikTokDefaultColors() {
+        // Update color pickers and text inputs
+        colorPicker1.value = tiktokDefaultFontColor;
+        colortext1.value = tiktokDefaultFontColor;
+        colorBox1.style.backgroundColor = tiktokDefaultFontColor;
+
+        colorPicker2.value = tiktokDefaultBgColor;
+        colortext2.value = tiktokDefaultBgColor;
+        colorBox2.style.backgroundColor = tiktokDefaultBgColor;
+
+        // Update TikTok preview spans
+        subtitleSpans.forEach(span => {
+            span.style.color = tiktokDefaultFontColor;
+            span.style.backgroundColor = tiktokDefaultBgColor;
+        });
+
+        // Hide the TikTok font option in the dropdown
+        tiktokFontOption.style.display = 'none';
+    }
+
+    // Function to set default colors for other dimensions
+    function setOtherDimensionDefaults() {
+        // Update color pickers and text inputs
+        colorPicker1.value = defaultFontColor;
+        colortext1.value = defaultFontColor;
+        colorBox1.style.backgroundColor = defaultFontColor;
+
+        colorPicker2.value = defaultBgColor;
+        colortext2.value = defaultBgColor;
+        colorBox2.style.backgroundColor = defaultBgColor;
+
+        // Update preview background and text
+        if (previewBackground && previewText) {
+            previewBackground.style.backgroundColor = defaultBgColor;
+            previewText.style.color = defaultFontColor;
+        }
+
+        // Show the TikTok font option in the dropdown
+        tiktokFontOption.style.display = 'none';
+
+        // Reset the font dropdown to the default option
+        fontSelect.value = '';
+    }
+
+    // Handle resolution changes
+    document.querySelectorAll('.box').forEach((box) => {
+        box.addEventListener('click', () => {
+            const resolution = box.getAttribute('data-resolution');
+
+            if (resolution === '9:16') { // TikTok/Reels
+                setTikTokDefaultColors(); // Apply TikTok defaults
+            } else { // Other dimensions (1:1, 4:5, 16:9)
+                setOtherDimensionDefaults(); // Apply other dimension defaults
+            }
+        });
+    });
+
+    // Update color boxes when font color picker changes
+    colorPicker1.addEventListener('input', function () {
+        const selectedColor = colorPicker1.value;
+        colortext1.value = selectedColor;
+        colorBox1.style.backgroundColor = selectedColor;
+
+        // Update font color for TikTok preview spans
+        subtitleSpans.forEach(span => {
+            span.style.color = selectedColor;
+        });
+
+        // Update font color for other dimensions
+        if (previewText) {
+            previewText.style.color = selectedColor;
+        }
+    });
+
+    // Update color boxes when subtitle background color picker changes
+    colorPicker2.addEventListener('input', function () {
+        const selectedColor = colorPicker2.value;
+        colortext2.value = selectedColor;
+        colorBox2.style.backgroundColor = selectedColor;
+
+        // Update background color for TikTok preview spans
+        subtitleSpans.forEach(span => {
+            span.style.backgroundColor = selectedColor;
+        });
+
+        // Update background color for other dimensions
+        if (previewBackground) {
+            previewBackground.style.backgroundColor = selectedColor;
+        }
+    });
+});
+</script> -->
+
+<script>
+   document.addEventListener('DOMContentLoaded', function () {
+    const colorPicker1 = document.getElementById('colorPicker1'); 
+    const colorPicker2 = document.getElementById('colorPicker2');
+    const colortext1 = document.getElementById('colortext1');
+    const colortext2 = document.getElementById('colortext2'); 
+    const colorBox1 = document.getElementById('color1'); 
+    const colorBox2 = document.getElementById('color2'); 
+    const subtitleSpans = document.querySelectorAll('#tiktokPreview span'); 
+    const previewBackground = document.getElementById('previewBackground'); 
+    const previewText = document.getElementById('previewText'); 
+    const fontSelect = document.getElementById('font_select'); 
+    const tiktokFontOption = document.querySelector('option[value="tiktokfont"]'); // TikTok font option
+
+    // Default colors for TikTok/Reels (9:16)
+    const tiktokDefaultFontColor = '#000000'; 
+    const tiktokDefaultBgColor = '#ffffff'; 
+
+    const defaultFontColor = '#ffffff'; 
+    const defaultBgColor = '#000000'; 
+
+    function setTikTokDefaultColors() {
+        // Update color pickers and text inputs
+        colorPicker1.value = tiktokDefaultFontColor;
+        colortext1.value = tiktokDefaultFontColor;
+        colorBox1.style.backgroundColor = tiktokDefaultFontColor;
+
+        colorPicker2.value = tiktokDefaultBgColor;
+        colortext2.value = tiktokDefaultBgColor;
+        colorBox2.style.backgroundColor = tiktokDefaultBgColor;
+
+        subtitleSpans.forEach(span => {
+            span.style.color = tiktokDefaultFontColor;
+            span.style.backgroundColor = tiktokDefaultBgColor;
+        });
+
+        tiktokFontOption.style.display = 'none';
+    }
+
+    function setOtherDimensionDefaults() {
+        colorPicker1.value = defaultFontColor;
+        colortext1.value = defaultFontColor;
+        colorBox1.style.backgroundColor = defaultFontColor;
+
+        colorPicker2.value = defaultBgColor;
+        colortext2.value = defaultBgColor;
+        colorBox2.style.backgroundColor = defaultBgColor;
+
+        if (previewBackground && previewText) {
+            previewBackground.style.backgroundColor = defaultBgColor;
+            previewText.style.color = defaultFontColor;
+        }
+
+        tiktokFontOption.style.display = 'none';
+
+        fontSelect.value = '';
+    }
+
+    document.querySelectorAll('.box').forEach((box) => {
+        box.addEventListener('click', () => {
+            const resolution = box.getAttribute('data-resolution');
+
+            if (resolution === '9:16') { // TikTok/Reels
+                setTikTokDefaultColors(); // Apply TikTok defaults
+            } else { // Other dimensions (1:1, 4:5, 16:9)
+                setOtherDimensionDefaults(); // Apply other dimension defaults
+            }
+        });
+    });
+
+    colorPicker1.addEventListener('input', function () {
+        const selectedColor = colorPicker1.value;
+        colortext1.value = selectedColor;
+        colorBox1.style.backgroundColor = selectedColor;
+
+        subtitleSpans.forEach(span => {
+            span.style.color = selectedColor;
+        });
+
+        if (previewText) {
+            previewText.style.color = selectedColor;
+        }
+    });
+
+    colorPicker2.addEventListener('input', function () {
+        const selectedColor = colorPicker2.value;
+        colortext2.value = selectedColor;
+        colorBox2.style.backgroundColor = selectedColor;
+
+        subtitleSpans.forEach(span => {
+            span.style.backgroundColor = selectedColor;
+        });
+
+        if (previewBackground) {
+            previewBackground.style.backgroundColor = selectedColor;
+        }
+    });
+
+    colortext1.addEventListener('input', function () {
+        const selectedColor = colortext1.value;
+        if (/^#[0-9A-F]{6}$/i.test(selectedColor)) { 
+            colorPicker1.value = selectedColor; 
+            colorBox1.style.backgroundColor = selectedColor;
+
+            subtitleSpans.forEach(span => {
+                span.style.color = selectedColor;
+            });
+
+            if (previewText) {
+                previewText.style.color = selectedColor;
+            }
+        }
+    });
+
+    colortext2.addEventListener('input', function () {
+        const selectedColor = colortext2.value;
+        if (/^#[0-9A-F]{6}$/i.test(selectedColor)) { 
+            colorPicker2.value = selectedColor; 
+            colorBox2.style.backgroundColor = selectedColor;
+
+            subtitleSpans.forEach(span => {
+                span.style.backgroundColor = selectedColor;
+            });
+
+            if (previewBackground) {
+                previewBackground.style.backgroundColor = selectedColor;
+            }
+        }
+    });
+});
+
+</script>
+  </body>
+
+</html>

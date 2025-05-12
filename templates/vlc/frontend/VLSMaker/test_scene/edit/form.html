@@ -1,0 +1,642 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'add_scene/style.css' %}">
+<div class="lead-container lead-details" style="max-width: 96%; margin: 0 auto; ">
+
+    <!-- Leads Table -->
+    <table id="leadsTable" class="lead-table" style="width: 100%; display: table;">
+        <thead>
+            <tr style="height: fit-content;">
+                <th class="slide-first" style="font-size: 1.4rem;">Subtitle</th>
+                <th style="font-size: 1.4rem; ">Subtitle Text</th>
+                <th class="slide-last" style="font-size: 1.4rem; text-wrap: nowrap; width: 5%;">Edit</th>
+                <th class="slide-last" style="font-size: 1.4rem; text-wrap: nowrap; width: 5%;">Undo</th>
+                <th class="slide-last" style="font-size: 1.4rem; text-wrap: nowrap; width: 5%;">Delete</th>
+            </tr>
+        </thead>
+
+        
+        
+        <tbody>
+            {% if video_clips %}
+            {% for clip in video_clips %}
+            <tr data-id="{{clip.id}}" style="height: 5rem;" id="tr_{{clip.id}}">
+                <td data-tooltip="Drag To Move" style="width: 18%; text-wrap: nowrap; font-size: 1.4rem;">
+                    Subtitle {{forloop.counter }}</td>
+                <td id="highlightable_{{forloop.counter}}" style="width: 100%">
+                    <div>
+                        <textarea 
+                            style="display: none; width: 96%; padding: .375rem .75rem; font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529; background-color: #fff; background-clip: padding-box; border: 1px solid #ced4da; padding-left:10px; resize:none; border-radius:14px; transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out; placeholder-color: black;"
+                            class="textarea-class" name="slide_text" class="form-control tab-textarea"
+                            aria-describedby="textarea" id="slide_text_{{forloop.counter}}">{{clip.slide}}</textarea>
+
+                        <div class="wrapper" id="wrapper_{{forloop.counter}}" style="flex-direction:column">
+                            <div class="tag-box">
+                                <ul style="margin: 0;" id="list-of-tags_{{forloop.counter}}" class="list-of-tags">
+
+                                    {% for subclip in clip.subclips.all %}
+                                    <li data-id="{{subclip.id}}" class="subtitle_clip"
+                                        style="font-size: 1.2rem; border-color: #864AF9;"
+                                        data-cat_id="{{subclip.video_clip.category.id}}"
+                                        data-current_file="{{subclip.get_video_file_name}}" id="saved_li_{{subclip.id}}"
+                                        onclick="editCurrentLi(this)">
+                                        <!-- Wrap the subtitle text inside a div with class 'drag-container' -->
+                                        <div class="drag-container">{{subclip.subtittle}}</div>
+                                    </li>
+                                    {% endfor %}
+                                    <span id="slide_span_{{forloop.counter}}" data-num="{{clip.get_number_of_subclip}}"
+                                        data-id="{{clip.id}}" style="padding: 5px 10px;">{{ clip.remaining }}
+                                    </span>
+                                </ul>
+                                <input id="remaining_{{forloop.counter}}" name="remaining_" hidden type="text">
+                            </div>
+                            <div id="error-message_{{forloop.counter}}" style="text-transform: capitalize;"
+                                class="error-message"></div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div style="display: flex; place-items: center; justify-content: center;">
+                        <a href="#!" class="delete-row-btn" id="edit_{{forloop.counter}}"
+                            onclick="EditeSlide('{{forloop.counter}}')"
+                            style="display: flex; align-items: center; justify-content: center; text-decoration: none; position: relative;">
+                            <i id="icon_{{clip.id}}" class="ri-edit-box-line fa-sync-alt"
+                                style="margin: 0 auto;font-size: 20px; font-weight: 600; cursor: pointer; vertical-align: middle; ">
+                            </i>
+                        </a>
+                    </div>
+
+                </td>
+                <td>
+                    <div style="display: flex; place-items: center; justify-content: center;">
+                        <a href="#!"
+                            style="display: flex; align-items: center; justify-content: center; text-decoration: none; position: relative;"
+                            class="delete-row-btn" id="reset_{{forloop.counter}}" onclick="subclipReset('{{clip.id}}')">
+
+                            <i id="icon_{{clip.id}}" class="ri-loop-right-line fa-sync-alt"
+                                style="margin: 0 auto;font-size: 20px; font-weight: 600; cursor: pointer;vertical-align: -webkit-baseline-middle;"></i>
+                        </a>
+                    </div>
+                </td>
+                <td id='action_{{forloop.counter}}'>
+                    <div style="display: flex; place-items: center; justify-content: center;">
+                        <a href="#!" class="delete-row-btn" id="delete_{{forloop.counter}}"
+                            onclick="deleteSavedSlide('{{clip.id}}', this)"
+                            style="display: flex; align-items: center; justify-content: center; text-decoration: none; position: relative;">
+                            <img id="icon_{{clip.id}}"
+                                src="https://leadeditor.s3.amazonaws.com/lead-maker/images/delete-icn.svg" alt="delete"
+                                style="width: 1.5rem; height: 3rem; cursor: pointer;">
+                        </a>
+                    </div>
+
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+            <input type="number" name="no_of_slides" id="no_of_slides" hidden value="{{no_of_slides}}">
+            {% else %}
+            <input type="number" name="no_of_slides" id="no_of_slides" hidden value="0">
+            {% endif %}
+        </tbody>
+    </table>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 40px; margin-top: -20px;">
+        <div class="d-flex justify-content-start">
+
+            <a href="#!" id="createLeadBtn"
+                style="font-family: 'Montserrat', sans-serif; align-items: center; display: flex; gap: 10px; padding: 12px 24px; color: white; background: #864AF9; border-radius: 8px; font-size: 18px; font-weight: 500; line-height: 24px; letter-spacing: 0.02em; text-align: left; cursor: pointer; border: none; width: fit-content; text-decoration: none; height: fit-content;"
+                class="btn proceed-btn" onclick="addSlide()">
+                Add New Subtitle +
+            </a>
+        </div>
+    </div>
+    <form action="." method="post" id="processFile">
+        {% csrf_token %}
+        <input type="text" name="purpose" value="process" hidden>
+    </form>
+    <br>
+    <br>
+    <br>
+    <div class="button-container"
+    style="margin-top: 60px;position: absolute;right: 20px;bottom: 16px;width: 60%;display: flex;justify-content: flex-end;">
+    
+    <a id="save-continue" href="#!" onclick="alert(`You can find all your saved video drafts under 'Manage Video Drafts' in your profile menu (top right corner). Just click your profile icon to access them anytime!`)"
+    
+    class="download-btn" style="margin-right: 50px; text-wrap: nowrap;width: 25%; ">Save & Continue Later</a>
+    
+    <button type="button" onclick="highlightNoSubclipIcons()"
+        style="
+        text-decoration: none;
+        padding: 22.5px 20px;
+        color: white;
+        max-width: 450px;
+        margin-right: 10%;
+        font-family: Montserrat;
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 24px;
+        text-align: left;
+        background: #864AF9;
+        border: none;
+        cursor: pointer;
+        margin-top: 4px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        width: 100%;border-radius: 8px;">
+        <span id="button-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Proceed To
+            Background Music Selection</span>
+        <svg id="proceed-svg" width="24" height="24" type="button" viewBox="0 0 24 24" fill="none"
+            xmlns="http://www.w3.org/2000/svg" style="display: inline-block;">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round"></path>
+        </svg>
+    </button>
+</div>
+</div>
+
+<!-- Scripts start -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+    integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
+    integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
+    crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="{% static 'add_scene/script.js' %}"></script>
+<script>
+    const textFileID ='{{textfile.id}}'
+    textfile_id = '{{textfile.id}}'
+    let num
+    let clip_id
+    let submitCheck
+    $(document).ready(function () {
+    let tableBody = document.querySelector("#leadsTable tbody");
+    let scrollSpeed = 50; 
+    let scrollInterval; 
+
+    $("#leadsTable tbody").sortable({
+        axis: "y",
+        containment: "parent",
+        handle: "td:first-child",
+        placeholder: "ui-sortable-placeholder",
+        forcePlaceholderSize: true,
+        tolerance: "pointer",
+        cursorAt: { top: 10 },
+        start: function (event, ui) {
+            console.log("Drag started");
+            // Start auto-scroll logic
+            scrollInterval = setInterval(function () {
+                autoScrollDuringDrag(ui.helper);
+            }, 50); 
+        },
+        update: function (event, ui) {
+            console.log("Drag ended, updating order");
+            updateSubtitleNumbers(tableBody);
+            updateBackendOrder();
+        },
+        stop: function (event, ui) {
+            console.log("Drag stopped");
+            // Stop auto-scroll logic
+            clearInterval(scrollInterval);
+        }
+    });
+
+    // Function to handle auto-scrolling during drag
+    function autoScrollDuringDrag(draggedElement) {
+        let scrollThreshold = 50; 
+        let scrollContainer = window; 
+        let scrollPosition = scrollContainer.scrollY || scrollContainer.pageYOffset;
+        let viewportHeight = window.innerHeight;
+        let elementRect = draggedElement[0].getBoundingClientRect();
+
+        // Check if near the top of the viewport
+        if (elementRect.top < scrollThreshold) {
+            scrollContainer.scrollBy({ top: -scrollSpeed, behavior: "auto" });
+        }
+        // Check if near the bottom of the viewport
+        else if (elementRect.bottom > viewportHeight - scrollThreshold) {
+            scrollContainer.scrollBy({ top: scrollSpeed, behavior: "auto" }); 
+        }
+    }
+
+    // Add CSS for the placeholder
+    $("<style>")
+        .prop("type", "text/css")
+        .html(
+            `.ui-sortable-placeholder {
+                background: #f0f0f0;
+                border-left: 2px solid purple;
+                visibility: visible !important;
+                height: 50px; /* Adjust height to match row height */
+                margin: 0; /* Ensure no margin interferes with placement */
+                padding: 0; /* Ensure no padding interferes with placement */
+            }`
+        )
+        .appendTo("head");
+});
+
+// Function to update subtitle numbers
+function updateSubtitleNumbers(tableBody) {
+    let rows = tableBody.getElementsByTagName("tr");
+    for (let i = 0; i < rows.length; i++) {
+        let subtitleCell = rows[i].querySelector("td:first-child");
+        subtitleCell.textContent = `Subtitle ${i + 1}`; 
+    }
+}
+
+    // function updateSubtitleNumbers(tableBody) {
+    //     let rows = tableBody.getElementsByTagName("tr");
+    //     for (let i = 0; i < rows.length; i++) {
+    //         let subtitleCell = rows[i].querySelector("td:first-child");
+    //         subtitleCell.textContent = `Subtitle ${i + 1}`;
+    //     }
+    // }
+
+    function updateBackendOrder() {
+        let subtitles = [];
+        $("#leadsTable tbody tr").each(function (index) {
+            let clip_id = $(this).data("id"); // Get the ID
+
+            if (clip_id != null) {  // Ensure it's not null or undefined
+                subtitles.push({
+                    id: clip_id,
+                    position: index + 1
+                });
+            }
+        });
+
+        $.ajax({
+            url: "/text/update-subtitle-positions/",
+            type: "POST",
+            data: JSON.stringify({ subtitles: subtitles }),
+            contentType: "application/json",
+            headers: { "X-CSRFToken": getCSRFToken() },
+            success: function (response) {
+                console.log("Positions updated successfully");
+            },
+            error: function (xhr, status, error) {
+                console.error("Error updating positions:", error);
+            }
+        });
+    }
+
+    function getCSRFToken() {
+        return document.querySelector("[name=csrfmiddlewaretoken]").value;
+    }
+
+async function checkSubtitlesLength(textfileId) {
+    let tableBody = document.querySelector("#leadsTable tbody");
+    let rows = tableBody.getElementsByTagName("tr");
+
+    if (rows.length > 40) {
+        console.log("Rows count:", rows.length);
+
+        try {
+            let response = await $.ajax({
+                url: `/text/check-subtitles/${textfileId}/`,
+                method: "GET",
+            });
+
+            if (response.status === "error") {
+                alert(response.message);
+                return false;
+            } else {
+                console.log(response.message);
+                return true;
+            }
+        } catch (error) {
+            console.error("Error checking subtitles:", error);
+            return false;
+        }
+
+    } else {
+        return true;
+    }
+}
+
+    function deleteSavedSlide(clipId, btn) {
+    if (btn.disabled) return;
+
+    btn.style.cursor = 'wait';
+    btn.disabled = true;
+    const row = btn.closest('tr');
+    if (row) {
+        row.parentNode.removeChild(row);
+        updateSubtitleNumbers(
+            document.getElementById('leadsTable').getElementsByTagName('tbody')[0]
+        );
+    } else {
+        console.error('Row not found for deletion.');
+    }
+
+    $.ajax({
+        url: `/text/delete-clip/${clipId}/`,
+        type: 'DELETE',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function (response) {
+
+        },
+        error: function (xhr, status, error) {
+            btn.disabled = false;
+            btn.style.cursor = 'pointer';
+            alert('Error deleting slide: ' + error);
+        },
+        complete: function () {
+            btn.style.cursor = 'pointer';
+            btn.disabled = false;
+        }
+    });
+}
+    
+function addSlide() {
+
+let currentNumber = document.getElementById('no_of_slides').value;
+
+edit = true
+
+var table = document.getElementById('leadsTable').getElementsByTagName('tbody')[0];
+if (checkRowCount(table)) {
+    var newRow = table.insertRow(-1);
+    var slideCell = newRow.insertCell(0);
+    currentNumber++;
+
+    document.getElementById('no_of_slides').value = currentNumber;
+    slideCell.innerText = `Subtitle ${currentNumber}`;
+    slideCell.dataset.tooltip="Drag To Move"
+    slideCell.style.fontSize = '1.4rem'
+    newRow.style.height = '5rem';
+    newRow.innerHTML += `
+    <td id="highlightable_${currentNumber}" style="padding: 12 12px;">
+        <div style="display: flex; height: 100%;width: 100%;flex-direction: column;">
+        <textarea  class="textarea-class"
+style="display: block;  padding: .375rem .75rem; font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529; background-color: #fff; background-clip: padding-box; border: 1px solid #ced4da; padding-left:10px; resize:none; border-radius:14px; transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out; placeholder-color: black;"
+id="slide_text_${currentNumber}" 
+type="text" 
+name="slide_text" 
+placeholder="Type Your Script Here" 
+class="form-control tab-textarea" 
+aria-describedby="textarea"></textarea>
+
+        <div class="wrapper" id="wrapper_${currentNumber}" style="display:none; flex-direction-column">
+            <div style="width: 100%;" class="tag-box">
+                <ul style="margin: 0;" id="list-of-tags_${currentNumber}" class="list-of-tags">
+                    <span id="slide_span_${currentNumber}" style="margin-left: 10px;"></span>
+                </ul>
+                <input id="remaining_${currentNumber}" name="remaining_" hidden type="text">
+            </div>
+            
+            </div>
+            <div id="error-message_${currentNumber}" style="text-transform: capitalize;"  class="error-message"></div>
+        </div>
+    </td>
+    
+        <td>
+        <div style="display: flex; place-items: center; justify-content: center;">
+            
+        <a href="#!" style="display: flex; align-items: center; justify-content: center; text-decoration: none; position: relative;" 
+            class="delete-row-btn" 
+            id="edit_${currentNumber}" 
+            style="display:none;" 
+            onclick="EditeSlide(${currentNumber})">
+            <i id="icon_{{clip.id}}" class="ri-edit-box-line fa-sync-alt"
+                style="margin: 0 auto;font-size: 20px; font-weight: 600; cursor: pointer;">
+            </i>
+        </a>
+        </div>
+        </td>
+        <td>
+        <div style="display: flex; place-items: center; justify-content: center;">
+
+        <a href="#!" style = "display:flex;align-items:center;justify-content:center;text-decoration:none;position:relative;"
+            style="display:none; " 
+            class="delete-row-btn" 
+            id="reset_${currentNumber}" 
+            >
+            
+        <i id="icon_{{clip.id}}" class="ri-loop-right-line fa-sync-alt"
+        style="margin: 0 auto;font-size: 20px; font-weight: 600; cursor: pointer;"></i>
+        </a>
+        </div>
+    </td>
+        <td id="action_${currentNumber}">
+        <div style="display: flex; place-items: center; justify-content: center;">
+
+        <a href="#!" class="delete-row-btn" id="delete_${currentNumber}" onclick="deleteSlide(this)">
+            <img id="icon_{{clip.id}}" src="https://leadeditor.s3.amazonaws.com/lead-maker/images/delete-icn.svg" alt="delete" style="width: 1.5rem; height: 3rem; cursor: pointer;">
+        </a>
+
+        </div>
+        </td>
+        `;
+    document.getElementById(`slide_text_${currentNumber}`).focus()
+    setTimeout(() => {
+        handleEnterToHide(currentNumber,);
+        handleSelection(currentNumber);
+        updateSubtitleNumbers(table)
+    }, 0);
+    toggleColumns(document.getElementById(`slide_text_${currentNumber}`), true)
+}
+}
+
+</script>
+<!-- by force html scripts -->
+<script>
+
+function openPopup(clipId, selectedText, remainingText, cNumber, li) {
+    const modalContainer = document.getElementById('modal-cont');
+    const popup = document.getElementById('add-subclip-popup');
+
+    if (modalContainer && popup) {
+        modalContainer.innerHTML = `
+
+<form   class="popup-content" method="POST" enctype="multipart/form-data"
+id="add-subclip-form"
+
+style="grid-template-columns: 0.7fr 1fr;width:100%;">
+<br>
+{% csrf_token %}
+
+<div id="submit-cont">
+<div class="form-group">
+    <input id="slide_text" hidden  name="slide_text"  readonly required class="form-input">
+</div>
+
+<input id="clipId" type="number" hidden name="clipId" value="${clipId}">
+
+
+<input type="text"  hidden id="remaining" name="remaining">
+<div style="display: grid;grid-template-columns: 0.7fr 1fr;border-radius: 8px;border: 1px solid #00000080;overflow: hidden;"  class="form-grid-cont">
+<div class="grid-item title  form-grid-item begin column-1"><span style="height:50px;align-items: center;">Upload Scene</span></div>
+<div class="grid-item title form-grid-item end column-2"><span style="height:50px;align-items: center;margin-left: -18px;">Upload Scene From Assets Folder</span></div>
+<div class="form-grid-item main-item">
+    <div  class="form-group" style="height:100%;">
+        <div class="upload-container">
+        <label for="slide_file" class="upload-label">
+            <i class="ri-upload-line"></i>
+            <span id="upload-text">Choose File</span>
+            </label>
+            <i id="clear-file" style="display:none" onclick="clearFileInput()" class="ri-close-circle-line"></i>
+        <input type="file" onchange="saveInput(this)" id="slide_file" name="slide_file" class="upload-input" accept="video/*">
+
+    </div>
+    
+    <p id="currentFile"></p>
+
+</div>
+</div>
+{% if user.subscription.plan.name|lower == 'free' %}
+
+<div id='disabled-div' data-tooltip="Only Available On Paid Plans" style="border-left:0.8px solid #000;background-color:eeeeeebb;  opacity: 0.5; cursor: not-allowed" class="form-grid-item ">
+ {% else %}
+ <div style="border-left:0.8px solid #864AF9;" class="form-grid-item ">
+{% endif %}
+
+
+
+<div  class="form-group">
+    <select id="selected_topic" onchange="fetchVideoClips(this)" name="selected_topic" class="form-select">
+        <option value="">Select Topic</option>
+        {%for cat in video_categories%}
+            <option value="{{cat.id}}">{{cat.name}}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="form-group">
+    <select id="videoSelect"  onclick="saveInput(this)" name="selected_video" class="form-select">
+        <option value="" disabled selected>Select A Video Clip</option>
+        </select>
+
+    <p style="color:red; font-size:13px;" id="error-slide"></p>
+</div>
+<input type='number'hidden id='is_tiktok' name='is_tiktok' value='0'/>
+
+</div>
+</div>
+</div>
+<div style="align-items: end;" class="form-group">
+<button type="submit" id="submit-clip" class="submit-btn">Submit</button>
+</div>
+</form>
+`;
+document.getElementById('slide_text').value = selectedText;
+document.getElementById('remaining').value = remainingText;
+        const errorElements = document.querySelectorAll('[id^="error"]');
+
+        errorElements.forEach(element => {
+            element.textContent = "";
+        });
+    };
+
+    popup.style.display = 'flex';
+    document.getElementById(`add-subclip-form`).addEventListener('submit', (e) => {
+        e.preventDefault();
+        attachValidation(`add-subclip-form`, clipId, cNumber, li);
+    })
+    disableForFree()
+}
+
+
+function editCurrentLi(liItem) {
+    if (liItem.disabled) {
+
+    } else {
+        liItem.disabled = true
+        liItem.style.cursor = 'wait';
+
+        console.log(liItem)
+        id = liItem.dataset.id;
+        text = liItem.textContent
+        const modalContainer = document.getElementById('modal-cont')
+        const popup = document.getElementById('add-subclip-popup')
+
+        if (modalContainer && popup) {
+            modalContainer.innerHTML = `
+<form   class="popup-content" method="POST" enctype="multipart/form-data"
+id="edit-subclip-form"
+
+style="grid-template-columns: 0.7fr 1fr;width:100%;">
+<br>
+{% csrf_token %}
+
+<div id="submit-cont">
+<div class="form-group">
+    <input id="slide_text" hidden  name="slide_text" value="some text" readonly required class="form-input">
+</div>
+
+<input id="clipId" type="number" hidden name="clipId" value="${liItem.dataset.id}">
+
+
+<input type="text" value="some text" hidden id="remaining" name="remaining">
+<div style="display: grid;grid-template-columns: 0.7fr 1fr;border-radius: 8px;border: 1px solid #00000080;overflow: hidden;"  class="form-grid-cont">
+<div class="grid-item title  form-grid-item begin column-1"><span style="height:50px;align-items: center;">Upload Scene</span></div>
+<div class="grid-item title form-grid-item end column-2"><span style="height:50px;align-items: center;margin-left: -18px;">Upload Scene From Assets Folder</span></div>
+<div class="form-grid-item main-item">
+    <div  class="form-group" style="height:100%;">
+        <div class="upload-container">
+        <label for="slide_file" class="upload-label">
+            <i class="ri-upload-line"></i>
+            <span id="upload-text">Choose File</span>
+            </label>
+            <i id="clear-file" style="display:none" onclick="clearFileInput()" class="ri-close-circle-line"></i>
+        <input type="file" onchange="saveInput(this)" id="slide_file" name="slide_file" class="upload-input" accept="video/*">
+
+    </div>
+    
+    <p id="currentFile"></p>
+    
+
+</div>
+</div>
+{% if user.subscription.plan.name|lower == 'free' %}
+
+<div id='disabled-div' data-tooltip="Only Available On Paid Plans" style="border-left:0.8px solid #864AF9;background-color:eeeeeebb;  opacity: 0.5; cursor: not-allowed" class="form-grid-item ">
+ {% else %}
+ <div style="border-left:0.8px solid #864AF9;" class="form-grid-item ">
+{% endif %}
+
+<div  class="form-group">
+    <select id="selected_topic"  onchange="fetchVideoClips(this)"   name="selected_topic" class="form-select">
+        <option value="">Select Topic</option>
+        {%for cat in video_categories%}
+            <option value="{{cat.id}}">{{cat.name}}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="form-group">
+    <select id="videoSelect"  onclick="saveInput(this)" name="selected_video" class="form-select">
+        <option  disabled selected>Select A Video Clip</option>
+    </select>
+    <p style="color:red; font-size:13px;" id="error-slide"></p>
+</div>
+<input  hidden type='number' id='is_tiktok' name='is_tiktok' value='0'/>
+</div>
+</div>
+</div>
+<div style="align-items: end;" class="form-group">
+<button type="submit" id="submit-clip" class="submit-btn">Submit</button>
+</div>
+
+</form>`;
+        }
+        popup.style.display = 'flex'
+        document.getElementById('edit-subclip-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            editAttachValidation('edit-subclip-form', id, `/text/edit_subcliphtmx/${liItem.dataset.id}/`, liItem);
+        });
+        restoreSelectFields(liItem);
+
+
+    }
+    disableForFree()
+}
+</script>

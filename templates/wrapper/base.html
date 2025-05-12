@@ -1,0 +1,56 @@
+{% load static %}
+{% load bootstrap5 %}
+{% load django_htmx %}
+{% block html %}
+  <!DOCTYPE html>
+  <html dir="ltr" lang="en">
+    {% block head %}
+      <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        {% block more_meta_tags %}{% endblock %}
+        {% include 'partials/head_c.html' %}
+
+        <link rel="stylesheet" href="{% static  'landing/style.css' %}" />
+
+        {% bootstrap_css %}
+        {% block extra_style %}
+        {% endblock extra_style %}
+      </head>
+    {% endblock head %}
+    {% block body %}
+      <body>
+
+        {% include 'wrapper/header.html' %}
+        <main>
+          {% include 'messages.html' %}
+
+          {% block content %}
+
+          {% endblock content %}
+
+          {% block in_page_scripts %}
+          {% endblock in_page_scripts %}
+
+        </div>
+      </main>
+
+      {% block script %}
+        <!-- <script src="{% static 'assets/js/jQuery.js' %}"></script> -->
+        <!-- <script src="{% static 'assets/js/htmx.js' %}"></script> -->
+        {% django_htmx_script %}
+
+        {% bootstrap_javascript %}
+        <!-- <script src="{% static 'assets/dashboard/js/main.js' %}"></script> -->
+        <!-- <script src="{% static 'assets/js/htmx_functions.js' %}"></script> -->
+
+        {% block extra_script %}
+        {% endblock extra_script %}
+      {% endblock script %}
+    </body>
+  {% endblock body %}
+</html>
+{% endblock html %}

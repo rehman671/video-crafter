@@ -1,0 +1,282 @@
+<!-- Popup Modal -->
+<div id="updateTextFileModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Update ElevenLabs Key</h2>
+            <button class="close-btn" onclick="closePopup()">&times;</button>
+        </div>
+        <p>Theres A Problem With Your ElevenLabs Key Please Insert A New Voice Over + API Key</p>
+
+        <div class="modal-body">
+            <form id="updateTextFileForm" method="POST" action="/text/update_textfile/{{textfile.id}}/">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="voiceId">Voice ID</label>
+                    <input type="text" id="voiceId" name="voice_id" placeholder="Voice ID" required>
+                    <p class="error" id="voiceIdError"></p>
+
+                </div>
+                <div class="form-group">
+                    <label for="apiKey">API Key</label>
+                    <input type="text" id="apiKey" name="api_key" placeholder="New ElevenLabs API Key" required>
+                    <p class="error" id="apiKeyError"></p>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Update</button>
+                    <!-- <button type="button" class="cancel-btn" onclick="closePopup()">Cancel</button> -->
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<style>
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    border-radius: 8px;
+    /* max-width: 400px; */
+    width: 40%;
+    position:fixed;
+    top:25%;
+    left:30%;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    margin-right: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.submit-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+    background-color: #0056b3;
+}
+
+.cancel-btn {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background-color: #e2e6ea;
+}
+
+/* Trigger Button */
+.open-popup-btn {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.open-popup-btn:hover {
+    background-color: #218838;
+}
+
+/* Modal Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+.error{
+    color:red
+}
+    
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    function openPopup() {
+        document.getElementById('updateTextFileModal').style.display = 'block';
+    }
+
+    function closePopup() {
+        document.getElementById('updateTextFileModal').style.display = 'none';
+    }
+
+    document.getElementById('updateTextFileForm').onsubmit = function (event) {
+    event.preventDefault();
+
+    // Get input values
+    const apiKeyInput = document.getElementById('apiKey');
+    const voiceIdInput = document.getElementById('voiceId');
+    const apiKey = apiKeyInput.value.trim();
+    const voiceId = voiceIdInput.value.trim();
+
+    const apiKeyError = document.getElementById('apiKeyError');
+    const voiceIdError = document.getElementById('voiceIdError');
+
+    // Clear previous errors
+    apiKeyError.textContent = '';
+    voiceIdError.textContent = '';
+
+    // Validate API key and Voice ID via AJAX
+    $.ajax({
+        url: '/text/validate_api_key/', // Your validation endpoint
+        type: 'POST',
+        data: {
+            'eleven_labs_api_key': apiKey,
+            'voice_id': voiceId,
+            'csrfmiddlewaretoken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        success: function (response) {
+            if (response.valid) {
+                // Proceed with form submission if validation passes
+                const form = document.getElementById('updateTextFileForm');
+                const formData = new FormData(form);
+
+                // Use XMLHttpRequest to submit the form
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', form.action, true);
+                xhr.setRequestHeader('X-CSRFToken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            // alert('Update successful!');
+                            window.location = `/text/process-textfile/{{textfile.id}}/`;
+                        } else {
+                            alert('Error updating TextFile.');
+                        }
+                    }
+                };
+
+                xhr.send(formData);
+            } else {
+                // Handle validation errors
+                if (response.error.includes('API key')) {
+                    apiKeyInput.focus();
+                    apiKeyError.textContent = response.error;
+                } else if (response.error.includes('Voice')) {
+                    voiceIdInput.focus();
+                    voiceIdError.textContent = response.error;
+                } else {
+                    apiKeyInput.focus();
+                    apiKeyError.textContent = response.error || 'An unknown error occurred.';
+                }
+            }
+        },
+        
+        error: function (xhr) {
+                // console.log("Error Status: ", xhr.status);
+                console.log("Error: ", xhr.responseText);
+
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    handleAPIError(response);
+                } catch (e) {
+                    apiKeyError.text('Error validating the API key.');
+                }
+            }
+       
+    });
+    function handleAPIError(response) {
+        let errorMessage = "Unknown error occurred.";
+    
+        if (response && typeof response === "object") {
+            if (response.error) {
+                errorMessage = response.error; // Use only the error message from Django
+            } 
+        }
+    
+        // Apply error messages to the correct field
+        if (response.status === 402) {
+            apiKeyInput.focus();
+            apiKeyError.textContent=errorMessage;
+        } else if (response.status === 401) {
+            apiKeyInput.focus();
+            apiKeyError.textContent=errorMessage;
+        } else if (response.status === 400) {
+            voiceIdInput.focus();
+            voiceIdError.textContent=errorMessage;
+        } else {
+            apiKeyInput.focus();
+            apiKeyError.textContent=errorMessage;
+        }
+    }
+};
+
+
+</script>

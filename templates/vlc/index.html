@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text To Video Bot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 600px;
+            margin: 0 auto;
+        }
+
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            margin-bottom: 10px;
+            padding: 8px;
+            width: calc(100% - 20px);
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .table-container {
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #000000;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-family: Arial, Helvetica, sans-serif;
+            border: springgreen;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #000000;
+        }
+
+        th {
+            background-color: #000000;
+        }
+
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .resolution-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .resolution-option-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 2px solid #d0a6e0; /* Light purple border color */
+            border-radius: 10px; /* Rounded corners */
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        .resolution-option-wrapper:hover {
+            border-color: #a065b6; /* Darker purple on hover */
+        }
+
+        .resolution-option-wrapper input[type="radio"]:checked + label {
+            color: #a065b6; /* Dark purple text when selected */
+        }
+
+        .visualization {
+            background-color: #e6e6fa; /* Light purple */
+            margin-bottom: 10px;
+        }
+
+        .visualization.square {
+            width: 100px;
+            height: 100px;
+        }
+
+        .visualization.widescreen {
+            width: 160px;
+            height: 90px;
+        }
+
+        /* Progress Bar Styles */
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            width: 33%; /* Initially 25% filled */
+            background-color: #9370DB; /* Light purple color */
+            text-align: center;
+            color: white;
+            line-height: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-container">
+        <div class="progress-bar"></div>
+    </div>
+
+    <div class="container">
+        <h1 style="text-align: center;">Create Your Perfect VSL:</h1>
+        <h2 style="text-align: center;">Upload, Customize and Convert!</h2>
+        <form action="/" method="post" enctype="multipart/form-data">
+            <h2>Select Video Resolution</h2>
+            <div class="section-1">
+
+                <div class="resolution-container" style="align-items: center; display: flex;">
+                    <!-- Option for 1:1 resolution -->
+                    <div class="resolution-option-wrapper">
+                        <div class="visualization square"></div>
+                        <label>
+                            <input type="radio" name="resolution" value="1:1" required>
+                            1:1
+                        </label>
+                    </div>
+                    <!-- Option for 16:9 resolution -->
+                    <div class="resolution-option-wrapper">
+                        <div class="visualization widescreen"></div>
+                        <label>
+                            <input type="radio" name="resolution" value="16:9">
+                            16:9
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="textfile">Text File:</label>
+                    <input type='file' name='textfile' accept=".txt" id='textfile' required>
+                </div>
+                <div class="form-group">
+                    <label for="voiceid">Voice Id:</label>
+                    <input type="text" name="voiceid" id="voiceid" required>
+                </div>
+                <div class="form-group">
+                    <label for="elevenlabs_apikey">ElevenLabs API Key:</label>
+                    <input type="text" id="elevenlabs_apikey" name="elevenlabs_apikey" required>
+                </div>
+
+
+                
+                <!-- Section 2: Subtitle Design -->
+                <div id="subtitleDesignForm">
+                    <h3>Subtitle Design Options</h3>
+                    <div class="subtitle-design-form-group">
+                        <label for="font_file">Upload Font File:</label>
+                        <input type="file" name="font_file" id="font_file">
+                    </div>
+                    <div class="subtitle-design-form-group">
+                        <label for="font_color">Font Color:</label>
+                        <input type="color" name="font_color" id="font_color" value="#000000">
+                    </div>
+                    <div class="subtitle-design-form-group">
+                        <label for="subtitle_box_color">Subtitle Box Color:</label>
+                        <input type="color" name="subtitle_box_color" id="subtitle_box_color" value="#ffffff">
+                    </div>
+                    
+                    <div class="subtitle-design-form-group">
+                        <label for="font_size">Font Size:</label>
+                        <input type="number" name="font_size" id="font_size" min="1" max="100" value="24">
+                    </div>
+                    <div class="subtitle-design-form-group">
+                        <label for="margin">Subtitle Margin:</label>
+                        <input type="number" name="margin" id="margin" min="0" max="100" value="10">
+                    </div>
+    
+                    
+                
+            </div>
+            
+            
+            
+
+
+            <input type="submit" value="Proceed to Scene Selection">
+        </form>
+        <br>
+        <br>
+        <br>
+        <form action="/stop_process" method="post">
+            <input type="submit" value="Stop Current Process">
+        </form>
+    </div>
+</body>
+</html>

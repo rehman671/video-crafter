@@ -1,0 +1,121 @@
+
+{% extends 'partials/modal_base.html' %}
+<!-- Container for the modal -->
+{%block modal_heading %}
+Upload Folder
+{%endblock modal_heading %}
+
+{%block instruction %}
+Please Make Sure Your Folder Contains Video Clips
+{%endblock  %}
+{% block action %}
+            
+<button class="upload-btn" id="videoUploadButton">Upload</button>
+
+{% endblock action %}
+{%block form_d %}
+    <form method="POST" id="uploadForm" enctype="multipart/form-data">
+{%endblock form_d %}
+{% block content %}            
+    <input id="fileInput"class="fileUpload" type="file" name="folder" webkitdirectory multiple >
+    <input type="text" id="directories" name="directories" hidden>
+    <input type="text" name="purpose" hidden value='text_file'>
+    
+    <div>
+        <div class="progressPercent">
+            <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+    </div>
+        <div id="uploadStatus" style="text-align: center; margin-top: 12px;"></div>
+{% endblock content %}    
+{% block extra_js%}
+<script>
+
+document.querySelector("#fileInput").addEventListener("change", function() {
+    let files = document.querySelector("#fileInput").files;
+    let directories = {};  // This will store folder paths and their corresponding files
+    document.getElementById('uploadStatus').textContent =''
+
+    // Loop through all selected files
+    for (let file of files) {
+        const folderPath = file.webkitRelativePath.split('/').slice(0, -1).join('/');
+        if (!directories[folderPath]) {
+            directories[folderPath] = [];  // Initialize array for this folder
+        }
+        directories[folderPath].push(file.name);  // Add file name to the folder
+    }
+
+    // Send folder structure to backend in a hidden input field
+    document.querySelector("#directories").value = JSON.stringify(directories);
+});
+
+const uploadForm = document.getElementById('uploadForm');
+const progressBar = document.getElementById('progressBar');
+const progressPercent = document.getElementById('progressPercent');
+const uploadStatus = document.getElementById('uploadStatus');
+
+uploadForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const files = document.getElementById('fileInput').files;
+    if (files.length === 0) {
+        alert('Please select files to upload.');
+        return;
+    }
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        formData.append('folder', files[i]);
+    }
+
+    // Add the directory structure data to the FormData object
+    formData.append('directories', document.getElementById('directories').value);
+
+    const xhr = new XMLHttpRequest();
+
+    // Progress event listener
+    xhr.upload.addEventListener('progress', function(e) {
+        if (e.lengthComputable) {
+            var  percentComplete = (e.loaded / e.total) * 100;
+            
+            document.getElementById('videoUploadButton').disabled=true
+            document.getElementById('videoUploadButton').textContent='Uploading Files...'
+
+            progressBar.style.width = percentComplete + '%';
+            progressPercent.textContent = Math.round(percentComplete) + '%';
+        }
+    });
+
+    // Complete event listener
+    xhr.addEventListener('load', function() {
+        if (xhr.status === 200) {
+            uploadStatus.textContent = 'Upload completed successfully!';
+            // Example with relative URL
+            window.location.reload();
+
+            
+        } else {
+            uploadStatus.textContent = 'Upload failed. Please try again.';
+            document.getElementById('videoUploadButton').textContent='Upload Folder'
+        document.getElementById('videoUploadButton').disabled=false
+        }
+    });
+
+    // Error event listener
+    xhr.addEventListener('error', function() {
+        uploadStatus.textContent = 'An error occurred during the upload.';
+    });
+
+    // Send the file and directory data
+    xhr.open('POST', '{% url "video:upload_video_folder" %}');
+    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+    xhr.send(formData);
+});
+
+
+
+</script>
+{% endblock extra_js%}  

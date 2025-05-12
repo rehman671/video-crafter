@@ -1,0 +1,28 @@
+
+<div id="previousButton" style="display: flex; align-items: center; cursor: pointer;justify-content: flex-start; padding-left: 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray" class="bi bi-arrow-left" viewBox="0 0 16 16" style="margin-right: 5px;">
+        <path fill-rule="evenodd" d="M11.3 1.3a1 1 0 0 1 0 1.4L5.4 8l5.9 5.3a1 1 0 1 1-1.4 1.4l-7-6.3a1 1 0 0 1 0-1.4l7-6.3a1 1 0 0 1 1.4 0z"/>
+    </svg>
+</div>
+
+
+<script>
+    // document.getElementById('previousButton').addEventListener('click', function() {
+    //     window.history.back();
+    // });
+    document.getElementById('previousButton').addEventListener('click', function() {
+    // Get the referrer URL
+    var referrer = document.referrer;
+    
+    // Check if the previous page URL contains 'progress'
+    if (referrer.includes('progress')) {
+        // Go back two steps
+        window.history.go(-2);
+    } else {
+        // Go back one step
+        window.history.back();
+    }
+});
+
+
+</script>

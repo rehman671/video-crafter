@@ -1,0 +1,425 @@
+<style>
+    [data-tooltip] {
+      position: relative;
+    }
+
+    [data-tooltip]:after {
+      content: attr(data-tooltip);
+      padding: 6px 8px;
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translateX(-50%);
+      background-color: #000000aa;
+      width: max-content;
+      opacity: 0;
+      -webkit-transition: opacity 0.2s ease-out;
+      color: #ffffff;
+      border-radius: 6px;
+    }
+
+    [data-tooltip]:hover:after {
+      opacity: 1;
+    }
+
+    .free-plan-disabled-overlay-container {
+        position: relative;
+    }
+
+    .free-plan-disabled-overlay {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: #eeeeeebb;
+        z-index: 999;
+        cursor: not-allowed;
+    }
+</style>
+
+<form method="POST" action="." id="scene_update_form" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="text", hidden name="purpose" value='update'>
+    <div class="scene-container" style="display: flex;padding:30px 30px;  justify-content: center; align-items: center;">
+        <div class="Scene"style="width: fit-content;  margin-bottom: 30px; border: 1px solid #0000004D; box-sizing: border-box; border-radius: 8px; padding: 40px 24px;  background: white;">
+            <div class="select-scene-text" style="display: flex; justify-content: center; margin-bottom:30px;">
+                <span style="font-size: 24px; font-weight: 700; line-height: 29.26px; text-align: center;">
+                    Select Your Scenes
+                </span>
+            </div>
+
+            <div   class="grid-container"  >
+                <div  class="grid-items" style="grid-template-columns: 0.5fr 1fr 1fr 2fr ;width:100%;">
+                    <div class="grid-item title"><span>Slide</span></div>
+                    <div class="grid-item title"><span>Slide Text</span></div>
+                    <div class="grid-item title"><span>Upload Scene</span></div>
+                    <div class="grid-item title right"><span>Upload Scene From Asset Folder</span></div>
+                    {% for data in form_data %}
+                    <div class="grid-item"><span>Slide {{ data.line_number }}</span></div>
+                    <div class="grid-item"><span>{{ data.line }}
+                        <input  type="hidden" name="line_{{ forloop.counter0 }}" value="{{ line }}">
+                    </span></div>
+                    
+                    
+                    <div class="grid-item center" style="flex-direction: column;">
+                        {% if data.clip.video_file_path %}  
+                        
+                            <div style="width: 80%; height: fit-content; padding: 16px 24px; border-radius: 8px; border: 1px dashed #19191980; display: flex;  align-items: center; position: relative; font-size: 16px; font-weight: 400; line-height: 23.2px; letter-spacing: 0.02em; text-align: center; gap: 14px;">
+                                <svg id="svg1" class="uploadFileIcon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5M14.1667 6.66667L10 2.5M10 2.5L5.83333 6.66667M10 2.5V12.5" stroke="#191919B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>    
+                                <div class="uploadText" id="uploadText_{{ forloop.counter0 }}" style="font-size: 16px; font-weight: 400; line-height: 23.2px; letter-spacing: 0.02em; text-align: center;">
+                                    Change
+                                </div>
+                                
+                                <!-- File input for selecting video -->
+                                <input type="file" accept="video/*" class="uploaded_file" id="video_{{ forloop.counter0 }}" name="uploaded_video_{{ forloop.counter0 }}" style="position: absolute; width: 100%; height: 100%; left: 0; opacity: 0; cursor: pointer;">
+                                
+                                <input hidden type="text" name="video_{{ forloop.counter0 }}_status" id="video_{{ forloop.counter0 }}_status" value="{{ data.clip.get_file_status}}">
+    
+                            </div>
+                        <p style="font-size: 10px; font-family: 'Montserrat';position: relative;" id="video_{{ forloop.counter0 }}_current">Current: {{ data.clip.get_video_file_name}}</p>                          
+                            
+                        {%else %}
+                        <div style="width: 80%; height: fit-content; padding: 16px 24px; border-radius: 8px; border: 1px dashed #19191980; display: flex; align-items: center; position: relative; font-size: 16px; font-weight: 400; line-height: 23.2px; letter-spacing: 0.02em; text-align: center; gap: 14px;">
+                            <svg id="svg1" class="uploadFileIcon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5M14.1667 6.66667L10 2.5M10 2.5L5.83333 6.66667M10 2.5V12.5" stroke="#191919B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>    
+                            
+                            <div class="uploadText" style="font-size: 16px; font-weight: 400; line-height: 23.2px; letter-spacing: 0.02em; text-align: center;">
+                                Choose File
+                            </div>
+                            <!-- File input for selecting video -->
+                            <input type="file" accept="video/*" class="uploaded_file" id="video_{{ forloop.counter0 }}" name="uploaded_video_{{ forloop.counter0 }}" style="position: absolute; width: 100%; height: 100%; left: 0; opacity: 0; cursor: pointer;">
+                            
+                            <input hidden type="text" name="video_{{ forloop.counter0 }}_status" id="video_{{ forloop.counter0 }}_status" value="{{ data.clip.get_file_status}}">
+
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    
+
+                    <div class="grid-item right free-plan-disabled-overlay-container">
+                        {% if request.user.subscription.plan.name|lower == 'free' %}
+                          <div data-tooltip="Only Available On Paid Plans" class="free-plan-disabled-overlay"></div>
+                        {% endif %}
+                        <div style="display: flex; width: 100%; height: fit-content; gap: 10px; align-items: center; flex-direction: column;">
+                        <!-- Topic Folder Selection -->
+                        <div style="width: 100%; position: relative;">
+                            <select id="topic_folder_{{ forloop.counter0 }}_{{textfile_id}}" name="topic_folder_{{ forloop.counter0 }}"
+                                onchange="fetchVideoClips(this.value, '{{ forloop.counter0 }}',this)"
+                                    style="appearance: none; background: #EEEEEE; width: 100%; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: none; color: #333;">
+                            <option value="">Select Topic</option>
+                            {% for video_category in video_categories %}
+                                <option value="{{ video_category.id }}">{{ video_category }}</option>
+                            {% endfor %}
+                            </select>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                            <path d="M6 9L12 15L18 9" stroke="#050315" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg> 
+                        </div>
+                    
+                        <!-- Video Selection -->
+                        <div id="div_{{ forloop.counter0 }}" style="width: 100%; position: relative;">
+                            <select class="selected_clip"
+                                    onchange="saveInput(this)"
+                                    name="selected_video_{{ forloop.counter0 }}"
+                                    id="videoSelect_{{ forloop.counter0 }}_{{textfile_id}}" 
+                                    style="appearance: none; background: #EEEEEE; width: 100%; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: none; color: #333; padding-right: 40px;"> <!-- Add padding-right to ensure space for the arrow -->
+                                <option value="">Select a video</option>
+                            </select>
+                            <svg id="svg_{{ forloop.counter0 }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" 
+                                 style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                                <path d="M6 9L12 15L18 9" stroke="#050315" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Hidden Input -->
+                        <input type="hidden" name="topic_folder_selected_{{ forloop.counter0 }}" id="topicFolder_{{ forloop.counter0 }}_{{textfile_id}}">
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+
+            </div>
+            
+            <div class="button" style="width: fit-content;margin-top: -30px; height:24px;position:absolute;right:10%; display: flex; justify-content: flex-end; align-items: center;">
+                <div style="display: flex;  align-items: center; justify-content: center; border-radius: 8px;  background: #864AF9; cursor: pointer;">
+                    <button type="submit"  style="text-decoration: none;padding:10px; color: white; font-family: Montserrat; font-size: 18px; font-weight: 500; line-height: 24px; text-align: left; margin-right: 10px; background: none; border: none; cursor: pointer;">
+                        Proceed To Background Music Selection
+                    </button>
+                    <svg width="24" height="24" type="button" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>                        
+                </div>
+            </div>
+    </div>
+    </form>
+     <script>
+    document.getElementById("scene_update_form").addEventListener("submit", function(event) {
+        let allValid = true;
+
+        // Loop through each loop index
+        const loopLength = "{{ n_lines }}"; 
+        const textfileId = "{{ textfile_id }}"; 
+
+        for (let i = 0; i < loopLength; i++) {
+            const fileInput = document.getElementById(`video_${i}`);
+            const topicFolderSelect = document.getElementById(`topic_folder_${i}_${textfileId}`);
+            const videoSelect = document.getElementById(`videoSelect_${i}_${textfileId}`);
+            const errorElementId = `select_video_${i}_error`;
+            const svgItemid=`svg_${i}`
+            const videoSyatus=document.getElementById(`video_${i}_status`)
+
+            let svgItemElement= document.getElementById(svgItemid)
+            let errorElement = document.getElementById(errorElementId);
+
+            // Check if file input has value or both selects have values
+            const isFileProvided = fileInput && fileInput.files.length  > 0;
+            const isSelectProvided = topicFolderSelect && topicFolderSelect.value && videoSelect && videoSelect.value;
+
+            if (!isFileProvided && !isSelectProvided && videoSyatus.value !=='filled') {
+                // Highlight unselected inputs
+                fileInput.style.border = "0.5px solid red";
+                topicFolderSelect.style.border = "0.5px solid red";
+                videoSelect.style.border = "0.5px solid red";
+                svgItemElement.style.top='30%'
+
+                // Increase padding for the second select (videoSelect)
+                // videoSelect.style.paddingRight = "25px"; // Increase padding slightly to align the arrow properly
+
+                // Focus on the first invalid field
+                topicFolderSelect.focus();
+
+                // Mark as invalid
+                allValid = false;
+
+                // Add error message just below the video select element if it doesn't exist
+                if (!errorElement) {
+                    errorElement = document.createElement('div');
+                    errorElement.id = errorElementId;
+                    errorElement.style.color = 'red';
+                    errorElement.style.fontSize = '0.8rem';
+                    errorElement.style.textAlign = 'center';
+                    errorElement.style.marginTop = '5px';
+                    errorElement.innerText = "Please Select A Scene";
+                    videoSelect.parentNode.insertBefore(errorElement, videoSelect.nextSibling);
+                }
+
+            } else {
+                // Remove red border if inputs are valid
+                fileInput.style.border = "";
+                topicFolderSelect.style.border = "";
+                videoSelect.style.border = "";
+                svgItemElement.style.top='50%'
+
+                // Remove any existing error message if present
+                if (errorElement) {
+                    errorElement.remove();
+                }
+
+                // Reset the padding for the second select (in case it was previously adjusted)
+                videoSelect.style.paddingRight = ""; // Reset to default
+            }
+        }
+
+        // If not valid, prevent form submission
+        if (!allValid) {
+            event.preventDefault();
+        }
+    });
+        // Function to handle changes in dynamically generated video inputs
+    function setupDynamicListeners(loopLength, textfileId) {
+        for (let i = 0; i < loopLength; i++) {
+            const videoInput = document.getElementById(`video_${i}`);
+            const topicFolderSelect = document.getElementById(`topic_folder_${i}_${textfileId}`);
+            const videoSelect = document.getElementById(`videoSelect_${i}_${textfileId}`);
+            const viderSyatus=document.getElementById(`video_${i}_status`)
+            const current_video=document.getElementById(`video_${i}_current`)
+            videoInput.addEventListener("change", function() {
+                // If the video input has a file selected
+                if (videoInput.files.length > 0) {
+                    topicFolderSelect.value = "";
+                    videoSelect.value = "";
+                    viderSyatus.value='changed';
+                    if (current_video){
+                        current_video.style.display='none';
+                    };
+                    saveInput(topicFolderSelect);
+                    saveInput(videoSelect);
+                    while (videoSelect.options.length > 0) {
+                        videoSelect.remove(0); // Clear all existing options
+                    }
+
+                    // Add default option
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    defaultOption.text = "Select a Video";
+                    videoSelect.add(defaultOption);
+
+                }
+            });
+        }
+    }
+
+
+    
+
+
+
+    const loopLength = "{{ n_lines }}";
+    const textfileId = "{{ textfile_id }}";
+    setupDynamicListeners(loopLength, textfileId);
+
+    for (let i = 0; i < loopLength; i++) {
+        const topicFolderSelect = document.getElementById(`topic_folder_${i}_${textfileId}`);
+        const videoSelect = document.getElementById(`videoSelect_${i}_${textfileId}`);
+        const errorElementId = `select_video_${i}_error`;
+        const svgItemid=`svg_${i}`
+        let svgItemElement= document.getElementById(svgItemid)
+
+         // file inputs fields
+         const fileInputs = document.querySelectorAll('.uploaded_file');
+         const uploadTexts = document.querySelectorAll('.uploadText');
+         const svgs = document.querySelectorAll('.uploadFileIcon');
+         const current_video=document.getElementById(`video_${i}_current`)
+
+
+        // Event listener for the first select field
+        topicFolderSelect.addEventListener("change", function() {
+            if (this.value !== "") {
+                this.style.border = "";
+                svgItemElement.style.top='50%'
+                
+                const errorElement = document.getElementById(errorElementId);
+                if (errorElement) {
+                    errorElement.remove();  // Remove error message if it exists
+                }
+
+                 // clearing file inputs
+                 fileInputs[i].value = '';
+                 uploadTexts[i].textContent = 'Choose File';
+                   svgs[i].style.position = 'static';
+                   svgs[i].style.opacity = '1';
+                   if (current_video){
+                    current_video.style.display='none';
+                };
+            }
+        });
+
+        // Event listener for the second dependent select field
+        videoSelect.addEventListener("change", function() {
+            if (this.value !== "") {
+                this.style.border = ""; 
+                svgItemElement.style.top='50%'
+                const errorElement = document.getElementById(errorElementId);
+                if (errorElement) {
+                    errorElement.remove();  // Remove error message if it exists
+                }
+
+                // clearing file inputs
+                fileInputs[i].value = '';
+                uploadTexts[i].textContent = 'Choose File';
+                  svgs[i].style.position = 'static';
+                  svgs[i].style.opacity = '1';
+                  if (current_video){
+                    current_video.style.display='none';
+                };
+            }
+        });
+    }
+    window.onload = function() {
+    // Get all inputs on the page
+    document.getElementById('scene_update_form').reset();
+
+    }
+    window.addEventListener('load', async function() {
+        // Ensure all elements are loaded
+
+        const inputs = document.querySelectorAll('select');
+        
+        // Helper function to return a promise for each htmx request
+        const fetchClip = (url, targetId) => {
+            return new Promise((resolve, reject) => {
+                htmx.ajax('GET', url, targetId)
+                    .then(() => resolve())
+                    .catch((err) => reject(err));
+            });
+        };
+
+        // First, update all select inputs that start with 'topic_folder_'
+        for (const input of inputs) {
+            const storedValue = sessionStorage.getItem(input.id);
+            if (storedValue && input.id.startsWith('topic_folder_')) {
+                input.value = storedValue;
+
+                // Get the current number from the ID, assuming it's in the format 'topic_folder_X'
+                const idParts = input.id.split('_');
+                const currentNumber = idParts[idParts.length - 2];  // Extract the current number part
+
+                // Build the URL and target ID
+                const url = `/video/get_clip/${storedValue}`;
+                const targetId = `#videoSelect_${currentNumber}_{{textfile_id}}`;
+
+                // Check if the target element exists before making the HTMX request
+                if (document.querySelector(targetId)) {
+                    try {
+                        await fetchClip(url, targetId);  // Wait for each HTMX request to complete
+                    } catch (error) {
+                        console.error(`Error fetching clip for ${input.id}:`, error);
+                    }
+                } else {
+                    console.warn(`Target element ${targetId} not found.`);
+                }
+            }
+        }
+
+        inputs.forEach(input => {
+            const storedValue = sessionStorage.getItem(input.id);
+            if (storedValue && input.id.startsWith('videoSelect_')) {
+                input.value = storedValue;
+            }
+        });
+    });
+
+
+    function saveInput(inputElement) {
+        
+            sessionStorage.setItem(inputElement.id, inputElement.value);
+            console.log(inputElement.value)
+            if (inputElement.id.startsWith('videoSelect_') && inputElement.value !==''){
+                const cNumber= inputElement.id.split('_')[1]
+                console.log(cNumber);
+                document.getElementById(`video_${cNumber}_status`).value='empty';
+
+
+            };
+            
+    };
+    
+    function fetchVideoClips(categoryId, counter,item) {
+        select2=document.getElementById(`videoSelect_${counter}_{{textfile_id}}`)
+        saveInput(item)
+
+        if (categoryId === ""){
+            select2.value=""
+            select2.innerHTML = "";
+
+            const defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.text = "Select a video";
+            select2.appendChild(defaultOption);
+
+        }
+        else{
+
+            htmx.ajax('GET',`/video/get_clip/${categoryId}`, `#videoSelect_${counter}_{{textfile_id}}`)
+        }
+
+        
+    }
+
+    </script>

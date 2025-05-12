@@ -1,0 +1,88 @@
+
+<form   class="popup-content" method="POST" enctype="multipart/form-data"
+ id="edit-subclip-form"
+ 
+    style="grid-template-columns: 0.7fr 1fr;width:100%;">
+    <br>
+    {% csrf_token %}
+
+    <div id="submit-cont">
+        <div class="form-group">
+            <input id="slide_text" hidden  name="slide_text" value="some text" readonly required class="form-input">
+        </div>
+        
+        <input id="clipId" type="number" hidden name="clipId" value="{{subclip.id}}">
+        
+
+        <input type="text" value="some text" hidden id="remaining" name="remaining">
+        <div style="display: grid;grid-template-columns: 0.7fr 1fr;border-radius: 8px;border: 1px solid #00000080;overflow: hidden;"  class="form-grid-cont">
+        <div class="grid-item title  form-grid-item begin column-1"><span style="height:50px;align-items: center;">Upload Scene</span></div>
+        <div class="grid-item title form-grid-item end column-2"><span style="height:50px;align-items: center;margin-left: -18px;">Upload Scene From Assets Folder</span></div>
+        <div class="form-grid-item main-item">
+            <div  class="form-group" style="height:100%;">
+                <div class="upload-container">
+                <label for="slide_file" class="upload-label">
+                    <i class="ri-upload-line"></i>
+                    <span id="upload-text">Choose File</span>
+                    </label>
+                    <i id="clear-file" style="display:none" onclick="clearFileInput()" class="ri-close-circle-line"></i>
+                <input type="file" onchange="saveInput(this)" id="slide_file" name="slide_file" class="upload-input" accept="video/*">
+
+            </div>
+            {% if subclip.video_file %}
+            <p id="currentFile">Current File: {{ subclip.get_video_file_name}}</p>
+            {% else %}
+            <p id="currentFile"></p>
+            {% endif %}
+        
+        </div>
+        </div>
+        <div style="border-left:0.8px solid #864AF9" class="form-grid-item ">
+
+        <div  class="form-group">
+            <select id="selected_topic"  onchange="fetchVideoClips(this)"   name="selected_topic" class="form-select">
+                <option value="">Select Topic</option>
+                {%for cat in categories%}
+                    <option value="{{cat.id}}">{{cat.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <select id="videoSelect"  onclick="saveInput(this)" name="selected_video" class="form-select">
+                <option  disabled selected>Select A Video Clip</option>
+                {% if videos %}
+                {% for video in videos %}
+                <option value="{{video.id}}" >{{video.title}}</option>
+                {% endfor %}
+                {%endif%}
+
+            </select>
+            <p style="color:red; font-size:13px;" id="error-slide"></p>
+        </div>
+        </div>
+    </div>
+    </div>
+    <div style="align-items: end;" class="form-group">
+        <button type="submit" id="submit-clip" class="submit-btn">Submit</button>
+    </div>
+</form>
+<script>
+
+function restoreSelectFields(){
+    const topic=document.getElementById('selected_topic')
+    const videoClip=document.getElementById('videoSelect')
+    if ('{{subclip.video_clip}}'){
+        topic.value= '{{subclip.video_clip.category.id}}'
+        // fetchVideoClips(topic)
+        // videoClip.value= sessionStorage.getItem('{{subclip.id}}')
+        videoClip.value = '{{subclip.video_clip.id}}'
+        console.log(`sessionStorage.getItem('{{subclip.id}}')`,sessionStorage.getItem('{{subclip.id}}'))
+
+    }else{
+        topic.value=''
+        videoClip.value=''
+    }
+};
+restoreSelectFields();
+</script>

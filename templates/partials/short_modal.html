@@ -1,0 +1,213 @@
+{% load static%}
+<!-- Container for the modal -->
+ 
+<style>
+    .modal {
+        display: block; 
+        position: fixed;
+        z-index: 1002;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+      }
+      
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 10px;
+        width: 400px;
+        text-align: center;
+      }
+      
+      .modal-buttons {
+        display: flex;
+        justify-content: end;
+        gap: 24px;
+        margin-top: 20px;
+      }
+      
+      /* Modal header and text */
+      .modal-content h2 {
+        margin-bottom: 10px;
+      }
+      
+      .modal-content p {
+        font-size: 14px;
+        margin-bottom: 10px;
+        color: #555;
+      }
+      
+      
+      .modal-buttons {
+        display: flex;
+        justify-content: end;
+        gap: 24px;
+        margin-top: 24px;
+      }
+      
+    
+      
+      .progressPercent {
+        width: 100%;
+        display: flex;
+        font-size: 18px;
+        font-weight: 600;
+        margin-top:10px;
+      }
+      .progressPercent span {
+        margin: 0;
+      }
+      .progress-bar {
+        width: 100%;
+        background-color: #d9d9d9;
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 15px 0;
+      }
+      
+      .progress {
+        height: 15px;
+        background-color: #864af9;
+        width: 0%;
+        transition: width 0.3s;
+      }
+      
+      /* Modal button styling */
+      .modal-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 24px;
+        margin-top: 30px;
+      }
+      
+      .cancel-btn,
+      .upload-btn,
+      .delete-btn {
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      
+      .delete-btn {
+        background-color: #f94a4a;
+        color: white;
+        border: none;
+      }
+      
+      .cancel-btn {
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+      }
+      
+      .upload-btn {
+        background-color: #864af9;
+        color: white;
+        border: none;
+      }
+      
+      /* Hidden file input */
+      
+      .fileUpload {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+       padding: 8px;
+       margin:10px;
+       
+        font-size: 16px;
+        width:90%;
+    }
+      .fileUpload::-webkit-file-upload-button {
+        background: #864af9;
+        color: #fff;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      
+      .active {
+        display: block;
+      }
+      
+      .input-field {
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #cccccc;
+      }
+      
+    .alert {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #f5c6cb;
+        margin-top: 20px;
+    }
+    
+    .alert button {
+        margin-right: 10px;
+        padding: 8px 12px;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .alert button:hover {
+        background-color: #c82333;
+    }
+    </style>
+ {%block extra_css%}
+
+ {% endblock extra_css%}
+<div id="confirmation-modal" class="modal">
+    <div class="modal-content">
+        {%block form_d %}
+        {%endblock form_d %}
+            {% csrf_token %}
+
+
+            <div class="modal-text">
+                <h2>
+                    {%block modal_heading %}
+                    {%endblock modal_heading %}
+                </h2>
+                <p>
+                    {%block instruction %}
+                    
+                    {%endblock  %}
+                    
+                </p>
+            </div>
+        
+            {% block content %}    
+
+            {% endblock content %}    
+            <div class="modal-buttons">
+                <button class="cancel-btn" type="button" id="uploadCancelBtn" onclick="closeModal()">Cancel</button>
+                    {% block action %}
+                
+
+                    {% endblock action %}
+            </div>
+        </form>
+            
+    </div>
+</div>
+
+<script>
+    function closeModal() {
+        document.getElementById('confirmation-modal').style.display = 'none';
+        window.location.reload();
+
+    }
+</script>
+
+{% block extra_js%}
+{% endblock extra_js%}
+<script src="{% static 'htmx.js' %}"></script>
+

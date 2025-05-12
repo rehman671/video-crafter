@@ -1,0 +1,4 @@
+media/
+.env
+*.json
+*.xml

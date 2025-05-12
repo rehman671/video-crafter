@@ -1,0 +1,111 @@
+
+/* Progress fill styling */
+.progressbar .progress-fill {
+    position: absolute;
+    height: 100%;
+    background: #864AF9;
+    left: 0;
+    top: 0;
+    transition: width 0.3s ease; /* Smooth transition */
+    z-index: 1; /* Below circles but above background */
+}
+
+.progressbar .sub-div2 {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background: #864AF9;
+    border-radius: 90px;
+    left: 1%;
+    z-index: 2; /* Above fill line */
+}
+
+.progressbar .sub-div3 {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background: #EEEEEE;
+    border-radius: 90px;
+    left: 187px;
+    z-index: 2;
+}
+
+.progressbar .sub-div4 {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background: #EEEEEE;
+    border-radius: 90px;
+    left: 396px;
+    z-index: 2;
+}
+
+.progressbar .sub-div5 {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background: #EEEEEE;
+    border-radius: 90px;
+    left: 99%;
+    z-index: 2;
+}
+
+/* Completed steps */
+.progressbar .sub-div2.completed,
+.progressbar .sub-div3.completed,
+.progressbar .sub-div4.completed,
+.progressbar .sub-div5.completed {
+    background: #864AF9;
+}
+
+/* Active step */
+.progressbar .sub-div2.active,
+.progressbar .sub-div3.active,
+.progressbar .sub-div4.active,
+.progressbar .sub-div5.active {
+    background: #864AF9;
+}
+
+/* Text styling - only weight change, no color */
+.active-text {
+    font-weight: 600;
+}
+
+.voice-subtitle {
+    position: absolute;
+    top: -50px;
+    left: -95.96px;
+    font-weight: 380;
+}
+
+.sceneselection {
+    position: absolute;
+    top: -50px;
+    left: 140px;
+    font-weight: 380;
+}
+
+.bgmselection {
+    position: absolute;
+    top: -50px;
+    left: 292px;
+    font-weight: 380;
+}
+
+.download {
+    position: absolute;
+    top: -50px;
+    left: 573px;
+    font-weight: 380;
+}
+.progressbar .progress-fill {
+    position: absolute;
+    height: 100%;
+    background: #864AF9;
+    left: 0;
+    top: 0;
+    transition: width 0.3s ease;
+    z-index: 1;
+    border-radius: 50px; /* To make it smoother */
+   
+}

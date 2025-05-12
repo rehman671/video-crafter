@@ -1,0 +1,2085 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/music.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/fonts.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/add-scene-style.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/main-scenes.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/scene.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/scene-style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
+    <title>VideoCrafter.io</title>
+    <style>
+        /* Free user overlay styling */
+#freeUserOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(200, 200, 200, 0.8);
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(2px);
+}
+
+#freeUserOverlay div {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 80%;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#freeUserOverlay h3 {
+    color: #864AF9;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+#freeUserOverlay p {
+    margin-bottom: 15px;
+}
+
+.upgrade-button {
+    background-color: #864AF9;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s;
+}
+
+.upgrade-button:hover {
+    background-color: #7038e0;
+}
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="main-div">
+            <div class="sub-main-div">
+                <img src="{% static 'images/logo.svg' %}" alt="Logo">
+                <a href="{% url 'preview' %}" class="anchor-sub-main"></a>
+            </div>
+            <div class="right">
+                <span class="right-span">Credits Remaining: <span id="number">{{ user_subscription.unused_credits }}</span></span>
+                <div class="line"></div>
+                <div class="img" id="pfp" onclick="toggleDropdown()">
+                    <div class="img-sub-div">
+                        <div class="img-sub">
+                            <img src="{% static 'images/profile.svg' %}" alt="Profile">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pfpdropdown" class="not-present" style="z-index:999;">
+                    <div class="not-present-sub">
+                        <span class="not-present-sub-span1">{{ user_subscription.user.first_name }}</span>
+                        <span class="not-present-sub-span2">{{ user_subscription.user.email }}</span>
+                    </div>
+                    <div class="profile-main-div">
+                        <div class="profile-sub-div">
+                            <div class="dropdownText">
+                                <span class="dropdownText" style="width: fit-content;">Credit Left</span>
+                                <span class="dropdownText" style="width: fit-content; color: #19191980;">{{ user_subscription.unused_credits }}</span>
+                            </div>
+                        </div>
+                        <span class="dropdownText">
+                            <a href="{% url 'asset_library' %}">Manage Asset Library</a>
+                        </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'recent_videos' %}">Manage Video Drafts</a>
+                        </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'manage_subscription' %}">Manage Subscription</a>
+                        </span>
+                    </div>
+                    <div class="profile-last-div">
+                        <span class="dropdownText"><a href="{% url 'logout' %}">Log Out</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="progressbar">
+        <div class="sub-div">
+            <div class="progress-fill" style="width:66.66666666666667%"></div>
+            <div class="sub-div2 completed"></div>
+            <div class="sub-div3 completed"></div>
+            <div class="sub-div4 active"></div>
+            <div class="sub-div5 "></div>
+            <div class="voice-subtitle ">Voice & Subtitle Design</div>
+            <div class="sceneselection ">Scene Selection</div>
+            <div class="bgmselection active-text">Background Music Selection</div>
+            <div class="download ">Download</div>
+        </div>
+    </div>
+    <div class="body-container">
+        <div id="pfp"></div>
+        <div id="pfpdropdown" class="not-present"></div>
+        <div class="card-container">
+            <div class="card">
+                <div class="card-header">
+                    <div id="previousButton">
+                        <a href="{% url 'preview' %}">
+                            <img src="{% static 'images/back.svg' %}" alt="Back">
+                        </a>
+                    </div>
+                    <span class="card-header-span">Upload Your Script</span>
+                </div>
+                <div class="card-body">
+                    <div class="Script-text-file-text">
+                        <div class="Script-text-file-text-sub">
+                            <div class="script-text">Script Text File:</div>
+                            <div class="vh-parent">
+                                <div class="vh-child">
+                                    <span class="text3">Please Make Sure Your Script Is On Txt File</span>
+                                    <span class="text3" style="display: block; color: #FF5050; margin-top: 5px;">Each line should be no more than 100 characters</span>
+                                </div>?
+                            </div>
+                        </div><a href="{% static 'dummy/template.txt' %}" download="" class="download-btn">Click Here To Download An
+                            Empty Template</a>
+                    </div>
+                </div>
+                <form method="post" enctype="multipart/form-data">    
+                    {% csrf_token %}
+
+                    <div class="Script-text-file-Upload">
+                        <div class="script-upload-sub">
+                            <img src="{% static 'images/choose-icon.svg' %}" alt="Choose file">
+                            <span class="text2 choosefile-heading">Choose file</span>
+                            <input required="" type="file" id="fileUpload" accept=".txt" name="videotextfile">
+                        </div>
+                        <div class="text2" id="fileName" style="color:#00000080">No file chosen</div>
+                    </div>
+                    <div class="center-container">
+                        <button type="submit" id="scriptUploadButton" class="file-button">
+                            Load Script
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card" id="uploadCard" style="position:relative">
+                <div class="card-header">
+                    <span class="card-header-span">Upload To Your Asset Folder</span>
+                    <h5>These Files Will be Saved In Your Asset Library Which You Can Manage Through The Profile Icon
+                        Above</h5>
+                </div>
+                <div class="card-body upload">
+                    <div class="Script-text-file-text">
+                        <div class="upload-folder-heading">
+                            <div class="Script-text-file-text-sub">
+                                <div class="script-text">Upload Folder:</div>
+                                <div class="vh-parent">
+                                    <div class="vh-child">
+                                        <span class="text3">Please Make Sure Your Script Is On Txt
+                                            File</span>
+                                    </div>?
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="Script-text-file-Upload">
+                    <div class="script-upload-sub">
+                        <img src="{% static 'images/choose-icon.svg' %}" alt="Choose file">
+                        <span class="text2 choosefile-heading">Choose file</span>
+                        <input id="fileInput" type="file" webkitdirectory="true" multiple="">
+                    </div>
+                    <div class="text2" id="fileName2" style="color:#00000080">No folder chosen</div>
+                </div>
+                <form id="uploadForm" enctype="multipart/form-data" method="POST" action="{% url 'asset_library' %}" style="display:none">
+                    {% csrf_token %}
+                    <input id="zipFile" type="file" name="zip_file" style="display: none;" accept=".zip">
+                    <input type="text" id="directories" name="directories" hidden>
+                    <div style="margin-top: 10px">
+                        <div class="progressPercent">
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar" style="width: 100%; height: 10px; background: #f0f0f0; border-radius: 5px;">
+                            <div class="progress" id="progressBar" style="width: 0%; height: 100%; background: #9662f9; transition: width 0.3s ease;"></div>
+                        </div>
+                    </div>
+                </form>
+                <div id="centered-c" class="center-containered">
+                    <div id="uploadStatus" style="text-align:center"></div>
+                    <div id="progressWrapper" style="display:none">
+                        <div id="progressBar"></div>
+                        <div id="percent"></div>
+                    </div><button class="file-button" id="videoUploadButton">Upload and Process</button>
+                </div>
+                {% if 'free' in user_subscription.plan.name %}
+                <div id="freeUserOverlay">
+                    <div>
+                        <h3>Asset Upload Restricted</h3>
+                        <p>This feature is only available for premium users. Upgrade your subscription to access asset uploads and other premium features.</p>
+                        <a href="{% url 'manage_subscription' %}" class="upgrade-button">Upgrade Now</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            <div class="grid-container2">
+                <div class="section">
+                    <div class="section-header">Instructions <span>▶</span></div>
+                    <div class="section-content" id="instructions">
+                        <div class="bor" style="border:1px solid #cccccc"></div>
+                        <h3>Step 1: Upload Your Script</h3>
+                        <p>Each line of your script represents a subtitle box in the video. For example:</p>
+                        <div class="highlight">
+                            <p>If your script says, "Hello, my name is Steve," on the first line of your text file, the
+                                first subtitle box will display Hello, my name is Steve.</p>
+                        </div>
+                        <h3>Step 2: Highlight And Assign Clips</h3>
+                        <p class="highlight-words">Highlight words:</p>
+                        <p>Simply highlight the words in your script that you want to match with a video clip and assign
+                            a video clip.</p><a href="{% static 'public/videos/dummy.mp4' %}">Watch Video Tutorial</a>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-header">How To Upload Files To The Asset Folder<span>▶</span></div>
+                    <div class="section-content" id="tips">
+                        <div class="bor" style="border:1px solid #cccccc;margin-bottom:1rem"></div>
+                        <div class="tips-background"
+                            style="background-color:#f0f0f0;padding:4px 20px 20px 20px;line-height:162%">
+                            <h3>Step 1</h3>
+                            <p><strong>Create a main folder:</strong></p>
+                            <p>On your computer, create one main folder (e.g., MyVideoAssets). This folder will contain
+                                all your subfolders and video clips.</p>
+                            <h4>Add Subfolders Inside The Main Folder:</h4>
+                            <p>Within the main folder, create subfolders to categorize your videos. For example:</p>
+                            <ul>
+                                <li>Back Pain Clips</li>
+                                <li>Fitness Clips</li>
+                                <li>Testimonials</li>
+                            </ul>
+                            <h4>Add Video Files To Each Subfolder:</h4>
+                            <p>Inside each subfolder, add the relevant video clips. For example:</p>
+                            <ul class="ul-cl">
+                                <li>Back Pain Clips<span style="color:#333"></span> <span class="vid">Clip1.mp4,
+                                        Clip2.mp4</span></li>
+                                <li>Fitness Clips<span style="color:#333"></span> <span class="vid">Workout1.mp4,
+                                        Workout2.mp4</span></li>
+                            </ul>
+                            <h3>Step 2</h3>
+                            <p><strong>Upload to VideoCrafter.io:</strong></p>
+                            <ul>
+                                <li>Go to the "Upload To Your Asset Folder" section.</li>
+                                <li>Click "Choose File" and select the main folder (not individual subfolders).</li>
+                                <li>Click "Upload And Process" to start the upload.</li>
+                            </ul>
+                        </div><a href="{% static 'public/videos/dummy.mp4' %}">Watch Video Tutorial</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="lead-container lead-details" style="max-width:96%;margin:0 auto">
+            <table id="leadsTable" class="lead-table" style="width:100%;display:table">
+                <thead>
+                    <tr style="height:fit-content">
+                        <th class="slide-first" style="font-size:1.4rem">Subtitle</th>
+                        <th style="font-size:1.4rem">Subtitle Text</th>
+                        <th class="slide-last">Edit</th>
+                        <th class="slide-last">Undo</th>
+                        <th class="slide-last">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-id="-1" style="height:5rem">
+                        <td class="slide-first" style="font-size:1.4rem;position:relative;cursor:grab"
+                            title="Drag to move">Subtitle 1</td>
+                        <td id="highlightable_-1">
+                            <div class="highlight-sub">
+                                <textarea class="textarea-class" id="slide_text_-1" name="slide_text"
+                                    placeholder="Type Your Script Here">
+                                </textarea>
+                                <div id="error-message_-1" class="error-message" style="display:none"></div>
+                                <div class="error-message" style="display:none">Highlighting Must Start From The First
+                                    Unassigned Word Of The Sentence.</div>
+                            </div>
+                        </td>
+                        <td class="slide-last active"><a href="#" class="above-del"><i id="icon"
+                                    class="ri-edit-box-line fa-sync-alt icon"
+                                    style="margin:0 auto;font-size:20px;font-weight:600;cursor:pointer;vertical-align:middle"></i></a>
+                        </td>
+                        <td class="slide-last active">
+                            <a href="#" class="above-del">
+                                <img src="{% static 'images/undo.svg' %}" alt="Undo" style="width:1.2rem;height:3rem;cursor:pointer">
+                            </a>
+                        </td>
+                        <td class="slide-last" id="action_-1">
+                            <a href="#" class="delete-row-btn">
+                                <img src="{% static 'images/delete-icn.svg' %}" alt="delete"
+                                    style="width:1.5rem;height:3rem;cursor:pointer">
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="add-new-sub">
+                <div class="d-flex justify-content-start">
+                    <a href="#" id="createLeadBtn" class="btn proceed-btn">Add New
+                        Subtitle +
+                    </a>
+                </div>
+                <div id="subtitle-limit-error" style="color: red; margin-top: 10px; display: none;">
+                    Free plan users are limited to 10 subtitles. Please upgrade your subscription for unlimited subtitles.
+                </div>
+            </div><input type="number" id="no_of_slides" hidden="" readonly="" name="no_of_slides" value="1">
+            <div class="button-container">
+                <a href="" class="button-container-btn ">
+                    <span id="button-text">Proceed To Background Music Selection</span>
+                    <img id="proceed-svg" src="{% static 'images/arrow.svg' %}" alt="Arrow" style="display:inline-block">
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Modal for Asset Upload -->
+    <div id="assetUploadModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+        <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+            <form id="uploadForm" enctype="multipart/form-data" method="POST" action="{% url 'asset_library' %}">
+                {% csrf_token %}
+                <div class="modal-text">
+                    <h2>Upload Folder</h2>
+                    <p>Please Make Sure Your Folder Contains Video Clips</p>
+                </div>
+                <input id="fileInput" class="fileUpload" type="file" name="folder" webkitdirectory multiple>
+                <input id="zipFile" type="file" name="zip_file" style="display: none;" accept=".zip">
+                <div>
+                    <div class="progressPercent">
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar"
+                        style="width: 100%; height: 10px; background: #f0f0f0; border-radius: 5px;">
+                        <div class="progress" id="progressBar"
+                            style="width: 0%; height: 100%; background: #9662f9; transition: width 0.3s ease;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeAssetModal()">Cancel</button>
+                    <button type="submit" class="upload-btn">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .char-count {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            margin-top: 2px;
+        }
+        .char-count-exceeded {
+            font-size: 12px;
+            color: #FF0000;
+            text-align: right;
+            margin-top: 2px;
+            font-weight: bold;
+        }
+        textarea.textarea-class {
+            transition: border 0.3s ease;
+        }
+        textarea.textarea-class:focus {
+            outline: none;
+        }
+        
+        /* Asset Upload Modal Styles */
+        #assetUploadModal .modal-text {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #assetUploadModal .modal-text h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        #assetUploadModal .fileUpload {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        #assetUploadModal .progressPercent {
+            text-align: right;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        #assetUploadModal .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        #assetUploadModal .cancel-btn {
+            background-color: #f0f0f0;
+            border: none;
+            padding: 10px 15px;
+            margin-right: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #assetUploadModal .upload-btn {
+            background-color: #9662f9;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+<script>        const video_type = "{{ video.dimensions }}";
+        console.log("Video type:", video_type);
+        window.VIDEOTYPE = video_type;
+</script>
+<script src="{% static 'js/progress.js' %}"></script>
+<script src="{% static 'js/header-toggle.js' %}"></script>
+<script src="{% static 'js/scene.js' %}"></script>
+<script src="{% static 'js/local-scene.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
+
+    <script>
+
+        // Add subscription plan check variable
+        const userSubscriptionPlan = "{{ user_subscription.plan.name|default:'Free Plan'|lower }}";
+        const isFreePlan = userSubscriptionPlan.toLowerCase().includes('free');
+        console.log("User plan:", userSubscriptionPlan, "Is free plan:", isFreePlan);
+        
+        console.log("User plan:", userSubscriptionPlan, "Is free plan:", isFreePlan);
+
+// Apply free plan restrictions on load - more robust implementation
+document.addEventListener('DOMContentLoaded', function() {
+    if(isFreePlan) {
+        // Get the upload card
+        const uploadCard = document.getElementById('uploadCard');
+        
+        if(uploadCard) {
+            // Make sure the upload card has position: relative
+            uploadCard.style.position = 'relative';
+            
+            // Check if overlay exists, if not create it
+            let freeUserOverlay = document.getElementById('freeUserOverlay');
+            if(!freeUserOverlay) {
+                freeUserOverlay = document.createElement('div');
+                freeUserOverlay.id = 'freeUserOverlay';
+                freeUserOverlay.innerHTML = `
+                    <div>
+                        <h3>Asset Upload Restricted</h3>
+                        <p>This feature is only available for premium users. Upgrade your subscription to access asset uploads and other premium features.</p>
+                        <a href="{% url 'manage_subscription' %}" class="upgrade-button">Upgrade Now</a>
+                    </div>
+                `;
+                uploadCard.appendChild(freeUserOverlay);
+            }
+            
+            // Make sure the overlay is displayed
+            freeUserOverlay.style.display = 'flex';
+            
+            // Disable input and button
+            const fileInput = document.getElementById('fileInput');
+            const uploadButton = document.getElementById('videoUploadButton');
+            
+            if(fileInput) {
+                fileInput.disabled = true;
+                fileInput.title = "Upgrade to premium to use this feature";
+            }
+            
+            if(uploadButton) {
+                uploadButton.disabled = true;
+                uploadButton.style.opacity = '0.5';
+                uploadButton.title = "Upgrade to premium to use this feature";
+            }
+        }
+        
+        // Monitor subtitle count for free users
+        checkSubtitleLimit();
+    }
+});
+        // Check subtitle limits for free users
+        function checkSubtitleLimit() {
+            if(!isFreePlan) return true;
+            
+            const subtitleCount = slides ? slides.length : 0;
+            const createLeadBtn = document.getElementById('createLeadBtn');
+            const subtitleLimitError = document.getElementById('subtitle-limit-error');
+            
+            console.log("Current subtitle count:", subtitleCount);
+            
+            if(subtitleCount >= 10) {
+                // Disable add button
+                if(createLeadBtn) {
+                    createLeadBtn.style.opacity = '0.5';
+                    createLeadBtn.style.pointerEvents = 'none';
+                }
+                
+                // Show error message
+                if(subtitleLimitError) {
+                    subtitleLimitError.style.display = 'block';
+                }
+                
+                return false;
+            } else {
+                // Enable add button
+                if(createLeadBtn) {
+                    createLeadBtn.style.opacity = '1';
+                    createLeadBtn.style.pointerEvents = 'auto';
+                }
+                
+                // Hide error message
+                if(subtitleLimitError) {
+                    subtitleLimitError.style.display = 'none';
+                }
+                
+                return true;
+            }
+        }
+        
+        // Override file upload validation 
+        document.querySelector('form[enctype="multipart/form-data"]').addEventListener('submit', function(e) {
+            if(isFreePlan) {
+                const fileInput = document.querySelector('input[name="videotextfile"]');
+                if(fileInput && fileInput.files && fileInput.files[0]) {
+                    // Read the file to check how many lines (subtitles) it contains
+                    // and check if any line exceeds the character limit
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const content = event.target.result;
+                        const lines = content.split('\n').filter(line => line.trim() !== '');
+                        
+                        // Access MAX_SUBTITLE_LENGTH from window object to ensure we use the one from scene.js
+                        const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+                        
+                        // Check character limit for each line
+                        const exceededLines = lines.filter(line => line.length > maxLength);
+                        
+                        if(exceededLines.length > 0) {
+                            e.preventDefault();
+                            alert(`${exceededLines.length} line(s) in your file exceed the ${maxLength} character limit. Please edit your file and try again.`);
+                            return false;
+                        }
+                        
+                        if(lines.length > 10) {
+                            e.preventDefault();
+                            alert('Free plan users are limited to 10 subtitles. Your file contains ' + lines.length + ' lines. Please upload a smaller file or upgrade your subscription.');
+                            return false;
+                        }
+                        // If acceptable, let the form submit
+                        e.target.submit();
+                    };
+                    
+                    e.preventDefault(); // Prevent default while we check the file
+                    reader.readAsText(fileInput.files[0]);
+                }
+            } else {
+                // For premium users, only check character limits
+                const fileInput = document.querySelector('input[name="videotextfile"]');
+                if(fileInput && fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const content = event.target.result;
+                        const lines = content.split('\n').filter(line => line.trim() !== '');
+                        
+                        // Access MAX_SUBTITLE_LENGTH from window object
+                        const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+                        
+                        // Check character limit for each line
+                        const exceededLines = lines.filter(line => line.length > maxLength);
+                        
+                        if(exceededLines.length > 0) {
+                            e.preventDefault();
+                            alert(`${exceededLines.length} line(s) in your file exceed the ${maxLength} character limit. Please edit your file and try again.`);
+                            return false;
+                        }
+                        
+                        // If acceptable, let the form submit
+                        e.target.submit();
+                    };
+                    
+                    e.preventDefault(); // Prevent default while we check the file
+                    reader.readAsText(fileInput.files[0]);
+                }
+            }
+        });
+        
+        // Modify loadScript to enforce subtitle limits
+        const originalLoadScript = loadScript;
+        loadScript = function(clips) {
+            originalLoadScript(clips);
+            
+            // Check subtitle limits after loading script
+            setTimeout(checkSubtitleLimit, 100);
+        };
+        
+        // Override createLeadBtn click handler to check limits
+        document.getElementById('createLeadBtn').addEventListener('click', function(e) {
+            if(isFreePlan) {
+                const subtitleCount = slides ? slides.length : 0;
+                
+                if(subtitleCount >= 10) {
+                    e.preventDefault();
+                    const subtitleLimitError = document.getElementById('subtitle-limit-error');
+                    if(subtitleLimitError) {
+                        subtitleLimitError.style.display = 'block';
+                    }
+                    return false;
+                }
+            }
+        });
+        
+        // Debug output of clips from Django
+        let clips = [];
+        {% for clip in clips %}
+                clips.push({
+                    id: {{ clip.id|default:"0" }},
+                    text: "{{ clip.text|escapejs }}".trim(),
+                    sequence: {{ clip.sequence|default:"0" }},
+                });
+            console.log("Clip: {{ clip.id|default:'0' }} - {{ clip.text|escapejs }}");
+        {% endfor %}
+        loadScript(clips);
+
+        // Pass subclips data directly from Django to JavaScript
+        let initialSubclips = [];
+        {% if subclips %}
+            {% for subclip in subclips %}
+                initialSubclips.push({
+                    clip_id: {{ subclip.clip.id }},
+                    subclip_id: {{ subclip.id }},
+                    text: "{{ subclip.text|escapejs }}",
+                    video_file: "{{ subclip.video_file.url|default:'' |escapejs }}"
+                });
+            {% endfor %}
+        {% endif %}
+        
+        // Initialize highlighting with subclips data
+        if (initialSubclips.length > 0) {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Wait for loadScript to finish before processing subclips
+                setTimeout(() => {
+                    processInitialSubclips(initialSubclips);
+                }, 300);
+            });
+        }
+        
+        // Make sure to set up event listeners for highlighted text after they're loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                // Add click handlers for all highlighted text
+                document.querySelectorAll('mark.handlePopupSubmit').forEach(mark => {
+                    mark.addEventListener('click', (e) => {
+                        const slideId = parseInt(e.target.closest('[data-id]').dataset.id);
+                        selectedSlideId = slideId;
+                        selectedText = e.target.textContent;
+                        popupOpen = true;
+                        renderPopup();
+                    });
+                });
+            }, 500);
+        });
+
+        // Store asset folders and their files
+        let assetFolders = {};
+        {% for folder in asset_folders %}
+            assetFolders["{{ folder.name }}"] = [];
+            {% for asset in folder.assets %}
+                {% if asset.content_type and asset.content_type|slice:":5" == "video" %}
+                assetFolders["{{ folder.name }}"].push({
+                    id: {{ asset.id }},
+                    filename: "{{ asset.filename|escapejs }}",
+                    key: "{{ asset.key|escapejs }}",
+                    url: "{{ asset.s3_url }}"
+                });
+                {% endif %}
+            {% endfor %}
+            console.log("Added folder: {{ folder.name }} with {{ folder.assets|length }} total assets");
+        {% endfor %}
+
+        function handleTopicChange(event) {
+            const selectedTopic = event.target.value;
+            console.log("Topic selected:", selectedTopic);
+            popupTopic = selectedTopic;
+            
+            // Show/hide video clips based on the selected folder
+            const videoSelect = document.getElementById('videoSelect');
+            if (!videoSelect) return;
+
+            // Show options for the selected folder, hide others
+            const optgroups = videoSelect.querySelectorAll('optgroup');
+            optgroups.forEach(group => {
+                if (group.getAttribute('data-folder') === selectedTopic) {
+                    group.style.display = 'block';
+                } else {
+                    group.style.display = 'none';
+                }
+            });
+
+            // Enable all options in the selected group
+            const options = videoSelect.querySelectorAll(`optgroup[data-folder="${selectedTopic}"] option`);
+            options.forEach(option => {
+                option.disabled = false;
+            });
+
+            // Reset selected video
+            popupVideoClip = "";
+            videoSelect.value = "";
+            
+            // Update submit button state
+            const submitButton = document.getElementById('submit-clip');
+            if (submitButton) {
+                submitButton.disabled = !popupFile;
+            }
+        }
+
+        function handleVideoClipChange(event) {
+            const selectedVideo = event.target.value;
+            console.log("Video selected:", selectedVideo);
+            popupVideoClip = selectedVideo;
+            
+            // Enable submit button
+            const submitButton = document.getElementById('submit-clip');
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
+        }
+
+        // These functions are for selecting and handling files in the popup
+        function handlePopupFileChange(e) {
+            console.log("File change event triggered");
+            const fileInput = document.getElementById('slide_file');
+            
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                popupFile = fileInput.files[0];
+                console.log("Selected file:", popupFile.name);
+                
+                // Update UI
+                const uploadText = document.getElementById("upload-text");
+                if (uploadText) {
+                    const fileName = popupFile.name;
+                    const lastDotIndex = fileName.lastIndexOf('.');
+                    const nameWithoutExt = lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : '';
+                    const extension = lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : '';
+                    const truncatedName = nameWithoutExt.length > 7 ? nameWithoutExt.substring(0, 7) : nameWithoutExt;
+                    uploadText.textContent = truncatedName + extension;
+                }
+                
+                // Show clear file button
+                const clearFileBtn = document.getElementById("clear-file");
+                if (clearFileBtn) {
+                    clearFileBtn.style.display = "inline";
+                }
+                
+                // Enable submit button
+                const submitButton = document.getElementById("submit-clip");
+                if (submitButton) {
+                    submitButton.disabled = false;
+                }
+            } else {
+                console.log("No file selected or file input not found");
+                popupFile = null;
+                
+                // Reset UI
+                const uploadText = document.getElementById("upload-text");
+                if (uploadText) {
+                    uploadText.textContent = "Choose File";
+                }
+                
+                // Hide clear file button
+                const clearFileBtn = document.getElementById("clear-file");
+                if (clearFileBtn) {
+                    clearFileBtn.style.display = "none";
+                }
+                
+                // Disable submit button if no video clip selected
+                const submitButton = document.getElementById("submit-clip");
+                if (submitButton) {
+                    submitButton.disabled = !popupVideoClip;
+                }
+            }
+        }
+
+        function clearPopupFile() {
+            console.log("Clearing file selection");
+            popupFile = null;
+            
+            // Reset file input
+            const fileInput = document.getElementById("slide_file");
+            if (fileInput) {
+                fileInput.value = '';
+            }
+            
+            // Reset UI
+            const uploadText = document.getElementById("upload-text");
+            if (uploadText) {
+                uploadText.textContent = "Choose File";
+            }
+            
+            const clearFileBtn = document.getElementById("clear-file");
+            if (clearFileBtn) {
+                clearFileBtn.style.display = "none";
+            }
+            
+            // Disable submit button if no video clip selected
+            const submitButton = document.getElementById("submit-clip");
+            if (submitButton) {
+                submitButton.disabled = !popupVideoClip;
+            }
+        }
+
+        // function handlePopupSubmit(e) {
+        //     e.preventDefault();
+        //     console.log("Submitting popup form...");
+        //     console.log("FROM HTML")
+            
+        //     // Check for free plan restrictions
+        //     if(isFreePlan) {
+        //         const subtitleCount = slides ? slides.length : 0;
+        //         if(subtitleCount >= 10) {
+        //             popupErrorMessage = "Free plan users are limited to 10 subtitles. Please upgrade your subscription.";
+        //             renderPopup();
+        //             return;
+        //         }
+                
+        //         // Ensure free users can't use asset selection even if they try to bypass UI
+        //         const selectedTopic = document.getElementById('selected_topic')?.value;
+        //         const selectedVideo = document.getElementById('videoSelect')?.value;
+        //         const hasVideoSelection = selectedTopic && selectedVideo;
+                
+        //         if(hasVideoSelection) {
+        //             popupErrorMessage = "Asset selection requires a premium subscription. Please upload a file instead.";
+        //             renderPopup();
+        //             return;
+        //         }
+        //     }
+            
+        //     // Check if file is selected
+        //     const fileInput = document.getElementById('slide_file');
+        //     const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+            
+        //     console.log("File input exists:", !!fileInput);
+        //     console.log("Files array exists:", !!(fileInput && fileInput.files));
+        //     console.log("Files length:", fileInput && fileInput.files ? fileInput.files.length : 0);
+        //     console.log("Has file:", hasFile);
+        //     console.log("popupFile:", popupFile);
+            
+        //     // Check if asset is selected
+        //     const selectedTopic = document.getElementById('selected_topic')?.value;
+        //     const selectedVideo = document.getElementById('videoSelect')?.value;
+        //     const hasVideoSelection = selectedTopic && selectedVideo;
+            
+        //     console.log("Selected topic:", selectedTopic);
+        //     console.log("Selected video:", selectedVideo);
+        //     console.log("Has video selection:", hasVideoSelection);
+            
+        //     // Validate that we have either a file or an asset selected
+        //     if (!hasFile && !hasVideoSelection) {
+        //         popupErrorMessage = "Please select a video file or choose a video from your assets.";
+        //         console.log("Validation error:", popupErrorMessage);
+        //         renderPopup();
+        //         return;
+        //     }
+            
+        //     // Get CSRF token from cookie
+        //     function getCookie(name) {
+        //         let cookieValue = null;
+        //         if (document.cookie && document.cookie !== '') {
+        //             const cookies = document.cookie.split(';');
+        //             for (let i = 0; i < cookies.length; i++) {
+        //                 const cookie = cookies[i].trim();
+        //                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        //                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        //                     break;
+        //                 }
+        //             }
+        //         }
+        //         return cookieValue;
+        //     }
+            
+        //     const csrftoken = getCookie('csrftoken');
+        //     console.log("CSRF Token obtained:", !!csrftoken);
+            
+        //     // Process file upload
+        //     if (hasFile) {
+        //         console.log("Processing file upload");
+        //         // Get the file from the input element directly to ensure we have the latest
+        //         const file = fileInput.files[0];
+        //         console.log("File to upload:", file.name, file.size, file.type);
+                
+        //         // Create FormData for file upload
+        //         const formData = new FormData();
+        //         formData.append('slide_file', file);
+        //         formData.append('slide_text', selectedText);
+        //         formData.append('clipId', selectedSlideId);
+                
+        //         console.log("FormData created with:", {
+        //             slide_text: selectedText,
+        //             clipId: selectedSlideId,
+        //             file_name: file.name
+        //         });
+                
+        //         // Send API request - CRITICAL PART FOR BACKEND
+        //         console.log("Sending API request to /handle-clip-assignment/");
+        //         fetch('/handle-clip-assignment/', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'X-CSRFToken': csrftoken
+        //             },
+        //             body: formData
+        //         })
+        //         .then(response => {
+        //             console.log("API Response received:", response.status, response.statusText);
+        //             return response.json();
+        //         })
+        //         .then(data => {
+        //             console.log("API Response data:", data);
+                    
+        //             if (data.success) {
+        //                 console.log("File upload successful:", data);
+                        
+        //                 // Store file in window object for later processing
+        //                 if (!window.videoFiles) window.videoFiles = {};
+        //                 const highlightId = `highlight_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        //                 window.videoFiles[highlightId] = file;
+                        
+        //                 // Create a temporary URL for the file
+        //                 const fileUrl = data.file_url || URL.createObjectURL(file);
+        //                 console.log("File URL for highlight:", fileUrl);
+                        
+        //                 // Update highlighted text with video file
+        //                 slides = slides.map(slide => {
+        //                     if (slide.id === selectedSlideId) {
+        //                         let newMarkedText = slide.markedText || slide.text || "";
+                                
+        //                         // Check if this text is already highlighted
+        //                         const isAlreadyHighlighted = newMarkedText.includes(`<mark class="handlePopupSubmit">${selectedText}</mark>`) || 
+        //                                                    new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(selectedText)}</mark>`, 'i').test(newMarkedText);
+                                
+        //                         // If it's already highlighted, remove the existing highlight first
+        //                         if (isAlreadyHighlighted) {
+        //                             // Remove the existing highlight for this text
+        //                             const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(selectedText)}</mark>`, 'i');
+        //                             newMarkedText = newMarkedText.replace(regex, selectedText);
+        //                         }
+                                
+        //                         // Now add the new highlight with video file reference
+        //                         const regex = new RegExp(`(${escapeRegExp(selectedText)})(?![^<]*>)`, "i");
+        //                         newMarkedText = newMarkedText.replace(
+        //                             regex,
+        //                             `<mark class="handlePopupSubmit" data-highlight-id="${highlightId}" data-video-file="${fileUrl}">${selectedText}</mark>`
+        //                         );
+                                
+        //                         return {
+        //                             ...slide,
+        //                             markedText: newMarkedText,
+        //                             isEditing: false
+        //                         };
+        //                     }
+        //                     return slide;
+        //                 });
+                        
+        //                 console.log("Updated slide with file highlight, ID:", highlightId);
+        //             } else {
+        //                 console.error("File upload failed:", data.error);
+        //                 popupErrorMessage = data.error || "Failed to upload the file. Please try again.";
+        //                 renderPopup();
+        //                 return;
+        //             }
+                    
+        //             // Close popup and reset state
+        //             popupOpen = false;
+        //             popupFile = null;
+        //             popupTopic = "";
+        //             popupVideoClip = "";
+        //             selectedText = "";
+        //             selectedSlideId = null;
+                    
+        //             // Update UI
+        //             renderSlides();
+        //             closePopup();
+                    
+        //             console.log("Popup submitted successfully");
+        //         })
+        //         .catch(error => {
+        //             console.error("API error:", error);
+        //             console.error("Error details:", error.message, error.stack);
+        //             popupErrorMessage = "An error occurred. Please try again.";
+        //             renderPopup();
+        //         });
+        //     } 
+        //     // Process asset selection
+        //     else if (hasVideoSelection) {
+        //         console.log("Processing asset selection");
+                
+        //         // Get the URL from the selected option's data-url attribute
+        //         let fileUrl = "";
+        //         const videoSelectElement = document.getElementById('videoSelect');
+        //         if (videoSelectElement && videoSelectElement.selectedIndex >= 0) {
+        //             const selectedOption = videoSelectElement.options[videoSelectElement.selectedIndex];
+        //             fileUrl = selectedOption.dataset.url;
+        //             console.log("Selected video URL:", fileUrl);
+        //         }
+                
+        //         // Prepare data for the API request
+        //         const data = {
+        //             slide_text: selectedText,
+        //             clipId: selectedSlideId,
+        //             selected_topic: selectedTopic,
+        //             selected_video: selectedVideo
+        //         };
+                
+        //         console.log("Sending JSON data to API:", data);
+                
+        //         // Send API request - CRITICAL PART FOR BACKEND
+        //         fetch('/handle-clip-assignment/', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'X-CSRFToken': csrftoken
+        //             },
+        //             body: JSON.stringify(data)
+        //         })
+        //         .then(response => {
+        //             console.log("API Response received:", response.status, response.statusText);
+        //             return response.json();
+        //         })
+        //         .then(data => {
+        //             console.log("API Response data:", data);
+                    
+        //             if (data.success) {
+        //                 console.log("Asset selection successful:", data);
+                        
+        //                 // Update highlighted text with asset reference
+        //                 slides = slides.map(slide => {
+        //                     if (slide.id === selectedSlideId) {
+        //                         let newMarkedText = slide.markedText || slide.text || "";
+                                
+        //                         // Check if this text is already highlighted
+        //                         const isAlreadyHighlighted = newMarkedText.includes(`<mark class="handlePopupSubmit">${selectedText}</mark>`) || 
+        //                                                    new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(selectedText)}</mark>`, 'i').test(newMarkedText);
+                                
+        //                         // If it's already highlighted, remove the existing highlight first
+        //                         if (isAlreadyHighlighted) {
+        //                             // Remove the existing highlight for this text
+        //                             const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(selectedText)}</mark>`, 'i');
+        //                             newMarkedText = newMarkedText.replace(regex, selectedText);
+        //                         }
+                                
+        //                         // Now add the new highlight with asset reference
+        //                         const regex = new RegExp(`(${escapeRegExp(selectedText)})(?![^<]*>)`, "i");
+        //                         newMarkedText = newMarkedText.replace(
+        //                             regex,
+        //                             `<mark class="handlePopupSubmit" data-topic="${selectedTopic}" data-video-key="${selectedVideo}" data-video-file="${data.file_url}">${selectedText}</mark>`
+        //                         );
+                                
+        //                         return {
+        //                             ...slide,
+        //                             markedText: newMarkedText,
+        //                             isEditing: false
+        //                         };
+        //                     }
+        //                     return slide;
+        //                 });
+                        
+        //                 console.log("Updated slide with asset highlight");
+        //             } else {
+        //                 console.error("Asset selection failed:", data.error);
+        //                 popupErrorMessage = data.error || "Failed to assign the asset. Please try again.";
+        //                 renderPopup();
+        //                 return;
+        //             }
+                    
+        //             // Close popup and reset state
+        //             popupOpen = false;
+        //             popupFile = null;
+        //             popupTopic = "";
+        //             popupVideoClip = "";
+        //             selectedText = "";
+        //             selectedSlideId = null;
+                    
+        //             // Update UI
+        //             renderSlides();
+        //             closePopup();
+                    
+        //             console.log("Popup submitted successfully");
+        //         })
+        //         .catch(error => {
+        //             console.error("API error:", error);
+        //             console.error("Error details:", error.message, error.stack);
+        //             popupErrorMessage = "An error occurred. Please try again.";
+        //             renderPopup();
+        //         });
+        //     }
+        // }
+    
+    
+    function handlePopupSubmit(e) {
+    e.preventDefault();
+    console.log("Submitting popup form...");
+    
+    // Check for free plan restrictions
+    if(isFreePlan) {
+        const subtitleCount = slides ? slides.length : 0;
+        if(subtitleCount >= 10) {
+            popupErrorMessage = "Free plan users are limited to 10 subtitles. Please upgrade your subscription.";
+            renderPopup();
+            return;
+        }
+        
+        // Ensure free users can't use asset selection even if they try to bypass UI
+        const selectedTopic = document.getElementById('selected_topic')?.value;
+        const selectedVideo = document.getElementById('videoSelect')?.value;
+        const hasVideoSelection = selectedTopic && selectedVideo;
+        
+        if(hasVideoSelection) {
+            popupErrorMessage = "Asset selection requires a premium subscription. Please upload a file instead.";
+            renderPopup();
+            return;
+        }
+    }
+    
+    // Check if file is selected
+    const fileInput = document.getElementById('slide_file');
+    const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+    
+    // Check if asset is selected
+    const selectedTopic = document.getElementById('selected_topic')?.value;
+    const selectedVideo = document.getElementById('videoSelect')?.value;
+    const hasVideoSelection = selectedTopic && selectedVideo;
+    
+    // Validate that we have either a file or an asset selected
+    if (!hasFile && !hasVideoSelection) {
+        popupErrorMessage = "Please select a video file or choose a video from your assets.";
+        renderPopup();
+        return;
+    }
+    
+    // Store values before closing popup
+    const savedSlideId = selectedSlideId;
+    const savedText = selectedText;
+    const savedFile = hasFile ? fileInput.files[0] : null;
+    const savedTopic = selectedTopic;
+    const savedVideo = selectedVideo;
+    
+    // Close popup immediately after validation
+    popupOpen = false;
+    popupFile = null;
+    popupTopic = "";
+    popupVideoClip = "";
+    selectedText = "";
+    selectedSlideId = null;
+    
+    // Render the popup closed and update UI
+    closePopup();
+    
+    // Get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    
+    // Process file upload
+    if (hasFile) {
+        console.log("Processing file upload in background");
+        
+        // Create a unique highlight ID for this upload
+        const highlightId = `highlight_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        
+        // Optimistically update the UI immediately - assume success
+        slides = slides.map(slide => {
+            if (slide.id === savedSlideId) {
+                let newMarkedText = slide.markedText || slide.text || "";
+                
+                // Check if this text is already highlighted
+                const isAlreadyHighlighted = newMarkedText.includes(`<mark class="handlePopupSubmit">${savedText}</mark>`) || 
+                                           new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i').test(newMarkedText);
+                
+                // If it's already highlighted, remove the existing highlight first
+                if (isAlreadyHighlighted) {
+                    const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                    newMarkedText = newMarkedText.replace(regex, savedText);
+                }
+                
+                // Create a temporary URL for the file for immediate display
+                const tempFileUrl = URL.createObjectURL(savedFile);
+                
+                // Now add the new highlight with temporary file reference
+                const regex = new RegExp(`(${escapeRegExp(savedText)})(?![^<]*>)`, "i");
+                newMarkedText = newMarkedText.replace(
+                    regex,
+                    `<mark class="handlePopupSubmit" data-highlight-id="${highlightId}" data-video-file="${tempFileUrl}" data-loading="true">${savedText}</mark>`
+                );
+                
+                return {
+                    ...slide,
+                    markedText: newMarkedText,
+                    isEditing: false
+                };
+            }
+            return slide;
+        });
+        
+        // Store file in window object for later processing
+        if (!window.videoFiles) window.videoFiles = {};
+        window.videoFiles[highlightId] = savedFile;
+        
+        // Update UI immediately
+        renderSlides();
+        
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('slide_file', savedFile);
+        formData.append('slide_text', savedText);
+        formData.append('clipId', savedSlideId);
+        
+        // Send API request in the background
+        fetch('/handle-clip-assignment/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("File upload successful:", data);
+                
+                // Update with the real server URL if provided
+                if (data.file_url) {
+                    slides = slides.map(slide => {
+                        if (slide.id === savedSlideId) {
+                            let newMarkedText = slide.markedText || "";
+                            
+                            // Replace the temporary URL with the permanent one
+                            newMarkedText = newMarkedText.replace(
+                                new RegExp(`data-highlight-id="${highlightId}"[^>]*data-loading="true"`, 'i'),
+                                `data-highlight-id="${highlightId}" data-video-file="${data.file_url}"`
+                            );
+                            
+                            return {
+                                ...slide,
+                                markedText: newMarkedText
+                            };
+                        }
+                        return slide;
+                    });
+                    
+                    // Update UI with permanent URL
+                    renderSlides(false);
+                }
+            } else {
+                console.error("File upload failed:", data.error);
+                
+                // If the upload failed, revert the highlight
+                slides = slides.map(slide => {
+                    if (slide.id === savedSlideId) {
+                        let newMarkedText = slide.markedText || "";
+                        
+                        // Find and remove the temporary highlight
+                        const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*data-highlight-id="${highlightId}"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                        newMarkedText = newMarkedText.replace(regex, savedText);
+                        
+                        return {
+                            ...slide,
+                            markedText: newMarkedText
+                        };
+                    }
+                    return slide;
+                });
+                
+                // Remove the file from storage
+                if (window.videoFiles && window.videoFiles[highlightId]) {
+                    delete window.videoFiles[highlightId];
+                }
+                
+                // Update UI
+                renderSlides();
+                
+                // Show error notification
+                showNotification("Upload failed: " + (data.error || "Unknown error"), "error");
+            }
+        })
+        .catch(error => {
+            console.error("API error:", error);
+            
+            // If the API call fails, revert the highlight
+            slides = slides.map(slide => {
+                if (slide.id === savedSlideId) {
+                    let newMarkedText = slide.markedText || "";
+                    
+                    // Find and remove the temporary highlight
+                    const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*data-highlight-id="${highlightId}"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                    newMarkedText = newMarkedText.replace(regex, savedText);
+                    
+                    return {
+                        ...slide,
+                        markedText: newMarkedText
+                    };
+                }
+                return slide;
+            });
+            
+            // Remove the file from storage
+            if (window.videoFiles && window.videoFiles[highlightId]) {
+                delete window.videoFiles[highlightId];
+            }
+            
+            // Update UI
+            renderSlides();
+            
+            // Show error notification
+            showNotification("Upload failed: Network error", "error");
+        });
+    } 
+    // Process asset selection
+    else if (hasVideoSelection) {
+        console.log("Processing asset selection in background");
+        
+        // Create a unique highlight ID for this selection
+        const highlightId = `highlight_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        
+        // Get the URL from the selected option's data-url attribute
+        let fileUrl = "";
+        const videoSelectElement = document.getElementById('videoSelect');
+        if (videoSelectElement && videoSelectElement.selectedIndex >= 0) {
+            const selectedOption = videoSelectElement.options[videoSelectElement.selectedIndex];
+            fileUrl = selectedOption.dataset.url || "";
+        }
+        
+        // Optimistically update the UI immediately - assume success
+        slides = slides.map(slide => {
+            if (slide.id === savedSlideId) {
+                let newMarkedText = slide.markedText || slide.text || "";
+                
+                // Check if this text is already highlighted
+                const isAlreadyHighlighted = newMarkedText.includes(`<mark class="handlePopupSubmit">${savedText}</mark>`) || 
+                                           new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i').test(newMarkedText);
+                
+                // If it's already highlighted, remove the existing highlight first
+                if (isAlreadyHighlighted) {
+                    const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                    newMarkedText = newMarkedText.replace(regex, savedText);
+                }
+                
+                // Now add the new highlight with asset reference
+                const regex = new RegExp(`(${escapeRegExp(savedText)})(?![^<]*>)`, "i");
+                newMarkedText = newMarkedText.replace(
+                    regex,
+                    `<mark class="handlePopupSubmit" data-highlight-id="${highlightId}" data-topic="${savedTopic}" data-video-key="${savedVideo}" data-video-file="${fileUrl}" data-loading="true">${savedText}</mark>`
+                );
+                
+                return {
+                    ...slide,
+                    markedText: newMarkedText,
+                    isEditing: false
+                };
+            }
+            return slide;
+        });
+        
+        // Update UI immediately
+        renderSlides();
+        
+        // Prepare data for the API request
+        const data = {
+            slide_text: savedText,
+            clipId: savedSlideId,
+            selected_topic: savedTopic,
+            selected_video: savedVideo
+        };
+        
+        // Send API request in background
+        fetch('/handle-clip-assignment/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("Asset selection successful:", data);
+                
+                // Update with the real server URL if provided
+                if (data.file_url) {
+                    slides = slides.map(slide => {
+                        if (slide.id === savedSlideId) {
+                            let newMarkedText = slide.markedText || "";
+                            
+                            // Replace the temporary loading attribute
+                            newMarkedText = newMarkedText.replace(
+                                new RegExp(`data-highlight-id="${highlightId}"[^>]*data-loading="true"`, 'i'),
+                                `data-highlight-id="${highlightId}" data-topic="${savedTopic}" data-video-key="${savedVideo}" data-video-file="${data.file_url}"`
+                            );
+                            
+                            return {
+                                ...slide,
+                                markedText: newMarkedText
+                            };
+                        }
+                        return slide;
+                    });
+                    
+                    // Update UI
+                    renderSlides(false);
+                }
+            } else {
+                console.error("Asset selection failed:", data.error);
+                
+                // If the selection failed, revert the highlight
+                slides = slides.map(slide => {
+                    if (slide.id === savedSlideId) {
+                        let newMarkedText = slide.markedText || "";
+                        
+                        // Find and remove the temporary highlight
+                        const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*data-highlight-id="${highlightId}"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                        newMarkedText = newMarkedText.replace(regex, savedText);
+                        
+                        return {
+                            ...slide,
+                            markedText: newMarkedText
+                        };
+                    }
+                    return slide;
+                });
+                
+                // Update UI
+                renderSlides();
+                
+                // Show error notification
+                showNotification("Asset selection failed: " + (data.error || "Unknown error"), "error");
+            }
+        })
+        .catch(error => {
+            console.error("API error:", error);
+            
+            // If the API call fails, revert the highlight
+            slides = slides.map(slide => {
+                if (slide.id === savedSlideId) {
+                    let newMarkedText = slide.markedText || "";
+                    
+                    // Find and remove the temporary highlight
+                    const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*data-highlight-id="${highlightId}"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                    newMarkedText = newMarkedText.replace(regex, savedText);
+                    
+                    return {
+                        ...slide,
+                        markedText: newMarkedText
+                    };
+                }
+                return slide;
+            });
+            
+            // Update UI
+            renderSlides();
+            
+            // Show error notification
+            showNotification("Asset selection failed: Network error", "error");
+        });
+    }
+}
+
+// Helper function to show notifications
+function showNotification(message, type = "info") {
+    // Create notification element if it doesn't exist
+    let notification = document.getElementById('notification-popup');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'notification-popup';
+        notification.className = 'notification';
+        document.body.appendChild(notification);
+    }
+    
+    // Set notification type class
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Show notification
+    notification.style.display = 'block';
+    notification.style.opacity = '1';
+    
+    // Hide notification after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 300);
+    }, 3000);
+}
+
+// Add this CSS to your page for notifications
+function addNotificationStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .notification.info {
+            background-color: #3498db;
+        }
+        
+        .notification.success {
+            background-color: #2ecc71;
+        }
+        
+        .notification.error {
+            background-color: #e74c3c;
+        }
+        
+        .notification.warning {
+            background-color: #f39c12;
+        }
+        
+        /* Add loading indicator for highlights that are being processed */
+        mark.handlePopupSubmit[data-loading="true"] {
+            background-color: rgba(134, 74, 249, 0.3);
+            position: relative;
+        }
+        
+        mark.handlePopupSubmit[data-loading="true"]:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            animation: loading-shine 1.5s infinite;
+        }
+        
+        @keyframes loading-shine {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Call this function on page load
+document.addEventListener('DOMContentLoaded', addNotificationStyles);
+    
+        function renderPopup() {
+            let popup = document.querySelector('.popup-modal');
+            if (!popup) {
+                popup = document.createElement('div');
+                popup.className = 'popup-modal';
+                document.body.appendChild(popup);
+            }
+            popup.style.display = popupOpen ? 'flex' : 'none';
+            if (popupOpen) {
+                // Check if free user to apply restrictions
+                const assetsDisabled = isFreePlan ? 'disabled' : '';
+                const assetsStyle = isFreePlan ? 'opacity:0.; pointer-events:none;' : '';
+                const assetsMessage = isFreePlan ? '<p style="color:#ff5555;font-size:11px;margin:5px 0 0;text-align:center;">Asset selection requires premium plan</p>' : '';
+                
+                popup.innerHTML = `
+                    <div class="popup-container">
+                        <div class="close-btnx close-btn">
+                            <button class="close-popup" onclick="closePopup()">X</button>
+                        </div>
+                        <div id="modal-cont">
+                            <form class="popup-content" style="grid-template-columns: 0.7fr 1fr; width: 100%;" onsubmit="handlePopupSubmit(event)">
+                                <br>
+                                <input type="hidden" name="csrfmiddlewaretoken" value="">
+                                <div id="submit-cont">
+                                <div class="form-group" style=" padding-left: 0px; padding-right: 0px;">
+                                <h4 style="margin-bottom: 15px; margin-top: 0px; color: rgb(51, 51, 51);">Selected Text:</h4>
+                                <div style="margin-bottom: 15px; padding: 7px; background: rgb(240, 240, 240); border-radius: 6px; border: 1px solid rgb(224, 224, 224); font-size: 18px; color: rgb(25, 25, 25);">${selectedText}</div></div>
+                                    <div class="form-group">
+                                        <input id="slide_text" hidden name="slide_text" value="${selectedText}" readonly class="form-input">
+                                    </div>
+                                    <input id="clipId" type="number" hidden name="clipId" value="2298" readonly>
+                                    <input type="text" hidden id="remaining" name="remaining" value="starting with a tingling sensation in my back." readonly>
+                                    <div style="display: grid; grid-template-columns: 0.7fr 1fr; border-radius: 8px; border: 1px solid #00000080; overflow: hidden;" class="form-grid-cont">
+                                        <div class="grid-item title form-grid-item begin column-1">
+                                            <span style="height: 50px; align-items: center;">Upload Scene</span>
+                                        </div>
+                                        <div class="grid-item title form-grid-item end column-2" style="${assetsStyle}">
+                                            <span style="height: 50px; align-items: center; margin-left: -18px;">Upload Scene From Assets Folder</span>
+                                        </div>
+                                        <div class="form-grid-item main-item">
+                                            <div class="form-group" style="height: 100%;">
+                                                <div class="upload-container">
+                                                    <label for="slide_file" class="upload-label">
+                                                        <img src="/images/upload.svg" alt="" class="uploadSvg">
+                                                        <span id="upload-text">${popupFile ? popupFile.name.slice(0, 7) + (popupFile.name.includes('.') ? popupFile.name.slice(popupFile.name.lastIndexOf('.')) : '') : 'Choose File'}</span>
+                                                    </label>
+                                                    <i id="clear-file" style="display: ${popupFile ? 'inline' : 'none'};" onclick="clearPopupFile()" class="ri-close-circle-line"></i>
+                                                    <input type="file" id="slide_file" name="slide_file" class="upload-input" accept="video/*" onchange="handlePopupFileChange(event)">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="border-left: 0.8px solid #864AF9; ${assetsStyle}" class="form-grid-item">
+                                            <div class="form-group">
+                                                <select id="selected_topic" name="selected_topic" class="form-select" onchange="handleTopicChange(event)" ${assetsDisabled}>
+                                                    <option value="" ${!popupTopic ? 'selected' : ''}>Select Folder</option>
+                                                    {% for asset_folder in asset_folders %}
+                                                    <option value="{{ asset_folder.name }}" ${popupTopic === "{{ asset_folder.name }}" ? 'selected' : ''}>{{ asset_folder.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <select id="videoSelect" name="selected_video" class="form-select" onchange="handleVideoClipChange(event)" ${assetsDisabled}>
+                                                    <option value="" disabled ${!popupVideoClip ? 'selected' : ''}>Select A Video Clip</option>
+                                                    {% for asset_folder in asset_folders %}
+                                                        <optgroup label="{{ asset_folder.name }}" data-folder="{{ asset_folder.name }}" style="display: ${popupTopic === '{{ asset_folder.name }}' ? 'block' : 'none'};">
+                                                            {% for video in asset_folder.assets %}
+                                                            <option value="{{ video.key }}" data-folder="{{ asset_folder.name }}" ${popupTopic === "{{ asset_folder.name }}" && popupVideoClip === "{{ video.key }}" ? 'selected' : ''}>{{ video.filename }}</option>
+                                                            {% endfor %}
+                                                        </optgroup>
+                                                    {% endfor %}
+                                                </select>
+                                                ${assetsMessage}
+                                                <p style="color: red; font-size: 13px; margin-top: 5px;" id="error-slide">${popupErrorMessage}</p>
+                                            </div>
+                                            <input type="number" hidden id="is_tiktok" name="is_tiktok" value="0" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="align-items: end;" class="form-group ai-form">
+                                <a href="javascript:void(0);" id="ai-clip">Click For AI Scene Suggestions</a>
+                                    <button type="submit" id="submit-clip" class="submit-btn" ${popupFile || (!isFreePlan && popupTopic && popupVideoClip) ? '' : 'disabled'}>
+                                        Submit
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        // Function to handle AI scene suggestions button click
+function handleAISceneSuggestions() {
+    // Get currently selected text from the popup
+    const selectedText = document.getElementById('slide_text')?.value || '';
+    
+    if (!selectedText.trim()) {
+        alert('Please select text first to get scene suggestions');
+        return;
+    }
+    
+    // Show loading state
+    showAILoadingModal();
+    
+    // Get CSRF token
+    const csrftoken = getCookie('csrftoken');
+    
+    // Make API call to generate scene suggestions
+    fetch('/generate-scene-suggestions/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            prompt: selectedText
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showAISuggestionsModal(data);
+        } else {
+            showAIErrorModal(data.message || 'Failed to generate scene suggestions');
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching scene suggestions:', error);
+        showAIErrorModal('An error occurred while fetching scene suggestions');
+    });
+}
+
+// Function to show loading modal
+function showAILoadingModal() {
+    // Create or get modal container
+    let modal = document.getElementById('ai-suggestions-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'ai-suggestions-modal';
+        modal.className = 'ai-modal';
+        document.body.appendChild(modal);
+    }
+    
+    // Set loading content
+    modal.innerHTML = `
+        <div class="ai-modal-content">
+            <div class="ai-modal-header">
+                <h3>Generating Scene Suggestions</h3>
+                <button class="ai-modal-close" onclick="closeAIModal()">×</button>
+            </div>
+            <div class="ai-modal-body" style="text-align: center;">
+                <div class="ai-loading-spinner"></div>
+                <p>Our AI is generating creative scene suggestions for your text...</p>
+            </div>
+        </div>
+    `;
+    
+    // Display modal
+    modal.style.display = 'flex';
+}
+
+// Function to show suggestions modal
+function showAISuggestionsModal(data) {
+    // Create or get modal container
+    let modal = document.getElementById('ai-suggestions-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'ai-suggestions-modal';
+        modal.className = 'ai-modal';
+        document.body.appendChild(modal);
+    }
+    
+    // Generate suggestions HTML
+    let suggestionsHTML = '';
+    data.suggestions.forEach((suggestion, index) => {
+        // Remove "Scene Description: " prefix if present
+        let description = suggestion.description;
+        if (description.startsWith('Scene Description: ')) {
+            description = description.substring('Scene Description: '.length);
+        }
+        
+        suggestionsHTML += `
+            <div class="ai-suggestion-card">
+                <div class="ai-suggestion-number">${index + 1}</div>
+                <div class="ai-suggestion-content">
+                    <p>${description}</p>
+                    <div class="ai-suggestion-links">
+                        <a href="${suggestion.pexels_url}" target="_blank" class="ai-link pexels-link">
+                            <span>Pexels</span>
+                        </a>
+                        <a href="${suggestion.storyblocks_url}" target="_blank" class="ai-link storyblocks-link">
+                            <span>Storyblocks</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Set modal content
+    modal.innerHTML = `
+        <div class="ai-modal-content">
+            <div class="ai-modal-header">
+                <h3>AI Scene Suggestions</h3>
+                <button class="ai-modal-close" onclick="closeAIModal()">×</button>
+            </div>
+            <div class="ai-modal-body">
+                <p class="ai-intro">Here are some scene suggestions for: <strong>"${document.getElementById('slide_text')?.value || ''}"</strong></p>
+                <div class="ai-suggestions-container">
+                    ${suggestionsHTML}
+                </div>
+                <p class="ai-note">Click on Pexels or Storyblocks links to search for these scenes</p>
+            </div>
+        </div>
+    `;
+    
+    // Display modal
+    modal.style.display = 'flex';
+}
+
+// Function to show error modal
+function showAIErrorModal(message) {
+    // Create or get modal container
+    let modal = document.getElementById('ai-suggestions-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'ai-suggestions-modal';
+        modal.className = 'ai-modal';
+        document.body.appendChild(modal);
+    }
+    
+    // Set error content
+    modal.innerHTML = `
+        <div class="ai-modal-content">
+            <div class="ai-modal-header">
+                <h3>Error</h3>
+                <button class="ai-modal-close" onclick="closeAIModal()">×</button>
+            </div>
+            <div class="ai-modal-body" style="text-align: center;">
+                <p style="color: #ff5050;">${message}</p>
+                <button class="ai-try-again-btn" onclick="closeAIModal()">Close</button>
+            </div>
+        </div>
+    `;
+    
+    // Display modal
+    modal.style.display = 'flex';
+}
+
+// Function to close AI modal
+function closeAIModal() {
+    const modal = document.getElementById('ai-suggestions-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Helper function to get cookie (for CSRF token)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Update the rendering of popup to add event listener to AI suggestions button
+const originalRenderPopup = renderPopup;
+renderPopup = function() {
+    // Call the original function first
+    originalRenderPopup();
+    
+    // Add event listener to AI scene suggestions button
+    const aiClipButton = document.getElementById('ai-clip');
+    if (aiClipButton) {
+        // Replace href with javascript:void(0) to prevent default link behavior
+        aiClipButton.href = 'javascript:void(0)';
+        // Add click event listener
+        aiClipButton.addEventListener('click', handleAISceneSuggestions);
+    }
+};
+
+// Add CSS styles for AI scene suggestions modal
+const styleElement = document.createElement('style');
+styleElement.textContent = `
+    .ai-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .ai-modal-content {
+        background-color: #fff;
+        width: 80%;
+        max-width: 700px;
+        max-height: 90vh;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .ai-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background-color: #864AF9;
+        color: white;
+    }
+    
+    .ai-modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+    }
+    
+    .ai-modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+    
+    .ai-modal-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+    }
+    
+    .ai-loading-spinner {
+        border: 4px solid rgba(134, 74, 249, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid #864AF9;
+        width: 40px;
+        height: 40px;
+        animation: ai-spin 1s linear infinite;
+        margin: 20px auto;
+    }
+    
+    @keyframes ai-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .ai-intro {
+        margin-bottom: 20px;
+        font-size: 15px;
+    }
+    
+    .ai-suggestions-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .ai-suggestion-card {
+        display: flex;
+        gap: 15px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .ai-suggestion-number {
+        background-color: #864AF9;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+    
+    .ai-suggestion-content {
+        flex: 1;
+    }
+    
+    .ai-suggestion-content p {
+        margin-top: 0;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+    
+    .ai-suggestion-links {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .ai-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        min-width: 120px;
+    }
+    
+    /* Removed img styling as we're not using images anymore */
+    
+    .pexels-link {
+        background-color: #05A081;
+        color: white;
+    }
+    
+    .pexels-link:hover {
+        background-color: #048b6f;
+    }
+    
+    .storyblocks-link {
+        background-color: #FF6B00;
+        color: white;
+    }
+    
+    .storyblocks-link:hover {
+        background-color: #e05f00;
+    }
+    
+    .ai-note {
+        font-size: 13px;
+        color: #666;
+        margin-top: 20px;
+        text-align: center;
+    }
+    
+    .ai-try-again-btn {
+        background-color: #864AF9;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        margin-top: 15px;
+    }
+    
+    .ai-try-again-btn:hover {
+        background-color: #7038e0;
+    }
+`;
+document.head.appendChild(styleElement);
+
+// Initialize when document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('AI Scene Suggestions initialized');
+});
+    </script>
+</body>
+</html>

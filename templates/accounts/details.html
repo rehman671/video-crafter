@@ -1,0 +1,496 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {% include 'partials/head_c.html' %}
+
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+          rel="stylesheet" />
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+          crossorigin="anonymous" />
+
+    <link rel="stylesheet"
+          type="text/css"
+          href="{% static 'accounts/transaction.css' %}"
+          media="screen" />
+    <link rel="stylesheet"
+          type="text/css"
+          href="{% static 'accounts/transaction-responsiveness.css' %}"
+          media="screen" />
+
+    <style>
+      a {
+        text-decoration: none;
+        color: #000000;
+      }
+
+      p {
+        padding: 0;
+        margin: 0;
+ 
+  text-transform:capitalise;
+ 
+      }
+
+      .outer {
+        max-width: 65%;
+        margin: 3rem auto 0 auto;
+        font-family: 'Montserrat';
+      }
+
+      .info-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 8px 8px 0 0;
+        border: 2px solid rgba(0, 0, 0, 0.171);
+        padding: 1.6rem;
+      }
+
+      .info-header h3 {
+        padding: 0;
+        margin: 0;
+      }
+
+      .info-header a {
+        border: 2px solid rgba(0, 0, 0, 0.171);
+        border-radius: 25px;
+        padding: 10px 15px;
+        text-decoration: none;
+        transition: all ease-out 0.2s;
+        font-size: 17px;
+        font-weight: 500;
+      }
+
+      .info-header a:hover {
+        background-color: #864AF9;
+        color: #ffffff;
+        border: 2px solid #864AF9;
+      }
+
+      .inner {
+        border-right: 2px solid rgba(0, 0, 0, 0.171);
+        border-bottom: 2px solid rgba(0, 0, 0, 0.171);
+        border-left: 2px solid rgba(0, 0, 0, 0.171);
+        border-radius: 0 0 8px 8px;
+        padding: 0 30px;
+      }
+
+      .section {
+        border-bottom: 2px solid rgba(0, 0, 0, 0.171);
+        padding: 30px 0;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .section:last-child {
+        border-bottom: none;
+      }
+
+      .section>p:first-of-type {
+        font-weight: 600;
+      }
+
+      .section p {
+        font-size: 18px;
+      }
+
+      .btn {
+        background-color: #cbcbcb;
+        text-transform: capitalize;
+      }
+
+      .active {
+        background-color: #41FF714D;
+      }
+
+      .btn,
+      .active {
+        border-radius: 25px;
+        padding: 10px 15px;
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .section:last-child {
+        display: block;
+      }
+
+      .credit-header {
+        margin-bottom: 25px;
+      }
+
+      .credit-info {
+        display: flex;
+        justify-content: space-between;
+        color: #747474;
+      }
+
+      .second-main p {
+        text-align: center;
+      }
+
+      .credit-box {
+        padding: 35px;
+      }
+
+      .cr {
+        margin-bottom: 23px;
+      }
+
+      .cr+p {
+        margin-bottom: 15px;
+      }
+
+      .credit-box {
+        border-radius: 7px;
+      }
+
+      .box-cont input {
+        padding: 17px 25px;
+        border-radius: 7px;
+      }
+
+      .credit-box button {
+        padding: 17px 25px;
+        border: none;
+        border-radius: 7px;
+      }
+
+      .plans {
+        gap: 2rem;
+        grid-template-columns: repeat(2, 1fr);
+        width: 50%;
+      }
+
+      .box {
+        border-radius: 8px;
+      }
+
+      .box-head {
+        margin-bottom: 20px;
+        text-transform: capitalize;
+      }
+
+      .box p {
+        margin-bottom: 17px;
+      }
+
+      .box a {
+        margin: 20px 0 0 0;
+        width: 100%;
+        color: #000;
+        background-color: #fff;
+        text-transform: capitalize;
+        font-weight: bold;
+        margin-bottom: 0.67rem;
+        font-weight: 500;
+        text-align: center;
+        margin: 0;
+        border: 1px solid #000;
+        border-radius: 9px;
+        padding: 8px;
+        cursor: pointer;
+        font-size: 19px;
+        transition: all ease-out 0.2s;
+        display: block;
+      }
+
+      .box button {
+        margin-bottom: 0;
+      }
+
+      .box a:hover {
+        border: none;
+        background-color: #5f12d1;
+        border: 1px solid #5f12d1;
+        color: white;
+      }
+
+      #up {
+        border: 1px solid #893BFF;
+      }
+
+      .second-main {
+        margin-top: 3rem;
+      }
+
+      .credit-box button[disabled] {
+        background-color: #c4c4c4;
+      }
+
+      .cancel-sub-overlay {
+        position: fixed;
+        background-color: #00000077;
+        z-index: 99999;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .cancel-sub-popup {
+        width: 27%;
+        background-color: #ffffff;
+        padding: 32px 32px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        text-align: center;
+        text-transform: capitalize;
+      }
+
+      .cancel-sub-heading {
+        color: #864AF9;
+        font-size: 20px;
+        margin-bottom: 35px;
+      }
+
+      .cancel-sub-msg {
+        font-size: 17px;
+        margin-bottom: 35px;
+      }
+
+      .cancel-sub-choices {
+        display: flex;
+        justify-content: space-between;
+        width: 50%;
+        margin: 0 auto;
+      }
+
+      .cancel-sub-choices button {
+        border: 2px solid #893bff;
+        background-color: #893bff;
+        border-radius: 10px;
+        padding: 13px 25px;
+        cursor: pointer;
+        font-size: 17px;
+        transition: all ease-out 0.2s;
+        display: block;
+        color: #ffffff;
+      }
+
+      .cancel-sub-choices a {
+        transition: all ease-out 0.2s;
+        display: block;
+        cursor: pointer;
+        font-size: 17px;
+        border-radius: 10px;
+        padding: 13px 25px;
+        text-decoration: none;
+        border: 2px solid #000000;
+      }
+
+      .cancel-sub-choices a:hover {
+        border: 2px solid #893bff;
+        background-color: #893bff;
+        color: #ffffff;
+      }
+
+      .cancel-sub-choices button:hover {
+        background-color: #5f12d1;
+        border: 2px solid #5f12d1;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 1356px) {
+        .plans {
+         
+          grid-template-columns: 1fr;
+          
+        }
+    }
+
+
+      
+    </style>
+  </head>
+  <body>
+    {% include 'sub_header.html' %}
+
+    {% include 'messages.html' %}
+
+    <div class="outer">
+      <div class="info-header">
+        <h3>Subscription Details</h3>
+        <a href="billing-portal">Manage Billing Info</a>
+      </div>
+
+      <div class="inner">
+        <div class="section">
+          <p>Current Plan:</p>
+          <p class="btn">{{ cur_plan.name }}</p>
+        </div>
+
+        <div class="section">
+          <p>Subscription Status:</p>
+          {% if cur_plan.name|lower == 'free'  %}
+            <p class="btn">Trial</p>
+            {% elif  cur_plan.name|lower == 'cancelled'%}
+            <p class="btn">Not Active</p>
+          {% else %}
+            <p class="active">Active</p>
+          {% endif %}
+        </div>
+
+        <div class="section">
+          <p class="credit-header">Credit Usage</p>
+          <div class="credit-info">
+            {% if   cur_plan.name|lower == 'free' or  cur_plan.name|lower == 'cancelled' %}
+            <p>You currently do not have an active plan.</p>
+            <p>Unused credits will expire in  {{days_left}} Days </p>
+            {%else%}
+            <p>Any unused credit will roll over to the next month</p>
+            <p>Next recharge in {{days_left}} Days </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="second-main">
+      <div class="heading">Need More Credits?</div>
+      <p>
+        Out of VSL edits? No worries! Add more edits to your account instantly.
+        Choose the number of extra edits you need, with a minimum of 5,
+        and keep creating high-converting VSLs without delays.
+      </p>
+
+    </div>
+
+    <div class="credit-box">
+      <div class="box-cont">
+        <form action="{% url 'accounts:add_credits' %}" method="post">
+          {% csrf_token %}
+          <p class="cr">Buy More Credits</p>
+          <p>${{ cur_plan.price_per_vsl }} Each</p>
+          <input type="number"
+                 min="1"
+                 name="credits_number"
+                 id="credit"
+                 required
+                 placeholder="Enter the amount of credits" />
+          <button type="submit"
+                  {% if cur_plan.name|lower == 'free' or  cur_plan.name|lower == 'cancelled' %}disabled{% endif %}>Buy</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="main-head">
+      <h1>Plans that scale with your business</h1>
+    </div>
+
+    <div class="plans">
+      <div class="box">
+        <p class="box-head">{{ plans.0.name }} Plan</p>
+        <p id="p">Perfect for scaling your video advertising campaigns</p>
+        <br>
+        <div class="price">
+          <h1>${{ plans.0.price }}</h1>
+          <span>/Month</span>
+        </div>
+        <p id="p">Just ${{ plans.0.price_per_vsl }} per Videos</p>
+        <p id="p" style="min-height: 70px;">
+          <i class="fa-solid fa-check"></i> Create up to {{ plans.0.vsl_limit }} Videos per month
+        </p>
+
+        {% if cur_plan.name|lower == 'growth' %}
+          <button type="button" class="cancel_button" id="up">
+            Cancel Subscription
+          </button>
+        {% elif cur_plan.name|lower == 'free' or cur_plan.name|lower == 'cancelled' %}
+          <a href="{% url 'accounts:upgrade_subscription' price_id=plans.0.stripe_price_id %}?success_path=/accounts/manage-subscription&cancel_path=/accounts/manage-subscription">Upgrade Subscription</a>
+        {% else %}
+          <button type="button" id="downgradeButton">Downgrade Subscription</button>
+        {% endif %}
+      </a>
+    </div>
+
+    <div class="box">
+      <p class="box-head">{{ plans.1.name }} Plan</p>
+      <p id="p">Ideal for high-volume marketers and agencies</p>
+      <br />
+      <div class="price">
+        <h1>${{ plans.1.price }}</h1>
+        <span>/Month</span>
+      </div>
+      <p id="p">Just ${{ plans.1.price_per_vsl }} per Videos</p>
+      <p id="p" style="min-height: 70px;">
+        <i class="fa-solid fa-check"></i> Create up to {{ plans.1.vsl_limit }} Videos per month
+      </p>
+      {% if cur_plan.name|lower == 'pro' %}
+        <button type="button" class="cancel_button" id="up">
+          Cancel Subscription
+        </button>
+      {% else %}
+        <a href="{% url 'accounts:upgrade_subscription' price_id=plans.1.stripe_price_id %}?success_path=/accounts/manage-subscription&cancel_path=/accounts/manage-subscription">Upgrade Subscription</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="cancel-sub-overlay hidden" id="cancelOverlay">
+    <div class="cancel-sub-popup">
+      <p class="cancel-sub-heading">Cancel Subscription?</p>
+      <p class="cancel-sub-msg">
+        Are you sure you want to cancel your subscription?
+      </p>
+      <div class="cancel-sub-choices">
+        <button id="cancelSubPopupNoBtn" type="button">No</button>
+        <a href="{% url 'accounts:cancel_subscription' %}">Yes</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="cancel-sub-overlay hidden" id="downgradeOverlay">
+    <div class="cancel-sub-popup">
+      <p class="cancel-sub-heading">Downgrade Subscription?</p>
+      <p class="cancel-sub-msg">
+        Are you sure you want to downgrade your subscription?
+      </p>
+      <div class="cancel-sub-choices">
+        <button id="downgradeSubPopupNoBtn" type="button">No</button>
+        <a href="{% url 'accounts:downgrade_subscription' %}?success_path=/accounts/manage-subscription&cancel_path=/accounts/manage-subscription">Yes</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelector('.cancel_button').addEventListener('click', () => {
+      document.querySelector('#cancelOverlay').classList.remove('hidden');
+    });
+
+    document.querySelector('#cancelSubPopupNoBtn').addEventListener('click', () => {
+      document.querySelector('#cancelOverlay').classList.add('hidden');
+    });
+
+    document.querySelector('#downgradeButton').addEventListener('click', () => {
+      document.querySelector('#downgradeOverlay').classList.remove('hidden');
+    });
+
+    document.querySelector('#downgradeSubPopupNoBtn').addEventListener('click', () => {
+      document.querySelector('#downgradeOverlay').classList.add('hidden');
+    });
+  </script>
+</body>
+</html>

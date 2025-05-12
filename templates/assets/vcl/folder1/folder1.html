@@ -1,0 +1,102 @@
+{% load static %}
+
+    <link rel="stylesheet" href="{% static 'resources/assets/folder1.css' %}">
+
+    <style>
+        body {
+
+            font-size: 1.0rem!important;
+            
+        }
+        
+        
+        .box > div:first-child {
+
+            font-size: 1.0rem!important;
+  
+        }
+        
+        .box > .log > div {
+
+            font-size: 1.0rem!important;
+        }
+        
+        .log > div > .actions > div {
+            font-size: 0.9rem!important;
+     
+        }
+
+        .box > div > .newFolder {
+            font-size: 1.0rem!important;
+          
+        }
+    </style>
+
+    <div class="content">
+        <div class="box">
+            <div>
+                <div class="folderpath">
+                    <a href="{%url 'video:category_view' %}">Assets Library</a>
+                    <img src="{% static 'resources/assets/assets1/Chevron-down.svg' %}" alt="">
+                </div>
+                <div class="newFolder" style="padding:8px">
+                    
+                    <a hx-get="{% url 'video:upload_video_folder' %}"  hx-target="#confirmation-box" 
+                        hx-swap="innerHTML"> 
+                        <img src="{% static 'resources/assets/assets1/create.svg' %}" alt="">
+                        <span  style="padding-left: 5px;">Import Folder</span> 
+                    </a>
+                </div>
+            </div>
+            <div class="log">
+                <div>
+                    <div>
+                        <input type="checkbox" name="selectall" id="" style="opacity:0;">
+                        <div>Folder Name</div>
+                    </div>
+                    <div>Items</div>
+                    <div>Modified At</div>
+                </div>
+                {% for folder in folders %}
+                <div>
+                    
+                    <div>
+                        <input type="checkbox" name="selectall" id=""style="opacity:0;">
+                        <div>
+                            
+                            <a href="{%url 'video:subcategory_view' folder.id %}">
+                                {{folder.name}}
+                            </a>
+                        </div>
+                    </div>
+                    <div>{{folder.get_clip_number}}</div>
+                    <div>{{folder.updated_at }}</div>
+                    <img src="{% static 'resources/assets/assets1/dots.svg' %}"class="menu" alt="">
+                    <div class="actions">
+                        <div>
+                            <a hx-get="{% url 'video:rename_folder' folder.id %}"  hx-target="#confirmation-box" 
+                            hx-swap="innerHTML">
+                                <img src="{% static 'resources/assets/assets1/rename.svg' %}" alt="">
+                                Rename
+                            </a>
+                        </div>
+                        <div>
+                            <a hx-get="{% url 'video:delete_category' folder.id %}"  hx-target="#confirmation-box" 
+                            hx-swap="innerHTML">
+                                <img src="{% static 'resources/assets/assets1/delete.svg' %}" alt="">
+                                Delete
+                            </a> 
+
+
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+    </div>
+
+    
+    <!-- <script src="{% static 'resources/assets/folder.js' %}"></script> -->

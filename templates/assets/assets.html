@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {%include 'partials/head_c.html' %}
+
+<style>
+   
+    a {
+    text-decoration: none; 
+    color: inherit;        
+    outline: none; 
+    display: flex;     
+    align-items:center;
+    cursor: pointer;
+}
+.newFolder:hover,.newVideo:hover{
+  background-color: #00000010;
+
+}
+.loader {
+display: none;
+position: fixed;
+z-index: 9999;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+width: 50px;
+height: 50px;
+border: 5px solid #f3f3f3;
+border-top: 5px solid #9662f9;
+border-radius: 50%;
+animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+/* Centered video card */
+.video-card {
+/* width: 80%; Adjust as per your need */
+max-width: 400px; /* To restrict excessive width on large screens */
+padding: 20px;
+border-radius: 10px;
+background-color: #f2f2f2; /* Ash color */
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+display: flex;
+justify-content: center;
+align-items: center;
+flex-direction: column;
+}
+.actions{
+display:none
+}
+
+
+</style>
+    
+</head>
+<body>
+<div class="loader"></div>
+    {% include 'sub_header.html' %}
+{% include 'messages.html'%}
+
+<div id="confirmation-box"></div>
+{% if not category_id %}
+{% include 'assets/vcl/folder1/folder1.html' %}
+{% elif  category_id and not video_id %}
+{% include 'assets/vcl/folder2/folder2.html' %}
+{% elif  category_id and video_id %}
+{% include 'assets/vcl/folder3/folder3.html' %}
+{% endif %}
+<script src="{% static 'htmx.js' %}"></script>
+
+<script src="{% static 'resources/assets.js' %}"></script>
+    
+</body>
+</html> 

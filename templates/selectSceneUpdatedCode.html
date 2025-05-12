@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="https://vlsmlsaker.s3.amazonaws.com/favicon/favicon.svg" />
+    <link rel="icon" type="image/png" href="https://vlsmlsaker.s3.amazonaws.com/favicon/favicon.png" sizes="32x32" />
+    <title>VideoCrafter.io</title>
+    <link rel="stylesheet" href="https://vlsmlsaker.s3.amazonaws.com/css/style.css">
+    <!-- <link rel="stylesheet" href="https://vlsmlsaker.s3.amazonaws.com/sceneselection/style.css"> -->
+    <link rel="stylesheet" href="/static/sceneselection/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://vlsmlsaker.s3.amazonaws.com/sceneselection/script.js"></script>
+    <style>
+        /* Modal Background */
+        #popup-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Semi-transparent background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Show the modal */
+        #popup-modal:not(.hidden) {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+
+        /* Modal Content */
+        .sub-div {
+            background: white;
+            border-radius: 8px;
+            padding: 20px 30px;
+            width: 100%;
+            max-width: 750px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: slide-down 0.3s ease-in-out;
+        }
+
+        /* Modal Header */
+        .popup-content .title {
+            background: #864AF9;
+            color: white;
+            border-top: none;
+            font-size: 24px;
+            font-weight: 600;
+            line-height: 29.26px;
+            text-align: center;
+        }
+
+        /* Modal Form Elements */
+        .popup-content select,
+        .popup-content input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            /* margin-bottom: 15px; */
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Submit Button */
+        #popup-submit {
+            font-family: "Montserrat", sans-serif;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            color: white;
+            background: #864AF9;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.02em;
+            text-align: left;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s ease-in-out;
+        }
+
+        .close-btn {
+            display: inline-block;
+            margin-left: 775px;
+        }
+
+        #close-popup {
+            background-color: red;
+            color: white;
+            border: none;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 30px;
+            text-align: center;
+        }
+
+        #close-popup:hover {
+            background-color: darkred;
+        }
+
+
+        #popup-submit {
+            margin-top: 32px;
+            margin-left: 85%;
+        }
+
+        #popup-submit:hover {
+            background: #722df3;
+        }
+
+        /* Animation */
+        @keyframes slide-down {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+    <style>
+        .hidden {
+            display: none;
+        }
+
+        /* Style for the button */
+        .file-button {
+            background: #864af9;
+            border: none;
+            border-radius: 5px;
+            /* Rounded corners */
+            padding: 10px 10px;
+            color: white;
+            font-size: 18px;
+            font-family: 'Arial', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .center-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .card {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            min-height: 370px;
+            max-height: 400px;
+            padding: 20px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .card-header {
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+
+        }
+
+        .card-header h5,
+        h6 {
+
+            font-family: "Montserrat", sans-serif;
+
+            font-weight: 400;
+        }
+
+        .card-body {
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        .card-body a {
+            margin-left: 12px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            color: #6c25be;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 15px;
+            border: 2px solid;
+            margin-bottom: 8px;
+            font-weight: 500;
+            margin-top: 4px;
+            margin-left: 73px !important;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: relative;
+            left: 19px;
+            top: 0;
+        }
+
+        .card-body.upload {
+            position: relative;
+            top: -25px;
+            left: 0;
+            padding-bottom: 2px;
+        }
+
+        @media (max-width:991px) {
+            .card-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body style="position: relative; overflow-x: hidden;">
+
+
+    <link rel="stylesheet" href="https://vlsmlsaker.s3.amazonaws.com/css/music.css" />
+
+    <style>
+        header a:hover {
+            color: #0a58ca;
+        }
+
+        header * {
+            box-sizing: border-box;
+        }
+
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]:after {
+            content: attr(data-tooltip);
+            padding: 6px 8px;
+            position: absolute;
+            left: 50%;
+            bottom: 100%;
+            transform: translateX(-50%);
+            background-color: #000000aa;
+            width: max-content;
+            opacity: 0;
+            -webkit-transition: opacity 0.2s ease-out;
+            color: #ffffff;
+            border-radius: 6px;
+        }
+
+        [data-tooltip]:hover:after {
+            opacity: 1;
+        }
+
+        header a {
+            text-decoration: none;
+            color: inherit;
+            outline: none;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        #pfpdropdown {
+            font-family: "Montserrat", sans-serif;
+            position: absolute;
+            border-radius: 8px;
+            border: 1px solid #00000080;
+            width: 350px;
+            background: white;
+            height: fit-content;
+            top: 10px;
+            right: -50px;
+            z-index: 1000;
+            transition: 0.05s ease-in;
+            transform: scale(0.7);
+            user-select: none;
+        }
+
+        .dropdown {
+            font-family: "Montserrat", sans-serif;
+        }
+
+        .dropdownText {
+            font-family: "Montserrat", sans-serif;
+        }
+
+        .not-present {
+            visibility: hidden;
+            transition: 0.05s ease;
+        }
+
+        .present {
+            /* opacity: 1; */
+            visibility: visible;
+            transition: 0.05s ease;
+        }
+    </style>
+
+    <header style="padding: 8px 108px;
+               border-bottom: 1px solid rgba(0, 0, 0, 0.171)">
+        <div style="display: flex; justify-content: space-between;">
+            <div style="display: flex;
+                align-items: center;
+                cursor: pointer;
+                position: relative">
+                <svg width="252" height="42" viewBox="0 0 252 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M20.656 4.13119C29.7859 4.13119 37.1807 11.526 37.1807 20.656C37.1807 29.7859 29.7859 37.1807 20.656 37.1807C11.526 37.1807 4.13119 29.7859 4.13119 20.656C4.13119 11.526 11.526 4.13119 20.656 4.13119ZM20.656 0C9.25387 0 0 9.25387 0 20.656C0 32.058 9.25387 41.3119 20.656 41.3119C32.058 41.3119 41.3119 32.058 41.3119 20.656C41.3119 9.25387 32.058 0 20.656 0Z"
+                        fill="black" />
+                    <path d="M15.9877 11.2368L30.4055 20.5733L15.9877 29.9098V11.2368Z" fill="#864AF9" />
+                    <path
+                        d="M57.5159 30.6559L49.0599 11.0559H53.9599L61.3519 28.4159H58.4679L65.9719 11.0559H70.4799L61.9959 30.6559H57.5159ZM71.7745 30.6559V15.5919H76.1425V30.6559H71.7745ZM73.9585 13.4919C73.1558 13.4919 72.5025 13.2586 71.9985 12.7919C71.4945 12.3253 71.2425 11.7466 71.2425 11.0559C71.2425 10.3653 71.4945 9.78661 71.9985 9.31994C72.5025 8.85328 73.1558 8.61994 73.9585 8.61994C74.7611 8.61994 75.4145 8.84394 75.9185 9.29194C76.4225 9.72128 76.6745 10.2813 76.6745 10.9719C76.6745 11.6999 76.4225 12.3066 75.9185 12.7919C75.4331 13.2586 74.7798 13.4919 73.9585 13.4919ZM86.3843 30.8799C84.9657 30.8799 83.687 30.5626 82.5483 29.9279C81.4097 29.2746 80.5043 28.3693 79.8323 27.2119C79.179 26.0546 78.8523 24.6919 78.8523 23.1239C78.8523 21.5373 79.179 20.1653 79.8323 19.0079C80.5043 17.8506 81.4097 16.9546 82.5483 16.3199C83.687 15.6853 84.9657 15.3679 86.3843 15.3679C87.6537 15.3679 88.7643 15.6479 89.7163 16.2079C90.6683 16.7679 91.4057 17.6173 91.9283 18.7559C92.451 19.8946 92.7123 21.3506 92.7123 23.1239C92.7123 24.8786 92.4603 26.3346 91.9563 27.4919C91.4523 28.6306 90.7243 29.4799 89.7723 30.0399C88.839 30.5999 87.7097 30.8799 86.3843 30.8799ZM87.1403 27.2959C87.8497 27.2959 88.4937 27.1279 89.0723 26.7919C89.651 26.4559 90.1083 25.9799 90.4443 25.3639C90.799 24.7293 90.9763 23.9826 90.9763 23.1239C90.9763 22.2466 90.799 21.4999 90.4443 20.8839C90.1083 20.2679 89.651 19.7919 89.0723 19.4559C88.4937 19.1199 87.8497 18.9519 87.1403 18.9519C86.4123 18.9519 85.759 19.1199 85.1803 19.4559C84.6017 19.7919 84.135 20.2679 83.7803 20.8839C83.4443 21.4999 83.2763 22.2466 83.2763 23.1239C83.2763 23.9826 83.4443 24.7293 83.7803 25.3639C84.135 25.9799 84.6017 26.4559 85.1803 26.7919C85.759 27.1279 86.4123 27.2959 87.1403 27.2959ZM91.0883 30.6559V27.5759L91.1723 23.0959L90.8923 18.6439V9.87994H95.2603V30.6559H91.0883ZM106.499 30.8799C104.782 30.8799 103.27 30.5439 101.963 29.8719C100.675 29.1999 99.6764 28.2853 98.967 27.1279C98.2577 25.9519 97.903 24.6173 97.903 23.1239C97.903 21.6119 98.2484 20.2773 98.939 19.1199C99.6484 17.9439 100.61 17.0293 101.823 16.3759C103.036 15.7039 104.408 15.3679 105.939 15.3679C107.414 15.3679 108.739 15.6853 109.915 16.3199C111.11 16.9359 112.052 17.8319 112.743 19.0079C113.434 20.1653 113.779 21.5559 113.779 23.1799C113.779 23.3479 113.77 23.5439 113.751 23.7679C113.732 23.9733 113.714 24.1693 113.695 24.3559H101.459V21.8079H111.399L109.719 22.5639C109.719 21.7799 109.56 21.0986 109.243 20.5199C108.926 19.9413 108.487 19.4933 107.927 19.1759C107.367 18.8399 106.714 18.6719 105.967 18.6719C105.22 18.6719 104.558 18.8399 103.979 19.1759C103.419 19.4933 102.98 19.9506 102.663 20.5479C102.346 21.1266 102.187 21.8173 102.187 22.6199V23.2919C102.187 24.1133 102.364 24.8413 102.719 25.4759C103.092 26.0919 103.606 26.5679 104.259 26.9039C104.931 27.2213 105.715 27.3799 106.611 27.3799C107.414 27.3799 108.114 27.2586 108.711 27.0159C109.327 26.7733 109.887 26.4093 110.391 25.9239L112.715 28.4439C112.024 29.2279 111.156 29.8346 110.111 30.2639C109.066 30.6746 107.862 30.8799 106.499 30.8799ZM123.575 30.8799C121.97 30.8799 120.542 30.5439 119.291 29.8719C118.059 29.1999 117.079 28.2853 116.351 27.1279C115.642 25.9519 115.287 24.6173 115.287 23.1239C115.287 21.6119 115.642 20.2773 116.351 19.1199C117.079 17.9439 118.059 17.0293 119.291 16.3759C120.542 15.7039 121.97 15.3679 123.575 15.3679C125.162 15.3679 126.58 15.7039 127.831 16.3759C129.082 17.0293 130.062 17.9346 130.771 19.0919C131.48 20.2493 131.835 21.5933 131.835 23.1239C131.835 24.6173 131.48 25.9519 130.771 27.1279C130.062 28.2853 129.082 29.1999 127.831 29.8719C126.58 30.5439 125.162 30.8799 123.575 30.8799ZM123.575 27.2959C124.303 27.2959 124.956 27.1279 125.535 26.7919C126.114 26.4559 126.571 25.9799 126.907 25.3639C127.243 24.7293 127.411 23.9826 127.411 23.1239C127.411 22.2466 127.243 21.4999 126.907 20.8839C126.571 20.2679 126.114 19.7919 125.535 19.4559C124.956 19.1199 124.303 18.9519 123.575 18.9519C122.847 18.9519 122.194 19.1199 121.615 19.4559C121.036 19.7919 120.57 20.2679 120.215 20.8839C119.879 21.4999 119.711 22.2466 119.711 23.1239C119.711 23.9826 119.879 24.7293 120.215 25.3639C120.57 25.9799 121.036 26.4559 121.615 26.7919C122.194 27.1279 122.847 27.2959 123.575 27.2959Z"
+                        fill="#864AF9" />
+                    <path
+                        d="M144.163 30.9919C142.651 30.9919 141.241 30.7493 139.935 30.2639C138.647 29.7599 137.527 29.0506 136.575 28.1359C135.623 27.2213 134.876 26.1479 134.335 24.9159C133.812 23.6839 133.551 22.3306 133.551 20.8559C133.551 19.3813 133.812 18.0279 134.335 16.7959C134.876 15.5639 135.623 14.4906 136.575 13.5759C137.545 12.6613 138.675 11.9613 139.963 11.4759C141.251 10.9719 142.66 10.7199 144.191 10.7199C145.889 10.7199 147.42 11.0186 148.783 11.6159C150.164 12.1946 151.321 13.0533 152.255 14.1919L149.343 16.8799C148.671 16.1146 147.924 15.5453 147.103 15.1719C146.281 14.7799 145.385 14.5839 144.415 14.5839C143.5 14.5839 142.66 14.7333 141.895 15.0319C141.129 15.3306 140.467 15.7599 139.907 16.3199C139.347 16.8799 138.908 17.5426 138.591 18.3079C138.292 19.0733 138.143 19.9226 138.143 20.8559C138.143 21.7893 138.292 22.6386 138.591 23.4039C138.908 24.1693 139.347 24.8319 139.907 25.3919C140.467 25.9519 141.129 26.3813 141.895 26.6799C142.66 26.9786 143.5 27.1279 144.415 27.1279C145.385 27.1279 146.281 26.9413 147.103 26.5679C147.924 26.1759 148.671 25.5879 149.343 24.8039L152.255 27.4919C151.321 28.6306 150.164 29.4986 148.783 30.0959C147.42 30.6933 145.88 30.9919 144.163 30.9919ZM154.73 30.6559V15.5919H158.902V19.8479L158.314 18.6159C158.762 17.5519 159.481 16.7493 160.47 16.2079C161.459 15.6479 162.663 15.3679 164.082 15.3679V19.3999C163.895 19.3813 163.727 19.3719 163.578 19.3719C163.429 19.3533 163.27 19.3439 163.102 19.3439C161.907 19.3439 160.937 19.6893 160.19 20.3799C159.462 21.0519 159.098 22.1066 159.098 23.5439V30.6559H154.73ZM174.655 30.6559V27.7159L174.375 27.0719V21.8079C174.375 20.8746 174.085 20.1466 173.507 19.6239C172.947 19.1013 172.079 18.8399 170.903 18.8399C170.1 18.8399 169.307 18.9706 168.523 19.2319C167.757 19.4746 167.104 19.8106 166.563 20.2399L164.995 17.1879C165.816 16.6093 166.805 16.1613 167.963 15.8439C169.12 15.5266 170.296 15.3679 171.491 15.3679C173.787 15.3679 175.569 15.9093 176.839 16.9919C178.108 18.0746 178.743 19.7639 178.743 22.0599V30.6559H174.655ZM170.063 30.8799C168.887 30.8799 167.879 30.6839 167.039 30.2919C166.199 29.8813 165.555 29.3306 165.107 28.6399C164.659 27.9493 164.435 27.1746 164.435 26.3159C164.435 25.4199 164.649 24.6359 165.079 23.9639C165.527 23.2919 166.227 22.7693 167.179 22.3959C168.131 22.0039 169.372 21.8079 170.903 21.8079H174.907V24.3559H171.379C170.352 24.3559 169.643 24.5239 169.251 24.8599C168.877 25.1959 168.691 25.6159 168.691 26.1199C168.691 26.6799 168.905 27.1279 169.335 27.4639C169.783 27.7813 170.389 27.9399 171.155 27.9399C171.883 27.9399 172.536 27.7719 173.115 27.4359C173.693 27.0813 174.113 26.5679 174.375 25.8959L175.047 27.9119C174.729 28.8826 174.151 29.6199 173.311 30.1239C172.471 30.6279 171.388 30.8799 170.063 30.8799ZM182.948 30.6559V15.2559C182.948 13.5573 183.452 12.2039 184.46 11.1959C185.468 10.1693 186.905 9.65594 188.772 9.65594C189.407 9.65594 190.013 9.72128 190.592 9.85194C191.189 9.98261 191.693 10.1879 192.104 10.4679L190.956 13.6319C190.713 13.4639 190.443 13.3333 190.144 13.2399C189.845 13.1466 189.528 13.0999 189.192 13.0999C188.557 13.0999 188.063 13.2866 187.708 13.6599C187.372 14.0146 187.204 14.5559 187.204 15.2839V16.6839L187.316 18.5599V30.6559H182.948ZM180.624 19.2879V15.9279H191.068V19.2879H180.624ZM199.124 30.8799C197.351 30.8799 195.969 30.4319 194.98 29.5359C193.991 28.6213 193.496 27.2679 193.496 25.4759V12.2599H197.864V25.4199C197.864 26.0546 198.032 26.5493 198.368 26.9039C198.704 27.2399 199.161 27.4079 199.74 27.4079C200.431 27.4079 201.019 27.2213 201.504 26.8479L202.68 29.9279C202.232 30.2453 201.691 30.4879 201.056 30.6559C200.44 30.8053 199.796 30.8799 199.124 30.8799ZM191.172 19.2879V15.9279H201.616V19.2879H191.172ZM211.863 30.8799C210.146 30.8799 208.634 30.5439 207.327 29.8719C206.039 29.1999 205.041 28.2853 204.331 27.1279C203.622 25.9519 203.267 24.6173 203.267 23.1239C203.267 21.6119 203.613 20.2773 204.303 19.1199C205.013 17.9439 205.974 17.0293 207.187 16.3759C208.401 15.7039 209.773 15.3679 211.303 15.3679C212.778 15.3679 214.103 15.6853 215.279 16.3199C216.474 16.9359 217.417 17.8319 218.107 19.0079C218.798 20.1653 219.143 21.5559 219.143 23.1799C219.143 23.3479 219.134 23.5439 219.115 23.7679C219.097 23.9733 219.078 24.1693 219.059 24.3559H206.823V21.8079H216.763L215.083 22.5639C215.083 21.7799 214.925 21.0986 214.607 20.5199C214.29 19.9413 213.851 19.4933 213.291 19.1759C212.731 18.8399 212.078 18.6719 211.331 18.6719C210.585 18.6719 209.922 18.8399 209.343 19.1759C208.783 19.4933 208.345 19.9506 208.027 20.5479C207.71 21.1266 207.551 21.8173 207.551 22.6199V23.2919C207.551 24.1133 207.729 24.8413 208.083 25.4759C208.457 26.0919 208.97 26.5679 209.623 26.9039C210.295 27.2213 211.079 27.3799 211.975 27.3799C212.778 27.3799 213.478 27.2586 214.075 27.0159C214.691 26.7733 215.251 26.4093 215.755 25.9239L218.079 28.4439C217.389 29.2279 216.521 29.8346 215.475 30.2639C214.43 30.6746 213.226 30.8799 211.863 30.8799ZM221.771 30.6559V15.5919H225.943V19.8479L225.355 18.6159C225.803 17.5519 226.522 16.7493 227.511 16.2079C228.501 15.6479 229.705 15.3679 231.123 15.3679V19.3999C230.937 19.3813 230.769 19.3719 230.619 19.3719C230.47 19.3533 230.311 19.3439 230.143 19.3439C228.949 19.3439 227.978 19.6893 227.231 20.3799C226.503 21.0519 226.139 22.1066 226.139 23.5439V30.6559H221.771ZM233.63 30.7839C233.203 30.7839 232.835 30.6399 232.526 30.3519C232.227 30.0533 232.078 29.6746 232.078 29.2159C232.078 28.7573 232.227 28.3893 232.526 28.1119C232.835 27.8239 233.203 27.6799 233.63 27.6799C234.067 27.6799 234.435 27.8239 234.734 28.1119C235.033 28.3893 235.182 28.7573 235.182 29.2159C235.182 29.6746 235.033 30.0533 234.734 30.3519C234.435 30.6399 234.067 30.7839 233.63 30.7839ZM236.713 30.6559V22.0479H239.209V30.6559H236.713ZM237.961 20.8479C237.503 20.8479 237.129 20.7146 236.841 20.4479C236.553 20.1813 236.409 19.8506 236.409 19.4559C236.409 19.0613 236.553 18.7306 236.841 18.4639C237.129 18.1973 237.503 18.0639 237.961 18.0639C238.42 18.0639 238.793 18.1919 239.081 18.4479C239.369 18.6933 239.513 19.0133 239.513 19.4079C239.513 19.8239 239.369 20.1706 239.081 20.4479C238.804 20.7146 238.431 20.8479 237.961 20.8479ZM245.462 30.7839C244.545 30.7839 243.729 30.5919 243.014 30.2079C242.31 29.8239 241.75 29.3013 241.334 28.6399C240.929 27.9679 240.726 27.2053 240.726 26.3519C240.726 25.4879 240.929 24.7253 241.334 24.0639C241.75 23.3919 242.31 22.8693 243.014 22.4959C243.729 22.1119 244.545 21.9199 245.462 21.9199C246.369 21.9199 247.179 22.1119 247.894 22.4959C248.609 22.8693 249.169 23.3866 249.574 24.0479C249.979 24.7093 250.182 25.4773 250.182 26.3519C250.182 27.2053 249.979 27.9679 249.574 28.6399C249.169 29.3013 248.609 29.8239 247.894 30.2079C247.179 30.5919 246.369 30.7839 245.462 30.7839ZM245.462 28.7359C245.878 28.7359 246.251 28.6399 246.582 28.4479C246.913 28.2559 247.174 27.9839 247.366 27.6319C247.558 27.2693 247.654 26.8426 247.654 26.3519C247.654 25.8506 247.558 25.4239 247.366 25.0719C247.174 24.7199 246.913 24.4479 246.582 24.2559C246.251 24.0639 245.878 23.9679 245.462 23.9679C245.046 23.9679 244.673 24.0639 244.342 24.2559C244.011 24.4479 243.745 24.7199 243.542 25.0719C243.35 25.4239 243.254 25.8506 243.254 26.3519C243.254 26.8426 243.35 27.2693 243.542 27.6319C243.745 27.9839 244.011 28.2559 244.342 28.4479C244.673 28.6399 245.046 28.7359 245.462 28.7359Z"
+                        fill="black" />
+                </svg>
+
+                <a href="/text" style="position: absolute; width: 100%; height: 100%;"></a>
+            </div>
+            <div class="right" style="display: flex;
+                align-items: center;
+                position: relative">
+                <span style="font-size: 16px;
+                   font-weight: 500;
+                   line-height: 14.63px;
+                   text-align: left">Credits Remaining: <span id="number">116</span></span>
+                <div class="line" style="border: 1px solid #00000080;
+                  height: 30px;
+                  margin: 0px 16px"></div>
+                <div class="img" id="pfp" style="display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  cursor: pointer">
+                    <div style="width: 20px;
+                    height: 20px;
+                    background: #C4C4C4;
+                    border-radius: 90px;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 10px;
+                    display: flex;
+                    padding: 18px">
+                        <div style="width: 24px; height: auto;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M12 13C14.7614 13 17 10.7614 17 8C17 5.23858 14.7614 3 12 3C9.23858 3 7 5.23858 7 8C7 10.7614 9.23858 13 12 13ZM12 13C14.1217 13 16.1566 13.8429 17.6569 15.3431C19.1571 16.8434 20 18.8783 20 21M12 13C9.87827 13 7.84344 13.8429 6.34315 15.3431C4.84285 16.8434 4 18.8783 4 21"
+                                    stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="not-present" id="pfpdropdown">
+                    <div style="border-bottom: 0.2px solid #00000080;
+                    box-sizing: border-box;
+                    width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                    padding: 18px 14px">
+                        <span style="font-size: 24px;
+                       font-weight: 600;
+                       line-height: 30.24px;
+                       letter-spacing: -0.02em;
+                       text-align: left;
+                       color: #191919">Muddathir</span>
+                        <span style="font-size: 20px;
+                       font-weight: 400;
+                       line-height: 25.2px;
+                       letter-spacing: -0.02em;
+                       text-align: left;
+                       color: #191919B2">officialfootballfits@gmail.com</span>
+                    </div>
+                    <div style="border-bottom: 0.2px solid #00000080;
+                    width: 100%;
+                    box-sizing: border-box;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 26px;
+                    padding: 18px 14px">
+
+                        <!-- <span class="dropdownText"><a href="/accounts/profile">Manage Subscription</a></span> -->
+
+                        <div class="display: flex; box-sizing: border-box; width: 100%; flex-direction: row;">
+                            <div class="dropdownText" style="width: 100%;
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: space-between">
+                                <span class="dropdownText" style="width: fit-content;">Credit Left</span>
+                                <span class="dropdownText" style="width: fit-content; color: #19191980;">116</span>
+                            </div>
+                        </div>
+
+                        <span class="dropdownText"><a href="/video/assets">Manage Asset Library</a></span>
+
+                        <span class="dropdownText"><a href="/accounts/manage-subscription">Manage
+                                Subscription</a></span>
+                        <!-- <span class="dropdownText">Setting</span> -->
+                    </div>
+                    <div style="width: 100%;
+                    box-sizing: border-box;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 36px;
+                    padding: 18px 14px">
+                        <span class="dropdownText"><a href="/accounts/logout">Log Out</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <script>
+        const pfp = document.getElementById('pfp');
+        const dropdown = document.getElementById('pfpdropdown');
+
+        pfp.addEventListener('click', function () {
+            dropdown.classList.toggle('not-present');
+            dropdown.classList.toggle('present');
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!dropdown.contains(event.target) && !pfp.contains(event.target)) {
+                dropdown.classList.remove('present');
+                dropdown.classList.add('not-present');
+            }
+        });
+    </script>
+
+
+
+    <div class="progressbar"
+        style="display: flex; justify-content: center; align-items: center; margin-top: 84px; margin-bottom: 56px;">
+        <div
+            style="width: 624px; height: 10px; background: #EEEEEE; position: relative; display: flex; align-items: center;">
+            <div
+                style="position: absolute; width: 25px; height: 25px; background: #864AF9; border-radius: 90px; left: 0%;">
+            </div>
+            <div
+                style="position: absolute; width: 25px; height: 25px; background: #864AF9; border-radius: 90px; left: 208px">
+            </div>
+            <div
+                style="position: absolute; width: 25px; height: 25px; background: #EEEEEE; border-radius: 90px; left: 416px;">
+            </div>
+            <div
+                style="position: absolute; width: 25px; height: 25px; background: #EEEEEE; border-radius: 90px; left: 100%;">
+            </div>
+
+
+            <div
+                style="position: absolute; width: 220px; height: 10px; background: #864AF9; border-radius: 90px; left: 0;">
+            </div>
+
+
+            <div style="position: absolute; top: -50px; left: -75.96px;">Voice & Subtitle Design</div>
+            <div style="position: absolute; top: -50px; left: 160px;">Scene Selection</div>
+            <div style="position: absolute; top: -50px; left: 312px;">Background Music Selection</div>
+            <div style="position: absolute; top: -50px; left: 594px;">Download</div>
+        </div>
+    </div>
+    <style>
+        #django-messages {
+            border-radius: 5px;
+            margin: 20px auto;
+            color: #4a148c;
+            width: max-content;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .message.success {
+            border: 1px solid #d1c4e9;
+            background-color: #ede7f6;
+            color: #4a148c;
+        }
+
+        .message.error {
+            border: 1px solid #f48fb1;
+            background-color: #fce4ec;
+            color: #c2185b;
+        }
+
+        .message.info {
+            border: 1px solid #64b5f6;
+            background-color: #bbdefb;
+            color: #0d47a1;
+        }
+
+        .message.warning {
+            border: 1px solid #ffd54f;
+            background-color: #fff9c4;
+            color: #f57f17;
+        }
+    </style>
+    <script>
+        // Wait for the document to be fully loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set a timeout to remove the messages after 5 seconds (5000ms)
+            setTimeout(function () {
+                const messages = document.getElementById('django-messages');
+                if (messages) {
+                    messages.style.transition = 'opacity 0.5s ease';
+                    messages.style.opacity = 0; // Fade out effect
+                    setTimeout(function () {
+                        messages.remove(); // Completely remove the messages from the DOM
+                    }, 500); // Wait for the fade-out to complete
+                }
+            }, 5000); // 5-second delay before starting the fade-out
+        });
+    </script>
+    <div class="card-container">
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <div id="previousButton"
+                        style="display: flex; align-items: center; cursor: pointer;justify-content: flex-start; padding-left: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray"
+                            class="bi bi-arrow-left" viewBox="0 0 16 16" style="margin-right: 5px;">
+                            <path fill-rule="evenodd"
+                                d="M11.3 1.3a1 1 0 0 1 0 1.4L5.4 8l5.9 5.3a1 1 0 1 1-1.4 1.4l-7-6.3a1 1 0 0 1 0-1.4l7-6.3a1 1 0 0 1 1.4 0z" />
+                        </svg>
+                    </div>
+                    <script>
+                        // document.getElementById('previousButton').addEventListener('click', function() {
+                        //     window.history.back();
+                        // });
+                        document.getElementById('previousButton').addEventListener('click', function () {
+                            // Get the referrer URL
+                            var referrer = document.referrer;
+
+                            // Check if the previous page URL contains 'progress'
+                            if (referrer.includes('progress')) {
+                                // Go back two steps
+                                window.history.go(-2);
+                            } else {
+                                // Go back one step
+                                window.history.back();
+                            }
+                        });
+
+
+                    </script>
+
+
+                    <span style="font-size: 24px; font-weight: 700; line-height: 29.26px; text-align: center;">
+                        Upload Your Script
+                    </span>
+                    <h5></h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="." enctype="multipart/form-data">
+                        <input type="hidden" name="csrfmiddlewaretoken"
+                            value="dsVrf8Ts0bzmWEVT7VwHdKS1Tfs5wwEzcGHMpvtlU2OFAbGWpmSVceR6VlfRCIbj">
+                        <div class="Script-text-file-text"
+                            style="display: flex; align-items: center;justify-content: space-between; margin-bottom: 16px;">
+                            <div style="display:flex;">
+                                <div
+                                    style="  font-weight: bold; line-height: 26.1px; letter-spacing: 0.02em; text-align: left; margin-right: 10px; font-size: 15px;">
+                                    Script Text File:
+                                </div>
+                                <div class="vh-parent">
+                                    <div class="vh-child">
+                                        <span class="text3">
+                                            Please Make Sure Your Script Is On Txt File
+                                        </span>
+                                    </div>
+                                    ?
+                                </div>
+                            </div>
+
+                            <a href="/text/media/logos/VSL-Maker-Script-Template.txt/" download="" class="download-btn"
+                                style="margin-right: 6px;">Click Here To Download An Empty Template</a>
+                        </div>
+                </div>
+
+
+                <div class="Script-text-file-Upload"
+                    style="width: 100%; height: 50px; border: 1px solid #000000B2; box-sizing: border-box; border-radius: 8px; padding: 8px; gap: 24px; display: flex; align-items: center; margin-bottom: 24px;">
+                    <div
+                        style="padding: 8px 24px; border-radius: 8px; cursor: pointer; background: #864AF9; width: fit-content; color: white; display: flex; align-items: center; gap: 10px; position: relative;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5M14.1667 6.66667L10 2.5M10 2.5L5.83333 6.66667M10 2.5V12.5"
+                                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span class="text2"
+                            style="font-size: 16px; line-height: 24px; text-align: center; font-weight: 400;">Choose
+                            file</span>
+                        <input required type="file" id="fileUpload" name="text_file" accept=".txt"
+                            style="width: 100%; height: 100%; position: absolute; opacity: 0; cursor: pointer; z-index: 2; left: 0; border-radius: 8px;">
+                    </div>
+                    <div class="text2" id="fileName" style="color: #00000080;">No file chosen</div>
+                </div>
+
+                <input type="text" name="purpose" hidden value='text_file'>
+                <div class="center-container">
+                    <button style="margin-top: 27px;" id="scriptUploadButton" class="file-button" type="submit">Load
+                        Script</button>
+                </div>
+                </form>
+            </div>
+        </div>
+        <style>
+            .center-containered {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+            }
+
+            #uploadStatus {
+                text-align: center;
+                margin-bottom: 12px;
+            }
+
+            #progressWrapper {
+                width: 250px;
+                display: none;
+                margin-top: -5px;
+                background-color: #f3f3f3;
+                position: relative;
+                /* Position relative to hold absolute children */
+                border-radius: 12px;
+            }
+
+            #progressBar {
+                width: 0%;
+                background-color: #864AF9;
+                text-align: center;
+                line-height: 7px;
+                color: white;
+                border-radius: 12px;
+
+            }
+
+            #percent {
+                position: absolute;
+                top: -26px;
+                right: -10px;
+                transform: translateX(-50%);
+                line-height: 30px;
+                color: black;
+            }
+
+            #videoUploadButton {
+                margin-top: 6px;
+            }
+        </style>
+
+        <div class="card" id="uploadCard" style="position: relative;">
+
+            <div class="card-header">
+                <span
+                    style="font-size: 24px; font-weight: 700; line-height: 29.26px; text-align: center; padding-top: 15px; display: inline-block;">
+                    Upload To Your Asset Folder
+                </span>
+                <h5>These Files Will be Saved In Your Asset Library Which You Can Manage Through The Profile Icon Above
+                </h5>
+            </div>
+            <div class="card-body upload">
+                <form method="POST" id="uploadForm" enctype="multipart/form-data">
+                    <input type="hidden" name="csrfmiddlewaretoken"
+                        value="dsVrf8Ts0bzmWEVT7VwHdKS1Tfs5wwEzcGHMpvtlU2OFAbGWpmSVceR6VlfRCIbj">
+                    <div class="Script-text-file-text" style="display: flex; align-items: center; margin-bottom: 16px;">
+
+                        <div
+                            style="  font-weight: bold; line-height: 26.1px; letter-spacing: 0.02em; text-align: left; margin-right: 10px; font-size: 15px;">
+                            Upload Folder:
+                        </div>
+                        <div class="vh-parent">
+                            <div class="vh-child">
+                                <span class="text3">
+                                    Please Make Sure Your Folder Contains Video Files
+                                </span>
+                            </div>
+                            ?
+                        </div>
+                    </div>
+            </div>
+            <div class="Script-text-file-Upload"
+                style="width: 100%; height: 50px; border: 1px solid #000000B2; box-sizing: border-box; border-radius: 8px; padding: 8px; gap: 24px; display: flex; align-items: center; margin-bottom: 24px;">
+                <div
+                    style="padding: 8px 24px; border-radius: 8px; cursor: pointer; background: #864AF9; width: fit-content; color: white; display: flex; align-items: center; gap: 10px; position: relative;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5M14.1667 6.66667L10 2.5M10 2.5L5.83333 6.66667M10 2.5V12.5"
+                            stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span class="text2"
+                        style="font-size: 16px; line-height: 24px; text-align: center; font-weight: 400;">Choose
+                        file</span>
+                    <input id="fileInput" type="file" name="folder" webkitdirectory multiple
+                        style="width: 100%; height: 100%; position: absolute; opacity: 0; cursor: pointer; z-index: 2; left: 0; border-radius: 8px;">
+
+                </div>
+
+                <div class="text2" id="fileName2" style="color: #00000080;">No folder chosen</div>
+            </div>
+            <input type="text" id="directories" name="directories" hidden />
+
+
+            <div id="centered-c" class="center-containered">
+                <div id="uploadStatus" style="text-align: center;"></div>
+
+                <div id="progressWrapper" style="display:none;   background-color: #f3f3f3; margin-bottom: 2px;">
+                    <div id="progressBar"
+                        style="width: 0%; height: 10px; text-align: center; line-height: 30px; color: white;">
+                    </div>
+                    <div id="percent"></div>
+                </div>
+                <button class="file-button" id="videoUploadButton" type="submit">Upload and Process</button>
+            </div>
+
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const uploadCard = document.getElementById('uploadCard')
+        document.querySelector("#fileInput").addEventListener("change", function () {
+            let files = document.querySelector("#fileInput").files;
+            let directories = {};  // This will store folder paths and their corresponding files
+            document.getElementById('uploadStatus').textContent = ''
+            // Loop through all selected files
+            for (let file of files) {
+                const folderPath = file.webkitRelativePath.split('/').slice(0, -1).join('/');
+                if (!directories[folderPath]) {
+                    directories[folderPath] = [];  // Initialize array for this folder
+                }
+                directories[folderPath].push(file.name);  // Add file name to the folder
+            }
+
+            // Send folder structure to backend in a hidden input field
+            document.querySelector("#directories").value = JSON.stringify(directories);
+        });
+        const fileName2 = document.getElementById('fileName2')
+
+        const fileUpload2 = document.getElementById('fileInput');
+        fileUpload2.addEventListener('change', (event) => {
+            const folderName = event.target.files[0].webkitRelativePath.split('/')[0];
+
+            const file = event.target.files[0]
+            if (file) {
+                fileName2.textContent = folderName.slice(0, 15);
+            } else {
+                fileName2.textContent = 'No files selected';
+            }
+        });
+        const uploadForm = document.getElementById('uploadForm');
+        const progressBar = document.getElementById('progressBar');
+        const percent = document.getElementById('percent');
+        const uploadStatus = document.getElementById('uploadStatus');
+
+        uploadForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const centeredContainer = document.getElementById('centered-c')
+            const files = document.getElementById('fileInput').files;
+            if (files.length === 0) {
+                alert('Please select files to upload.');
+                return;
+            }
+
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('folder', files[i]);
+            }
+
+            // Add the directory structure data to the FormData object
+            formData.append('directories', document.getElementById('directories').value);
+
+            const xhr = new XMLHttpRequest();
+
+            // Progress event listener
+            xhr.upload.addEventListener('progress', function (e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+
+                    document.getElementById('progressWrapper').style.display = 'block'
+                    document.getElementById('videoUploadButton').disabled = true
+
+                    document.getElementById('videoUploadButton').textContent = 'Uploading Files...'
+                    document.getElementById('videoUploadButton').style.cursor = 'wait'
+                    document.getElementById('scriptUploadButton').style.marginTop = '29px'
+
+
+                    percent.textContent = Math.round(percentComplete) + '%';
+                }
+            });
+
+            // Complete event listener
+            xhr.addEventListener('load', function () {
+                if (xhr.status === 200) {
+                    document.getElementById('progressWrapper').style.display = 'none'
+
+                    uploadStatus.textContent = 'Upload completed successfully!';
+                    // Example with relative URL
+
+
+                    window.location.reload();
+
+
+                } else {
+                    document.getElementById('progressWrapper').style.display = 'none'
+
+                    uploadStatus.textContent = 'Upload failed. Please try again.';
+                    document.getElementById('videoUploadButton').textContent = 'Upload Folder'
+                    document.getElementById('videoUploadButton').disabled = false
+
+
+                }
+            });
+
+            // Error event listener
+            xhr.addEventListener('error', function () {
+                uploadStatus.textContent = 'An error occurred during the upload.';
+            });
+
+            // Send the file and directory data
+            xhr.open('POST', '/video/upload-folder/');
+            xhr.setRequestHeader('X-CSRFToken', 'dsVrf8Ts0bzmWEVT7VwHdKS1Tfs5wwEzcGHMpvtlU2OFAbGWpmSVceR6VlfRCIbj');
+            xhr.send(formData);
+        });
+    </script>
+    </div>
+    </div>
+    <style>
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]:after {
+            content: attr(data-tooltip);
+            padding: 6px 8px;
+            position: absolute;
+            left: 50%;
+            bottom: 100%;
+            transform: translateX(-50%);
+            background-color: #000000aa;
+            width: max-content;
+            opacity: 0;
+            -webkit-transition: opacity 0.2s ease-out;
+            color: #ffffff;
+            border-radius: 6px;
+        }
+
+        [data-tooltip]:hover:after {
+            opacity: 1;
+        }
+
+        .free-plan-disabled-overlay-container {
+            position: relative;
+        }
+
+        .free-plan-disabled-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-color: #eeeeeebb;
+            z-index: 999;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <form class="grid-container">
+        <div class="scene-container"
+            style="display: flex; padding: 30px 30px; justify-content: center; align-items: center;">
+            <div class="Scene"
+                style="max-width: 2000px; margin-bottom: 30px; border: 1px solid #0000004D; box-sizing: border-box; border-radius: 8px; padding: 40px 24px; background: white; position: relative;">
+                <div class="select-scene-text" style="display: flex; justify-content: center; margin-bottom: 30px;">
+                    <span style="font-size: 24px; font-weight: 700; line-height: 29.26px; text-align: center;">
+                        Select Your Scenes
+                    </span>
+                </div>
+                <div class="grid-container"
+                    style="display: grid; grid-template-columns: 0.23fr 1fr; width: 100%; border: 1px solid #0000004D;">
+                    <div class="grid-item title column-1"><span>Subtitle</span></div>
+                    <div class="grid-item title column-2"><span>Subtitle Text</span></div>
+
+                    <!-- Subtitle 1 -->
+                    <div class="grid-item slide-row grid-row" data-slide="1"><span>Subtitle 1</span></div>
+                    <div class="grid-item slide-text" data-slide="1" tabindex="0">
+                        <span>After reviewing the existing offers in the market, <input type="hidden" name="line_0"
+                                value=""></span>
+                    </div>
+
+                    <!-- Subtitle 2 -->
+                    <div class="grid-item slide-row grid-row" data-slide="2"><span>Subtitle 2</span></div>
+                    <div class="grid-item slide-text" data-slide="2" tabindex="0">
+                        <span>we identified a gap in neck pain relief devices based on user feedback. <input
+                                type="hidden" name="line_1" value=""></span>
+                    </div>
+
+                    <!-- Subtitle 3 -->
+                    <div class="grid-item slide-row grid-row" data-slide="3"><span>Subtitle 3</span></div>
+                    <div class="grid-item slide-text" data-slide="3" tabindex="0">
+                        <span>Our research revealed a noticeable absence of heat therapy in competing products. <input
+                                type="hidden" name="line_2" value=""></span>
+                    </div>
+
+                    <!-- Subtitle 4 -->
+                    <div class="grid-item slide-row grid-row" data-slide="4"><span>Subtitle 4</span></div>
+                    <div class="grid-item slide-text" data-slide="4" tabindex="0">
+                        <span>As a result, ItamiFlow integrated heat therapy into the Itami Neck Stretcher, <input
+                                type="hidden" name="line_3" value=""></span>
+                    </div>
+                </div>
+
+                <!-- Button Container (Moves based on container width) -->
+                <div class="button"
+                    style="position: absolute; right: 20px; bottom: 16px;height: 24px; width: fit-content; display: flex; justify-content: flex-end;">
+                    <div
+                        style="display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #864AF9; cursor: pointer;">
+                        <button type="submit" id="proceed-button"
+                            style="text-decoration: none; padding: 10px 20px; color: white; font-family: Montserrat; font-size: 18px; font-weight: 500; line-height: 24px; text-align: left; background: none; border: none; cursor: pointer;">
+                            Proceed To Background Music Selection
+                        </button>
+                        <svg width="24" height="24" type="button" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+    <!-- Popup Modal -->
+    <div class="grid-container hidden" id="popup-modal">
+    <div class="close-btn">
+        <button id="close-popup">
+            X
+        </button>
+    </div>
+    <div class="sub-div">
+        <div class="grid-items popup-content" style="grid-template-columns: 0.7fr 1fr;width:100%;">
+            <div class="grid-item title column-hide column-3"><span>Upload Scene</span></div>
+            <div class="grid-item title right column-hide column-4"><span>Upload Scene From Asset Folder</span></div>
+            <div class="grid-item center column-hide column-3">
+                <div
+                    style="width: 100%; height: fit-content; padding: 16px 24px; border-radius: 8px; border: 1px dashed #19191980; display: flex; align-items: center; position: relative; font-size: 16px; font-weight: 400; line-height: 23.2px; letter-spacing: 0.02em; text-align: center; gap: 14px;">
+                    <svg id="svg1" class="uploadFileIcon" width="20" height="20" viewBox="0 0 20 20" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5M14.1667 6.66667L10 2.5M10 2.5L5.83333 6.66667M10 2.5V12.5"
+                            stroke="#191919B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <div class="uploadText"
+                        style="font-size: 16px; font-weight: 400; line-height: 23.2px; letter-spacing: 0.02em; text-align: center;">
+                        Choose File
+                    </div>
+                    <!-- File input for selecting video -->
+                    <input type="file" accept="video/*" class="upload-input" id="popup-file" name="uploaded_video_0"
+                        style="position: absolute; width: 100%; height: 100%; left: 0; opacity: 0; cursor: pointer;">
+                </div>
+                <div class="delete-icon" id="delete-icon" style="display: none; cursor: pointer; margin-left: 16px">&#x2716;</div>
+            </div>
+            <div class="grid-item right free-plan-disabled-overlay-container column-hide column-4">
+                <div
+                    style="display: flex; width: 100%; height: fit-content; gap: 13px; align-items: center; flex-direction: column;">
+                    <!-- Topic Folder Selection -->
+                    <div style="width: 100%; position: relative;">
+                        <select id="popup-topic" name="topic_folder_0"
+                            onchange="fetchVideoClips(this.value, '0',this)"
+                            style="appearance: none; background: #EEEEEE; width: 100%; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: none; color: #333;">
+                            <option value="">Select Topic</option>
+                            <option value="745">Female Frustrated Clips</option>
+                          
+                            <option value="748">Male Thinking Clips</option>
+                        
+                            <option value="749">Male Crying Clips</option>
+                        
+                            <option value="750">Male Desperation Clips</option>
+                        
+                            <option value="751">Male Hope Clips</option>
+                        
+                            <option value="768">Back Pain Clips</option>
+                        
+                            <option value="752">Male Surprised Clips</option>
+                        
+                            <option value="753">Millions Of People Clips</option>
+                        
+                            <option value="754">Male Happy Clips</option>
+                        
+                            <option value="755">Female Surprised Clips</option>
+                        
+                            <option value="756">Male Finding Strength Clips </option>
+                        
+                            <option value="757">Male Regret Clips</option>
+                        
+                            <option value="758">Male Research Clips</option>
+                        
+                            <option value="759">Male Waking Up Clips</option>
+                        
+                            <option value="760">Male Anxiety Clips</option>
+                        
+                            <option value="761">Memory Reminiscing Clips</option>
+                        
+                            <option value="762">Money Back Clips</option>
+                        
+                            <option value="763">Male Curiosity Clips</option>
+                        
+                            <option value="764">Female Sleeping Clips</option>
+                        
+                            <option value="765">Female Waking Up Clips</option>
+                        
+                            <option value="766">Painkillers Clips</option>
+                        
+                            <option value="767">Male Sleeping Clips</option>
+                        </select>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                            <path d="M6 9L12 15L18 9" stroke="#050315" stroke-opacity="0.7" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+
+                    <!-- Video Selection -->
+                    <div id="div_0" style="width: 100%; position: relative;">
+                        <select class="selected_clip" id="popup-video"
+                            style="appearance: none; background: #EEEEEE; width: 100%; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: none; color: #333; padding-right: 40px;">
+                            <option value="">Select a video</option>
+                        </select>
+                        <svg id="svg_0" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                            <path d="M6 9L12 15L18 9" stroke="#050315" stroke-opacity="0.7" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <!-- Hidden Input -->
+                    <input type="hidden" name="topic_folder_selected_0" id="topicFolder_0_345">
+                </div>
+            </div>
+        </div>
+        <button id="popup-submit">Submit</button>
+    </div>
+</div>
+
+
+
+    </div>
+    <script>
+        document.getElementById("scene_form").addEventListener("submit", function (event) {
+            let allValid = true;
+
+            // Loop through each loop index
+            const loopLength = "4";
+            const textfileId = "345";
+
+            for (let i = 0; i < loopLength; i++) {
+                const fileInput = document.getElementById(`video_${i}`);
+                const topicFolderSelect = document.getElementById(`topic_folder_${i}_${textfileId}`);
+                const videoSelect = document.getElementById(`videoSelect_${i}_${textfileId}`);
+                const errorElementId = `select_video_${i}_error`;
+                const svgItemid = `svg_${i}`
+                let svgItemElement = document.getElementById(svgItemid)
+                let errorElement = document.getElementById(errorElementId);
+
+                // Check if file input has value or both selects have values
+                const isFileProvided = fileInput && fileInput.files.length > 0;
+                const isSelectProvided = topicFolderSelect && topicFolderSelect.value && videoSelect && videoSelect.value;
+
+                if (!isFileProvided && !isSelectProvided) {
+                    // Highlight unselected inputs
+                    fileInput.style.border = "0.5px solid red";
+                    topicFolderSelect.style.border = "0.5px solid red";
+                    videoSelect.style.border = "0.5px solid red";
+                    svgItemElement.style.top = '30%'
+
+                    // Increase padding for the second select (videoSelect)
+                    // videoSelect.style.paddingRight = "25px"; // Increase padding slightly to align the arrow properly
+
+                    // Focus on the first invalid field
+                    topicFolderSelect.focus();
+
+                    // Mark as invalid
+                    allValid = false;
+
+                    // Add error message just below the video select element if it doesn't exist
+                    if (!errorElement) {
+                        errorElement = document.createElement('div');
+                        errorElement.id = errorElementId;
+                        errorElement.style.color = 'red';
+                        errorElement.style.fontSize = '0.8rem';
+                        errorElement.style.textAlign = 'center';
+                        errorElement.style.marginTop = '5px';
+                        errorElement.innerText = "Please Select A Scene";
+                        videoSelect.parentNode.insertBefore(errorElement, videoSelect.nextSibling);
+                    }
+
+                } else {
+                    // Remove red border if inputs are valid
+                    fileInput.style.border = "";
+                    topicFolderSelect.style.border = "";
+                    videoSelect.style.border = "";
+                    svgItemElement.style.top = '50%'
+
+                    // Remove any existing error message if present
+                    if (errorElement) {
+                        errorElement.remove();
+                    }
+
+                    // Reset the padding for the second select (in case it was previously adjusted)
+                    videoSelect.style.paddingRight = ""; // Reset to default
+                }
+            }
+
+            // If not valid, prevent form submission
+            if (!allValid) {
+                event.preventDefault();
+            }
+        });
+        // Function to handle changes in dynamically generated video inputs
+        function setupDynamicListeners(loopLength, textfileId) {
+            for (let i = 0; i < loopLength; i++) {
+                const videoInput = document.getElementById(`video_${i}`);
+                const topicFolderSelect = document.getElementById(`topic_folder_${i}_${textfileId}`);
+                const videoSelect = document.getElementById(`videoSelect_${i}_${textfileId}`);
+
+                const deleteIcons = document.querySelectorAll('.delete-icon');
+                // Listen for changes in the video input field
+                videoInput.addEventListener("change", function () {
+                    // If the video input has a file selected
+                    if (videoInput.files.length > 0) {
+                        deleteIcons[i].style.display = 'block';
+                        // Clear the corresponding topic folder select and video select fields
+                        topicFolderSelect.value = "";
+                        videoSelect.value = "";
+                        saveInput(topicFolderSelect);
+                        saveInput(videoSelect);
+                        // Remove all options from videoSelect except the default "Select a Video"
+                        while (videoSelect.options.length > 0) {
+                            videoSelect.remove(0); // Clear all existing options
+                        }
+
+                        // Add default option
+                        const defaultOption = document.createElement('option');
+                        defaultOption.value = "";
+                        defaultOption.text = "Select a Video";
+                        videoSelect.add(defaultOption);
+
+                    }
+                });
+
+
+            }
+        }
+
+        function deleteIconListerHandler() {
+            const deleteIcons = document.querySelectorAll('.delete-icon');
+            const fileInputs = document.querySelectorAll('.uploaded_file');
+            const svgs = document.querySelectorAll('.uploadFileIcon');
+            const uploadTexts = document.querySelectorAll('.uploadText');
+            const selected_clips = document.querySelectorAll('.selected_clip');
+
+            deleteIcons.forEach((icon, index) => {
+                icon.addEventListener('click', (event) => {
+                    fileInputs[index].value = ""
+                    uploadTexts[index].textContent = 'Choose File';
+                    svgs[index].style.position = 'static';
+                    svgs[index].style.opacity = '1';
+
+                    icon.style.display = 'none';
+                    //selected_clips[index].value= ""
+                });
+            });
+        }
+
+
+
+        deleteIconListerHandler()
+
+
+
+        const loopLength = "4";
+        const textfileId = "345";
+        setupDynamicListeners(loopLength, textfileId);
+
+        for (let i = 0; i < loopLength; i++) {
+            const topicFolderSelect = document.getElementById(`topic_folder_${i}_${textfileId}`);
+            const videoSelect = document.getElementById(`videoSelect_${i}_${textfileId}`);
+            const errorElementId = `select_video_${i}_error`;
+            const svgItemid = `svg_${i}`
+            let svgItemElement = document.getElementById(svgItemid)
+
+            // file inputs fields
+            const fileInputs = document.querySelectorAll('.uploaded_file');
+            const uploadTexts = document.querySelectorAll('.uploadText');
+            const svgs = document.querySelectorAll('.uploadFileIcon');
+
+            // Event listener for the first select field
+            topicFolderSelect.addEventListener("change", function () {
+                if (this.value !== "") {
+                    this.style.border = "";
+                    svgItemElement.style.top = '50%'
+
+                    const errorElement = document.getElementById(errorElementId);
+                    if (errorElement) {
+                        errorElement.remove();  // Remove error message if it exists
+                    }
+
+                    // clearing file inputs
+                    fileInputs[i].value = '';
+                    uploadTexts[i].textContent = 'Choose File';
+                    svgs[i].style.position = 'static';
+                    svgs[i].style.opacity = '1';
+
+                }
+            });
+
+            // Event listener for the second dependent select field
+            videoSelect.addEventListener("change", function () {
+                if (this.value !== "") {
+                    this.style.border = "";
+                    svgItemElement.style.top = '50%'
+                    const errorElement = document.getElementById(errorElementId);
+                    if (errorElement) {
+                        errorElement.remove();  // Remove error message if it exists
+                    }
+
+                    // clearing file inputs
+                    fileInputs[i].value = '';
+                    uploadTexts[i].textContent = 'Choose File';
+                    svgs[i].style.position = 'static';
+                    svgs[i].style.opacity = '1';
+                }
+            });
+        }
+        window.onload = function () {
+            // Get all inputs on the page
+            document.getElementById('scene_form').reset();
+
+        }
+        window.addEventListener('load', async function () {
+            // Ensure all elements are loaded
+
+            const inputs = document.querySelectorAll('select');
+
+            // Helper function to return a promise for each htmx request
+            const fetchClip = (url, targetId) => {
+                return new Promise((resolve, reject) => {
+                    htmx.ajax('GET', url, targetId)
+                        .then(() => resolve())
+                        .catch((err) => reject(err));
+                });
+            };
+
+            // First, update all select inputs that start with 'topic_folder_'
+            for (const input of inputs) {
+                const storedValue = sessionStorage.getItem(input.id);
+                if (storedValue && input.id.startsWith('topic_folder_')) {
+                    input.value = storedValue;
+
+                    // Get the current number from the ID, assuming it's in the format 'topic_folder_X'
+                    const idParts = input.id.split('_');
+                    const currentNumber = idParts[idParts.length - 2];  // Extract the current number part
+
+                    // Build the URL and target ID
+                    const url = `/video/get_clip/${storedValue}`;
+                    const targetId = `#videoSelect_${currentNumber}_345`;
+
+                    // Check if the target element exists before making the HTMX request
+                    if (document.querySelector(targetId)) {
+                        try {
+                            await fetchClip(url, targetId);  // Wait for each HTMX request to complete
+                        } catch (error) {
+                            console.error(`Error fetching clip for ${input.id}:`, error);
+                        }
+                    } else {
+                        console.warn(`Target element ${targetId} not found.`);
+                    }
+                }
+            }
+
+            inputs.forEach(input => {
+                const storedValue = sessionStorage.getItem(input.id);
+                if (storedValue && input.id.startsWith('videoSelect_')) {
+                    input.value = storedValue;
+                }
+            });
+        });
+
+
+        function saveInput(inputElement) {
+
+            sessionStorage.setItem(inputElement.id, inputElement.value);
+            console.log(inputElement.value)
+        }
+
+        function fetchVideoClips(categoryId, counter, item) {
+            select2 = document.getElementById(`videoSelect_${counter}_345`)
+            saveInput(item)
+
+            if (categoryId === "") {
+                select2.value = ""
+                select2.innerHTML = "";
+
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "";
+                defaultOption.text = "Select a video";
+                select2.appendChild(defaultOption);
+
+            }
+            else {
+
+                htmx.ajax('GET', `/video/get_clip/${categoryId}`, `#videoSelect_${counter}_345`)
+            }
+
+
+        }
+    </script>
+
+
+
+
+    <script>
+        const fileName = document.getElementById('fileName')
+        const fileUpload = document.getElementById('fileUpload');
+        fileUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                fileName.textContent = `${file.name.slice(0, 15)}`;
+            } else {
+                fileName.textContent = 'No file selected';
+            }
+        });
+
+    </script>
+    <script src="selectSceneUpdatedCode.js"></script>
+
+    <script src="https://vlsmlsaker.s3.amazonaws.com/htmx.js"></script>
+</body>
+
+</html>

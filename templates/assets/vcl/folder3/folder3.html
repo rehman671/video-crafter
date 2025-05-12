@@ -1,0 +1,102 @@
+{% load static %}
+<style>
+    
+ .actions {
+  position: absolute;
+  display: none;
+  background: white;
+  border-radius: 0.5vw;
+  right: 0;
+  top: 4.3vw;
+  box-shadow: 0 0 0.2vw #0000004d;
+  border: solid 1px #0000004d;
+  z-index: 99;
+}
+.actions > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5vw;
+  padding: 0.5vw 0.6vw;
+  cursor: pointer;
+  font-size: 0.9vw;
+}
+ .actions > div:first-child {
+  border-bottom: solid 1px #0000004d;
+  padding-right: 2vw;
+}
+
+
+body {
+
+    font-size: 1.0rem!important;
+}
+
+
+
+
+
+.box > div:first-child {
+
+    font-size: 1.0rem!important;
+
+}
+
+.box > div > .newFolder {
+    font-size: 1.0rem!important;
+}
+
+</style>
+    <link rel="stylesheet" href="{% static 'resources/assets/folder3.css'%}">
+    <div class="content">
+        <div class="box">
+            <div>
+                <div class="folderpath">
+                    <a href="{%url 'video:category_view' %}">
+                        Assets Library
+                    <img src="{% static 'resources/assets/assets2/chevron-right.svg' %}" alt="">
+                    </a>
+                    <a href="{%url 'video:subcategory_view' current_category.id %}">
+                        {{current_category.name}}
+                        <img src="{% static 'resources/assets/assets2/chevron-right.svg' %}" alt="">
+                    </a>
+                    <a href="{%url 'video:category_view_video' current_category.id video.id %}">
+                        {{video.title}}
+                        <img src="{% static 'resources/assets/assets2/Chevron-down.svg' %}" alt="">
+                    </a>
+
+                </div>
+                <div class="newFolder">
+                    <!-- <img src="{% static 'resources/assets/assets3/dots.svg' %}" class="menu" alt=""> -->
+                </div>
+                <div class="actions">
+                    <div>
+                        
+                        <a style="align-items:center;" hx-get="{% url 'video:rename_video_clip' video.id %}"  hx-target="#confirmation-box" 
+                            hx-swap="innerHTML">
+                            <img src="{% static 'resources/assets/assets1/rename.svg' %}" alt="">
+                            Rename
+                        </a>
+                    </div>
+                    <!-- <div>
+                        <a style="align-items:center;" hx-get="{% url 'video:delete_video' video.id %}"  hx-target="#confirmation-box" 
+                        hx-swap="innerHTML">
+                            <img src="{% static 'resources/assets/assets1/delete.svg' %}"  alt="">
+                            Delete
+                        </a> 
+
+
+                    </div> -->
+                </div>
+
+            </div>
+            <div class="placeholder">
+                <div class="video-card">
+                    <video id="video" width="100%" controls >
+                        <source src="{{video.video_file.url}}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <!-- <img src="{% static 'resources/assets/assets3/VideoPlaceholderbig.svg' %}" alt=""> -->
+            </div>
+        </div>
+    </div>

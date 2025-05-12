@@ -1,0 +1,566 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoCrafter.io</title>
+    <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
+    <link rel="stylesheet" href="{% static 'styles/fonts.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/music.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/preview.css' %}">
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #f44336;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10000;
+            max-width: 350px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .toast-show {
+            opacity: 1;
+        }
+        
+        .toast-close {
+            float: right;
+            font-weight: bold;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="main-div">
+            <div class="sub-main-div">
+                <img src="{% static 'images/logo.svg' %}" alt="Logo">
+                {% comment %} <a href="{% url 'home:preview' %}" class="anchor-sub-main"></a> {% endcomment %}
+            </div>
+            <div class="right">
+                <span class="right-span">Credits Remaining: <span id="number">{{ user_subscription.unused_credits }}</span></span>
+                <div class="line"></div>
+                <div class="img" id="pfp" onclick="toggleDropdown()">
+                    <div class="img-sub-div">
+                        <div class="img-sub">
+                            <img src="{% static 'images/profile.svg' %}" alt="Profile">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pfpdropdown" class="not-present">
+                    <div class="not-present-sub">
+                        <span class="not-present-sub-span1">{{ user_subscription.user.first_name }}</span>
+                        <span class="not-present-sub-span2">{{ user_subscription.user.email }}</span>
+                    </div>
+                    <div class="profile-main-div">
+                        <div class="profile-sub-div">
+                            <div class="dropdownText">
+                                <span class="dropdownText" style="width: fit-content;">Credit Left</span>
+                                <span class="dropdownText" style="width: fit-content; color: #19191980;">{{ user_subscription.unused_credits }}</span>
+                            </div>
+                        </div>
+                        <span class="dropdownText">
+                            <a href="{% url 'asset_library' %}">Manage Asset Library</a>
+                        </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'recent_videos' %}">Manage Video Drafts</a>
+                        </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'manage_subscription' %}">Manage Subscription</a>
+                        </span>
+                    </div>
+                    <div class="profile-last-div">
+                        <span class="dropdownText"><a href="{% url 'logout' %}">Log Out</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Toast component -->
+    <div id="toast" class="toast">
+        <span id="toast-close" class="toast-close">&times;</span>
+        <span id="toast-message"></span>
+    </div>
+    <div class="progressbar">
+        <div class="sub-div">
+            <div class="progress-fill" style="width:66.66666666666667%"></div>
+            <div class="sub-div2 completed"></div>
+            <div class="sub-div3 completed"></div>
+            <div class="sub-div4 active"></div>
+            <div class="sub-div5 "></div>
+            <div class="voice-subtitle ">Voice & Subtitle Design</div>
+            <div class="sceneselection ">Scene Selection</div>
+            <div class="bgmselection active-text">Background Music Selection</div>
+            <div class="download ">Download</div>
+        </div>
+    </div>
+    <div class="main-dimension-div">
+        <form class="form" id="text_form" enctype="multipart/form-data" method="post">
+            {% csrf_token %}
+        {% comment %} <form class="form" id="text_form" action="{% url 'text:process' %}" enctype="multipart/form-data" method="post">{% csrf_token %} {% endcomment %}
+            <div class="customise-main"><span>Create Your Perfect Video Creative: <br> Upload, Customize, and
+                    Convert!</span></div>
+            <div class="card-text">
+                <h3>Tutorial Video:</h3>
+            </div>
+            <div class="video-card">
+                <div class="video-card-sub-div">
+                    <div id="videoPreviewContainer" class="videoPreviewContainer"></div>
+                </div>
+            </div>
+            <div class="pick-dimension">Pick Your Dimensions</div>
+            <div class="options video-sizes video-sizes-div">
+                <div class="box" data-resolution="1:1">
+                    <input type="radio" hidden="" name="resolution" checked="" value="1:1">
+                    <div class="below-input">
+                        <div class="square">Square</div>
+                        <div class="square-border"></div>
+                        <div class="text one-one">1:1</div>
+                        <div class="circle-outer">
+                            <div class="circle-inner"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box tiktok-box" data-resolution="4:5">
+                    <input type="radio" hidden="" name="resolution" value="4:5">
+                    <div class="tiktok-box-sub">
+                        <div class="vertical-portrait">Vertical/Portrait</div>
+                        <div class="sub-vertical"></div>
+                        <div class="text four-five">4:5</div>
+                        <div class="circle-outer tiktok-circle">
+                            <div class="circle-inner tiktok-inner"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box youtube-main" data-resolution="16:9">
+                    <input type="radio" hidden="" name="resolution" value="16:9">
+                    <div class="youtube-sub">
+                        <div class="youtube-text">YouTube</div>
+                        <div class="youtube-border"></div>
+                        <div class="text sixteen-nine">16:9</div>
+                        <div class="circle-outer youtube-outer">
+                            <div class="circle-inner youtube-inner"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box nine-sixteen-main" data-resolution="9:16">
+                    <input type="radio" hidden="" name="resolution" value="9:16">
+                    <div style="display:flex;flex-direction:column;align-items:center">
+                        <div class="tiktok-heading">TikTok/Reels</div>
+                        <div class="tiktok-border"></div>
+                        <div class="text nine-sixteen-text">9:16</div>
+                        <div class="circle-outer tiktok-circle2">
+                            <div class="circle-inner tiktok-circle3">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="eleven-labs-main">
+                <div class="eleven-labs-sub">
+                    <div class="11Labs-Api-key-text eleven-labs-main-text">
+                        <div class="eleven-labs-heading">ElevenLabs Api Key:</div>
+                        <div class="vh-parent">
+                            <div class="vh-child">
+                                <span class="text3">An unique code from your Eleven Labs account that
+                                    lets VideoCrafter.io use your selected AI voices. Find it in your Eleven Labs
+                                    account under API settings.
+                                </span>
+                            </div>?
+                        </div>
+                    </div>
+                    <div class="11Labs-Api-key-textarea" style="margin-bottom:24px">
+                        <input id="api_key" type="text" class="text3 text3-input" placeholder="ElevenLabs Api Key"
+                            name="elevenlabs_apikey">
+                        <p id="api_key_error" class="error-message"></p>
+                    </div>
+                    <div class="Voice-ID-text">
+                        <div class="Voice-ID-text-sub">Voice ID:</div>
+                        <div class="vh-parent">
+                            <div class="vh-child">
+                                <span class="text3">The specific identifier for the voice you want to
+                                    use. Each voice in your Eleven Labs account has its own unique ID.
+                                </span>
+                            </div>?
+                        </div>
+                    </div>
+                    <div class="Voice-ID-textarea" style="margin-bottom:24px">
+                        <input type="text" id="voice_id" class="text3 text3-input" placeholder="Enter Voice ID"
+                            name="voiceid">
+                        <p id="voice_id_error" class="error-message"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="eleven-labs-sub">
+                <div class="Line for-border"></div>
+                <div class="subtitledesign">Subtitle Design</div>
+                <div class="Upload-Font-File-text" style="display: flex;">
+                    <div class="choose-font">Choose Font:</div>
+                </div>
+                <div class="Upload-Font-File-Upload" style="display: flex;"><select id="font_select" required=""
+                        name="font_select">
+                        <option class="text3" value="" disabled="" selected="">Select A Font</option>
+                        {% for font in fonts %}
+                        <option class="text3" style="font-family:{{ font.name }}" value="{{ font.name }}"> {{ font.name }} </option>
+                        {% endfor %}
+
+                    </select></div>
+                <p id="font_error" class="error-message"></p>
+                <div class="Font-Color-text">
+                    <div class="font-color">Font Color:</div>
+                </div>
+                <div class="Font-Color-textarea">
+                    <div id="color1">
+                        <input type="color" id="colorPicker1" name="font_color" value="#ffffff">
+                    </div>
+                    <input id="colortext1" type="text" class="focusdefault" placeholder="#ffffff" value="#ffffff">
+                </div>
+                <div class="Subtitle-text">
+                    <div class="Subtitle-text-heading">Subtitles Background Color:</div>
+                </div>
+                <div class="Subtitle-textarea">
+                    <div id="color2">
+                        <input type="color" id="colorPicker2" name="subtitle_box_color" value="#000000">
+                    </div>
+                    <input id="colortext2" type="text" class="focusdefault" placeholder="#000000" value="#000000">
+                </div>
+                <div class="Font-Size-text" style="display: flex;">
+                    <div class="Font-Size-text-heading">Font Size: <span id="recommended-font-size">(Recommended Font
+                            Size: 22)</span></div><span id="SliderValue">22</span>
+                </div>
+                <div class="Font-Size-Slider" style="display: block;">
+                    <input type="range" min="0" max="25" class="slider" id="mySlider" name="font_size1" value="22">
+                    <input type="number" hidden="" id="font_size" readonly="" name="font_size" value="44">
+                </div>
+                <div class="slider-container" style="display: block;">
+                    <div class="slider-container-sub">
+                        <label for="subtitleBorderRadiusSlider" class="box-roundness-text"
+                            style="display: block;">Subtitle Box Roundness:</label>
+                        <span id="subtitleBorderRadiusValue">26</span>
+                    </div>
+                    <input type="range" id="subtitleBorderRadiusSlider" class="subtitle-border-radius-slider" min="0"
+                        max="50" name="box_radius" value="26">
+                </div>
+            </div>
+            <div class="Preview" id="Preview" style="margin-top: 0px;">
+                <div class="Preview-text">
+                    <div class="Preview-text-heading">Preview</div>
+                </div>
+                <div id="preview-box">
+                    <span id="videoText" style="font-size: 48px; display: flex;">Your Selected Video <br> Scene Will Go
+                        Here</span>
+                    <div id="previewBackground" class="previewBackground2">
+                        <span id="previewText">This Is How Your Original Subtitle Text Will Be Displayed</span>
+                    </div>
+                    <div id="tiktokPreview" class="container2" style="display: none;">
+                        <p class="text-wrapper2">
+                            <span class="text-wrapper2-span">This Is How Your Original</span>
+                            <span class="text-wrapper2-span">Subtitle Text Will Show.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <br>
+            {% comment %} <a style="text-decoration:none" href="{% url 'home:scene' %}"> {% endcomment %}
+                <button id="submit_form" type="submit" class="done-button">
+                    <span id="button-text">Proceed To Scene Selection</span>
+                </button>
+            </a>
+        </form>
+    </div>
+    <script src="{% static 'js/progress.js' %}"></script>
+    <script src="{% static 'js/preview.js' %}"></script>
+    <script src="{% static 'js/header-toggle.js' %}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set form values from server-side data if available
+        {% if form_data %}
+            // Set API key and Voice ID inputs
+            if (document.getElementById('api_key')) {
+                document.getElementById('api_key').value = "{{ form_data.elevenlabs_apikey }}";
+            }
+            if (document.getElementById('voice_id')) {
+                document.getElementById('voice_id').value = "{{ form_data.voiceid }}";
+            }
+            
+            // Set resolution
+            if ("{{ form_data.resolution }}") {
+                const resolutionValue = "{{ form_data.resolution }}";
+                document.querySelector(`input[name="resolution"][value="${resolutionValue}"]`).checked = true;
+                handleResolutionChange(resolutionValue);
+            }
+            
+            // Set font select if we're not in 9:16 resolution
+            if ("{{ form_data.font_select }}" && "{{ form_data.resolution }}" !== "9:16") {
+                const fontSelect = document.getElementById('font_select');
+                if (fontSelect) {
+                    fontSelect.value = "{{ form_data.font_select }}";
+                    selectedFont = "{{ form_data.font_select }}";
+                    document.getElementById('previewText').style.fontFamily = selectedFont;
+                }
+            }
+            
+            // Set colors
+            if ("{{ form_data.font_color }}") {
+                const fontColor = "{{ form_data.font_color }}";
+                document.getElementById('colorPicker1').value = fontColor;
+                document.getElementById('colortext1').value = fontColor;
+                document.getElementById('color1').style.backgroundColor = fontColor;
+                document.getElementById('previewText').style.color = fontColor;
+                dimensionStyles["{{ form_data.resolution }}"].fontColor = fontColor;
+            }
+            
+            if ("{{ form_data.subtitle_box_color }}") {
+                const bgColor = "{{ form_data.subtitle_box_color }}";
+                document.getElementById('colorPicker2').value = bgColor;
+                document.getElementById('colortext2').value = bgColor;
+                document.getElementById('color2').style.backgroundColor = bgColor;
+                document.getElementById('previewBackground').style.backgroundColor = bgColor;
+                dimensionStyles["{{ form_data.resolution }}"].bgColor = bgColor;
+            }
+            
+            // Set font size
+            if ("{{ form_data.font_size1 }}") {
+                const fontSizeVal = parseInt("{{ form_data.font_size1 }}");
+                fontSize = fontSizeVal;
+                fontSizeDerived = fontSizeVal * 2;
+                document.getElementById('mySlider').value = fontSizeVal;
+                document.getElementById('SliderValue').textContent = fontSizeVal;
+                document.getElementById('font_size').value = fontSizeDerived;
+                document.getElementById('previewText').style.fontSize = `${fontSizeVal * 0.8}px`;
+                updateSliderBackground('mySlider', fontSizeVal, 0, 25);
+            }
+            
+            // Set border radius
+            if ("{{ form_data.box_radius }}") {
+                const boxRadiusVal = parseInt("{{ form_data.box_radius }}");
+                borderRadius = boxRadiusVal;
+                document.getElementById('subtitleBorderRadiusSlider').value = boxRadiusVal;
+                document.getElementById('subtitleBorderRadiusValue').textContent = boxRadiusVal;
+                document.getElementById('previewBackground').style.borderRadius = `${boxRadiusVal}px`;
+                updateSliderBackground('subtitleBorderRadiusSlider', boxRadiusVal, 0, 50);
+            }
+        {% endif %}
+    });
+        const tiktokImage_url = "{% static 'images/tiktok.png' %}";
+        document.addEventListener('DOMContentLoaded', function() {
+            const toast = document.getElementById('toast');
+            const toastClose = document.getElementById('toast-close');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // Show toast if there's an error message from the view
+            {% if error_message %}
+                showToast("{{ error_message }}");
+            {% endif %}
+            
+            // Close toast when clicking X
+            toastClose.addEventListener('click', function() {
+                hideToast();
+            });
+            
+            function showToast(message) {
+                toastMessage.textContent = message;
+                toast.classList.add('toast-show');
+                
+                // Auto hide after 5 seconds
+                setTimeout(function() {
+                    hideToast();
+                }, 5000);
+            }
+            
+            function hideToast() {
+                toast.classList.remove('toast-show');
+            }
+        });
+
+        function updateResolutionSettings(selectedResolution) {
+    resolution = selectedResolution;
+    const previewBox = document.getElementById('preview-box');
+    const videoText = document.getElementById('videoText');
+    const previewText = document.getElementById('previewText');
+    const previewBackground = document.getElementById('previewBackground');
+    const tiktokPreview = document.getElementById('tiktokPreview');
+    const fontSelectLabel = document.querySelector('.Upload-Font-File-text');
+    const fontSelectDropdown = document.querySelector('.Upload-Font-File-Upload');
+    const fontSizeLabel = document.querySelector('.Font-Size-text');
+    const fontSizeSlider = document.querySelector('.Font-Size-Slider');
+    const borderRadiusLabel = document.querySelector('.slider-container label');
+    const borderRadiusSliderDiv = document.querySelector('.slider-container');
+    const fontSelect = document.getElementById('font_select');
+    const preview = document.getElementById('Preview');
+
+    let newFontSize = 22;
+    if (selectedResolution === '1:1') {
+        previewBox.style.width = '600px';
+        previewBox.style.height = '600px';
+        videoText.style.fontSize = '48px';
+        previewText.style.width = '350px';
+        preview.style.marginTop = '0';
+        previewBox.style.background = '#EEEEEE';
+        videoText.style.display = 'flex';
+        previewBackground.style.display = 'flex';
+        tiktokPreview.style.display = 'none';
+        fontSelectLabel.style.display = 'flex';
+        fontSelectDropdown.style.display = 'flex';
+        fontSizeLabel.style.display = 'flex';
+        fontSizeSlider.style.display = 'block';
+        borderRadiusLabel.style.display = 'block';
+        borderRadiusSliderDiv.style.display = 'block';
+        if (selectedFont && selectedFont !== 'tiktokfont') {
+            previewText.style.fontFamily = selectedFont;
+        } else {
+            fontSelect.value = '';
+            previewText.style.fontFamily = '';
+        }
+        fontError = '';
+        document.getElementById('font_error').textContent = '';
+    } else if (selectedResolution === '4:5') {
+        previewBox.style.width = '480px';
+        previewBox.style.height = '600px';
+        videoText.style.fontSize = '42px';
+        previewText.style.width = '350px';
+        preview.style.marginTop = '0';
+        previewBox.style.background = '#EEEEEE';
+        videoText.style.display = 'flex';
+        previewBackground.style.display = 'flex';
+        tiktokPreview.style.display = 'none';
+        fontSelectLabel.style.display = 'flex';
+        fontSelectDropdown.style.display = 'flex';
+        fontSizeLabel.style.display = 'flex';
+        fontSizeSlider.style.display = 'block';
+        borderRadiusLabel.style.display = 'block';
+        borderRadiusSliderDiv.style.display = 'block';
+        if (selectedFont && selectedFont !== 'tiktokfont') {
+            previewText.style.fontFamily = selectedFont;
+        } else {
+            fontSelect.value = '';
+            previewText.style.fontFamily = '';
+        }
+        fontError = '';
+        document.getElementById('font_error').textContent = '';
+    } else if (selectedResolution === '16:9') {
+        previewBox.style.width = '680px';
+        previewBox.style.height = '382px';
+        videoText.style.fontSize = '38px';
+        previewText.style.width = '350px';
+        preview.style.marginTop = '0';
+        previewBox.style.background = '#EEEEEE';
+        videoText.style.display = 'flex';
+        previewBackground.style.display = 'flex';
+        tiktokPreview.style.display = 'none';
+        fontSelectLabel.style.display = 'flex';
+        fontSelectDropdown.style.display = 'flex';
+        fontSizeLabel.style.display = 'flex';
+        fontSizeSlider.style.display = 'block';
+        borderRadiusLabel.style.display = 'block';
+        borderRadiusSliderDiv.style.display = 'block';
+        if (selectedFont && selectedFont !== 'tiktokfont') {
+            previewText.style.fontFamily = selectedFont;
+        } else {
+            fontSelect.value = '';
+            previewText.style.fontFamily = '';
+        }
+        fontError = '';
+        document.getElementById('font_error').textContent = '';
+    } else if (selectedResolution === '9:16') {
+        previewBox.style.width = '382px';
+        previewBox.style.height = '680px';
+        previewText.style.width = '300px';
+        newFontSize = 16;
+        fontSelect.value = 'Tiktokfont';
+        previewText.style.fontFamily = 'tiktokfont';
+        tiktokPreview.style.fontFamily = 'tiktokfont';
+        document.querySelectorAll('.text-wrapper2-span').forEach(span => {
+            span.style.fontFamily = 'tiktokfont';
+            span.style.color = dimensionStyles['9:16'].fontColor;
+            span.style.backgroundColor = dimensionStyles['9:16'].bgColor;
+        });
+        previewBackground.style.display = 'none';
+        tiktokPreview.style.display = 'flex';
+        fontSelectLabel.style.display = 'none';
+        fontSelectDropdown.style.display = 'none';
+        fontSizeLabel.style.display = 'none';
+        fontSizeSlider.style.display = 'none';
+        borderRadiusLabel.style.display = 'none';
+        borderRadiusSliderDiv.style.display = 'none';
+        videoText.style.display = 'none';
+        previewBox.style.background = `url('${tiktokImage_url}') center/cover no-repeat`;
+        preview.style.marginTop = '-2rem';
+        fontError = '';
+        document.getElementById('font_error').textContent = '';
+    }
+
+    if (selectedResolution !== '9:16' && selectedFont === 'tiktokfont') {
+        selectedFont = '';
+        fontSelect.value = '';
+    }
+
+    fontSize = newFontSize;
+    previewText.style.fontSize = `${newFontSize * 0.8}px`;
+    const slider = document.getElementById('mySlider');
+    if (slider) {
+        slider.value = newFontSize;
+        updateSliderBackground('mySlider', newFontSize, 0, 25);
+    }
+    document.getElementById('SliderValue').textContent = newFontSize;
+    document.getElementById('recommended-font-size').textContent = `(Recommended Font Size: ${newFontSize})`;
+    fontSizeDerived = newFontSize * 2;
+    document.getElementById('font_size').value = fontSizeDerived;
+    previewBox.style.margin = '0 auto';
+
+    if (previewBackground) {
+        previewBackground.style.borderRadius = `${borderRadius}px`;
+    }
+    updateSliderBackground('subtitleBorderRadiusSlider', borderRadius, 0, 50);
+
+    const fontColor = dimensionStyles[selectedResolution].fontColor;
+    const bgColor = dimensionStyles[selectedResolution].bgColor;
+    document.getElementById('colorPicker1').value = fontColor;
+    document.getElementById('colortext1').value = fontColor;
+    document.getElementById('color1').style.backgroundColor = fontColor;
+    previewText.style.color = fontColor;
+
+    document.getElementById('colorPicker2').value = bgColor;
+    document.getElementById('colortext2').value = bgColor;
+    document.getElementById('color2').style.backgroundColor = bgColor;
+    previewBackground.style.backgroundColor = bgColor;
+
+    document.querySelectorAll('.box').forEach(box => {
+        const res = box.getAttribute('data-resolution');
+        if (res === selectedResolution) {
+            box.style.border = '1px solid #864AF9';
+            const circleOuter = box.querySelector('.circle-outer');
+            const circleInner = box.querySelector('.circle-inner');
+            if (circleOuter) circleOuter.style.border = '3px solid #864AF9';
+            if (circleInner) circleInner.style.backgroundColor = '#864AF9';
+        } else {
+            box.style.border = '1px solid #88888877';
+            const circleOuter = box.querySelector('.circle-outer');
+            const circleInner = box.querySelector('.circle-inner');
+            if (circleOuter) circleOuter.style.border = '3px solid #D9D9D9';
+            if (circleInner) circleInner.style.backgroundColor = '#D9D9D9';
+        }
+    });
+
+
+    
+}
+
+    </script>
+</body>
+
+</html>

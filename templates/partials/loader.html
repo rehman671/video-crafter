@@ -1,0 +1,47 @@
+    <style>
+        /* Add a loading screen */
+        #loading {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 1000;
+        }
+
+        /* Hide the main content initially */
+        #videoPreviewContainer {
+            display: none;
+        }
+    </style>
+
+<div id="loading">Loading video, please wait...</div>
+
+<script>
+    // Wait for the DOM to load
+    document.addEventListener('DOMContentLoaded', function () {
+        var video = document.getElementById('my-video');
+        var loadingScreen = document.getElementById('loading');
+        var content = document.getElementById('videoPreviewContainer');
+
+        // Add an event listener for the 'canplaythrough' event
+        video.addEventListener('canplaythrough', function () {
+            // Hide the loading screen
+            loadingScreen.style.display = 'none';
+            // Show the content
+            content.style.display = 'block';
+        });
+
+        // If the video fails to load after a certain time, you can handle that too
+        setTimeout(function () {
+            if (!video.readyState >= 4) { // If video is not fully ready
+                alert("Video took too long to load. Please try refreshing the page.");
+                // Optionally keep showing the loading screen or take some other action
+            }
+        }, 15000); // Set a timeout of 15 seconds
+    });
+</script>
+

@@ -1,0 +1,25 @@
+.inline-group .inline-related.with-nested {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.inline-group .inline-related.with-nested > h3 {
+    background: #f8f8f8;
+    border-bottom: 1px solid #eee;
+    margin-top: 0;
+    padding: 8px;
+}
+
+/* Nested inline styling */
+.inline-related .inline-group {
+    margin-left: 20px;
+    border-left: 2px solid #79aec8;
+    padding-left: 10px;
+}
+
+.inline-related .inline-group h2 {
+    font-size: 14px;
+    color: #417690;
+}

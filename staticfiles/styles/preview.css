@@ -1,0 +1,119 @@
+.box {
+    border: 1px solid rgb(134, 74, 249);
+}
+
+.circle-outer {
+    border: 3px solid rgb(134, 74, 249);
+}
+
+.circle-inner {
+    background-color: rgb(134, 74, 249);
+}
+
+.tiktok-box {
+    border: 1px solid rgba(136, 136, 136, 0.467);
+}
+
+.tiktok-circle {
+    border: 3px solid rgb(217, 217, 217);
+}
+
+.tiktok-inner {
+    background-color: rgb(217, 217, 217);
+}
+
+.youtube-main {
+    border: 1px solid rgba(136, 136, 136, 0.467);
+}
+
+.youtube-outer {
+    border: 3px solid rgb(217, 217, 217);
+}
+
+.youtube-inner {
+    background-color: rgb(217, 217, 217);
+}
+
+.nine-sixteen-main {
+    border: 1px solid rgba(136, 136, 136, 0.467);
+}
+
+.tiktok-circle2 {
+    border: 3px solid rgb(217, 217, 217);
+}
+
+.tiktok-circle3 {
+    background-color: rgb(217, 217, 217);
+}
+
+.error-message {
+    color: red;
+    font-size: 16px;
+}
+
+#font_error {
+    color: red;
+    margin-top: -20px;
+    font-size: 16px;
+}
+
+#color1 {
+    background-color: rgb(255, 255, 255);
+}
+
+#color2 {
+    background-color: rgb(0, 0, 0);
+}
+
+#mySlider {
+    width: 100%;
+    background: linear-gradient(to right, rgb(134, 74, 249) 88%, rgb(217, 217, 217) 88%);
+}
+
+.subtitle-border-radius-slider {
+    background: linear-gradient(to right, rgb(134, 74, 249) 52%, rgb(217, 217, 217) 52%);
+}
+
+#preview-box {
+    width: 600px;
+    height: 600px;
+    background: rgb(238, 238, 238);
+    margin: 0px auto;
+}
+
+#previewBackground {
+    display: flex;
+    border-radius: 26px;
+    background-color: rgb(0, 0, 0);
+}
+
+#previewText {
+    width: 350px;
+    font-size: 17.6px;
+    color: rgb(255, 255, 255);
+}
+
+.text-wrapper2-span {
+    color: rgb(255, 255, 255);
+    background-color: rgb(0, 0, 0);
+}
+
+#button-text {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 21.94px;
+    text-align: left;
+}
+#font_select {
+    outline: none;
+    border: none; 
+    box-shadow: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+#font_select:focus {
+    outline: none;
+    box-shadow: none;
+}

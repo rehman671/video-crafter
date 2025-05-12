@@ -1,0 +1,164 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Background Music</title>
+    <link rel="stylesheet" href="{% static 'css/music.css' %}">
+    
+</head>
+  <style>
+  .container {
+      padding: 20px;
+    }
+    
+    .breadcrumb-nav ul {
+      list-style: none;
+      display: flex;
+      padding: 0;
+    }
+    
+    .breadcrumb-nav ul li {
+      margin-right: 10px;
+    }
+    
+    .folder-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .card {
+      width: 200px;
+      position: relative;
+      transition: transform 0.3s ease-in-out;
+    }
+    
+    .folder-card:hover, .video-card:hover {
+      transform: scale(1.05);
+    }
+    
+    .three-dots-menu {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    
+    .video-thumbnail {
+      position: relative;
+    }
+    
+    .video-thumbnail img {
+      width: 100%;
+      border-radius: 5px;
+    }
+    
+    .play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      padding: 10px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    
+    .play-btn:hover {
+      background-color: rgba(0, 0, 0, 0.8);
+    }
+  </style>
+<body class="bg" style="position: relative; overflow-x: hidden;">
+                
+<!-- templates/category_view.html -->
+
+{% include 'sub_header.html' %}
+
+<div class="breadcrumb-nav">
+    <ul>
+        {% if current_category %}
+            <li><a href="{% url 'video:category_view' %}">Root</a></li>
+            {% for parent in current_category.get_ancestors %}
+                <li><a href="{% url 'video:category_view' parent.id %}">{{ parent.name }}</a></li>
+            {% endfor %}
+            <li>{{ current_category.name }}</li>
+        {% else %}
+            <li>Root</li>
+        {% endif %}
+    </ul>
+</div>
+
+<div class="folder-grid">
+    <!-- Subcategories (Folders) -->
+    {% for subcategory in subcategories %}
+        <div class="card folder-card">
+            <div class="card-body">
+                <i class="fas fa-folder fa-4x"></i>
+                <h5 class="card-title">{{ subcategory.name }}</h5>
+                <a href="{% url 'video:category_view' subcategory.id %}">Open</a>
+                <span class="three-dots-menu">
+                    <i class="fas fa-ellipsis-v"></i>
+                    <!-- Options: Delete, Rename -->
+                </span>
+            </div>
+        </div>
+    {% empty %}
+        <p>No subcategories found.</p>
+    {% endfor %}
+</div>
+
+<div class="video-grid">
+    <!-- Videos -->
+    {% for video in videos %}
+        <div class="card video-card">
+            <div class="card-body">
+                <div class="video-thumbnail">
+                    <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}">
+                    <a href="" class="play-btn"><i class="fas fa-play"></i></a>
+                </div>
+                <h5 class="card-title">{{ video.title }}</h5>
+                <span class="three-dots-menu">
+                    <i class="fas fa-ellipsis-v"></i>
+                    <!-- Options: Delete, Rename, Move -->
+                </span>
+            </div>
+        </div>
+    {% empty %}
+        <p>No videos found in this category.</p>
+    {% endfor %}
+</div>
+<!--  -->
+
+  <script>
+    // Handle folder click to navigate
+$('.folder-card').on('click', function() {
+  // Implement your AJAX or transition here to load subfolder content
+  // Example transition:
+  $(this).addClass('animate-out');
+  $('.folder-grid').addClass('slide-in-new');
+});
+
+// Play video inside the card
+$('.play-btn').on('click', function() {
+  let videoUrl = $(this).data('video-url'); // Get the video URL
+  $('#main-video-card').html(`<video controls autoplay src="${videoUrl}"></video>`);
+});
+
+// Handle three-dots menu actions
+$('.three-dots-menu').on('click', function() {
+  // Show options for delete, rename, etc.
+  $(this).find('.dropdown-menu').toggle();
+});
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="{% static 'styles/signup.css' %}">
+  <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
+  <title>VideoCrafter.io</title>
+</head>
+<body>
+
+  <div class="signup_container">
+    <img 
+      src="{% static 'images/elipse.svg' %}" 
+      alt="Background decoration" 
+      class="signup_backgroundImage"
+    />
+    <div class="signup_formContainer">
+      <form id="signupForm" class="signup_form" method="POST">
+        {% csrf_token %}
+
+        <div class="signup_logo">
+          <a href="/">
+            <img src="{% static 'images/logo.svg' %}" alt="Company logo" />
+          </a>
+          <span className="signup_logoText">
+            Your Payment Has Been Completed Successfully
+          </span>
+          <small class="small">Set Up Your Account Details Below</small>
+        </div>
+
+        {% if error_message %}
+        <div class="error-message" style="color: red; margin-bottom: 15px;">
+          {{ error_message }}
+        </div>
+        {% endif %}
+
+        <div class="signup_formGroup">
+          <label for="username" class="signup_label">Name:</label>
+          <input 
+            class="signup_input" 
+            type="text" 
+            id="username" 
+            name="username" 
+            required 
+            placeholder="Your Name"
+          />
+        </div>
+
+        <div class="signup_formGroup">
+          <label for="email" class="signup_label">Email address:</label>
+          <input 
+            class="signup_input" 
+            type="email" 
+            id="email" 
+            name="email" 
+            required 
+            placeholder="Email"
+            value="{{ email }}"
+          />
+        </div>
+
+        <div class="signup_formGroup">
+          <label for="password" class="signup_label">Password:</label>
+          <input 
+            class="signup_input" 
+            type="password" 
+            id="password" 
+            name="password" 
+            required 
+            placeholder="Password"
+          />
+        </div>
+
+        <div class="signup_formGroup">
+          <label for="confirm_password" class="signup_label">Confirm Password:</label>
+          <input 
+            class="signup_input" 
+            type="password" 
+            id="confirm_password" 
+            name="confirm_password" 
+            required 
+            placeholder="Confirm Password"
+          />
+        </div>
+
+        <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
+
+        <button type="submit" class="signup_button">Sign Up</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('signupForm').addEventListener('submit', function (e) {
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm_password').value;
+      const errorDiv = document.getElementById('passwordError');
+  
+      // Clear any previous error
+      errorDiv.textContent = '';
+  
+      if (password !== confirmPassword) {
+        e.preventDefault();
+        errorDiv.textContent = 'Passwords do not match.';
+        return false;
+      }
+    });
+  </script>
+</body>
+</html>

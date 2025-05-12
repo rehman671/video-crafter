@@ -1,0 +1,732 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control"
+          content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    {% include 'partials/head_c.html' %}
+    
+
+  <link rel="stylesheet" href="{% static 'landing/style-tmp.css' %}" />
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+
+   
+  </head>
+  <body>
+    <div class="background">
+      <img src="{% static 'assets/background/Lines.svg' %}"
+           alt="lines"
+           class="lines" />
+      <img src="{% static 'assets/background/Ellipse 2.svg' %}"
+           alt=""
+           class="ellipse2" />
+    </div>
+
+    {% include "vlc/frontend/includes/navbar.html" %}
+
+    <div class="hero">
+      <img src="{% static 'assets/background/Ellipse 2.svg' %}"
+           alt=""
+           class="ellipse2 heroellipse" />
+      <img src="{% static 'assets/background/Ellipse 2.svg' %}"
+           alt=""
+           class="ellipse1" />
+
+      <div class="top">
+        <div class="typography">
+          <h1 class="h1hero">
+            The Fastest and Easiest Way to Create <span class="highlight">High-
+            <br />
+            Converting</span> Video Ads
+          </h1>
+
+          <p class="phero">
+            Are You Tired Of Relying On Expensive And Unreliable Video Editors For Your Video Ads? Wish
+            <br />
+            There Was A Faster, Easier, And More Affordable Way To Create High-Quality Video Ads For
+            <br />
+            Your Facebook Ads, YouTube Ads, Ecommerce Products, Or Affiliate Offers?
+          </p>
+        </div>
+
+        <div class="heroButton">
+          <img src="{% static 'assets/icons/Arrow.svg' %}" alt="arrow" class="arrow" />
+          <a href="#pricing" class="getStarted" id="heroButton">
+            Get Started
+            <img src="{% static 'assets/icons/arrow-right.svg' %}" alt="arrow-right" />
+          </a>
+        </div>
+      </div>
+
+      <div class="PlaceholderContainer">
+        <div class="Placeholder" id="heroPlaceholder">
+          <img src="{% static 'assets/icons/Play.svg' %}" alt="play" />
+        </div>
+      </div>
+    </div>
+
+    <div class="portfolio" id="Portfolio">
+      <div class="portfoliotext">
+        <h2>
+          See What
+          <br />
+          <span class="highlight">VideoCrafter.io</span> Has Done
+        </h2>
+      </div>
+
+      <div class="grid">
+        <h2 class="subtitle">TikTok Ad Examples</h2>
+        <div class="grid-container">
+            <div class="grid-item">
+                <video src="{% static 'videos/tiktok/tiktok1.mp4' %}" class="tiktok-video" controls></video>
+            </div>
+            <div class="grid-item">
+                <video src="{% static 'videos/tiktok/tiktok2.mp4' %}" class="tiktok-video" controls></video>
+            </div>
+            <div class="grid-item">
+                <video src="{% static 'videos/tiktok/tiktok3.mp4' %}" class="tiktok-video" controls></video>
+            </div>
+        </div>
+    
+        <h2 class="subtitle">Facebook/Instagram Ad Examples</h2>
+        <div class="grid-container">
+            <div class="grid-item">
+                <video src="{% static 'videos/facebook/facebook1.mp4' %}" class="facebook-video" controls></video>
+            </div>
+            <div class="grid-item">
+                <video src="{% static 'videos/facebook/facebook2.mp4' %}" class="facebook-video" controls></video>
+            </div>
+            <div class="grid-item">
+                <video src="{% static 'videos/facebook/facebook3.mp4' %}" class="facebook-video" controls></video>
+            </div>
+        </div>
+    
+        <h2 class="subtitle">YouTube Ad Examples</h2>
+        <div class="grid-container">
+            <div class="grid-item">
+                <video src="{% static 'videos/youtube/youtube1.mp4' %}" class="youtube-video" controls></video>
+            </div>
+            <div class="grid-item">
+                <video src="{% static 'videos/youtube/youtube2.mp4' %}"  class="youtube-video"  controls></video>
+            </div>
+            <div class="grid-item">
+                <video src="{% static 'videos/youtube/youtube3.mp4' %}"  class="youtube-video"  controls></video>
+            </div>
+        </div>
+    </div>
+
+      <!--
+      
+     
+
+      <div class="grid">
+        <div class="grid-container">
+          <div class="grid-item">
+            <img src="{% static 'assets/icons/Play.svg' %}"
+                 alt="play"
+                 class="img-size" />
+          </div>
+          <div class="grid-item">
+            <img src="{% static 'assets/icons/Play.svg' %}"
+                 alt="play"
+                 class="img-size" />
+          </div>
+          <div class="grid-item">
+            <img src="{% static 'assets/icons/Play.svg' %}"
+                 alt="play"
+                 class="img-size" />
+          </div>
+          <div class="grid-item">
+            <img src="{% static 'assets/icons/Play.svg' %}"
+                 alt="play"
+                 class="img-size" />
+          </div>
+          <div class="grid-item">
+            <img src="{% static 'assets/icons/Play.svg' %}"
+                 alt="play"
+                 class="img-size" />
+          </div>
+          <div class="grid-item">
+            <img src="{% static 'assets/icons/Play.svg' %}"
+                 alt="play"
+                 class="img-size" />
+          </div>
+        </div>
+      </div>
+ -->
+
+ <!--
+      <div class="mobi-slider">
+        <div class="slider">
+          <div class="slides">
+            <div class="slide">
+              <div class="Placeholder">
+                <video src="{% static 'videos/tiktok/tiktok1.mp4' %}" class="tiktok-video" controls></video>
+              </div>
+            </div>
+            <div class="slide">
+              <div class="Placeholder">
+                <video src="{% static 'videos/tiktok/tiktok1.mp4' %}" class="tiktok-video" controls></video>
+              </div>
+            </div>
+            <div class="slide">
+              <div class="Placeholder">
+                <video src="{% static 'videos/tiktok/tiktok1.mp4' %}" class="tiktok-video" controls></video>
+              </div>
+            </div>
+            
+          </div>
+
+          <div class="slider-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+      </div>
+
+
+<div class="mobi-slider facebook-slider">
+  <h2 class="subtitle mobile-sub-head">Facebook Ad Examples</h2>
+  <div class="slider">
+    <div class="slides">
+      <div class="slide">
+        <div class="Placeholder-mob">
+          <video src="{% static 'videos/facebook/facebook1.mp4' %}" class="facebook-video" controls></video>
+        </div>
+      </div>
+      <div class="slide">
+        <div class="Placeholder-mob">
+          <video src="{% static 'videos/facebook/facebook2.mp4' %}" class="facebook-video" controls></video>
+        </div>
+      </div>
+      <div class="slide">
+        <div class="Placeholder-mob">
+          <video src="{% static 'videos/facebook/facebook3.mp4' %}" class="facebook-video" controls></video>
+        </div>
+      </div>
+     
+    </div>
+    <div class="slider-dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+</div>
+
+
+<div class="mobi-slider youtube-slider">
+  <h2 class="subtitle mobile-sub-head">YouTube Ad Examples</h2>
+  <div class="slider">
+    <div class="slides">
+      <div class="slide">
+        <div class="Placeholder-mob">
+          <video src="{% static 'videos/youtube/youtube1.mp4' %}" class="youtube-video" controls></video>
+        </div>
+      </div>
+      <div class="slide">
+        <div class="Placeholder-mob">
+          <video src="{% static 'videos/youtube/youtube2.mp4' %}" class="youtube-video" controls></video>
+        </div>
+      </div>
+      <div class="slide">
+        <div class="Placeholder-mob">
+          <video src="{% static 'videos/youtube/youtube3.mp4' %}" class="youtube-video" controls></video>
+        </div>
+      </div>
+     
+    </div>
+    <div class="slider-dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+</div>
+-->
+<div class="mobi-slider tiktok-slider">
+  <h2 class="subtitle mobile-sub-head">TikTok Ad Examples</h2>
+  <div class="slider">
+    <div class="slides">
+      <div class="slide">
+        <div class="Placeholder-mob">
+
+          <video id="tiktok-video-1" class="video-js vjs-default-skin vjs-big-play-centered tiktok-video" controls preload="auto" data-setup='{ "fluid" : true }' width="100%">
+            <source src="{% static 'videos/tiktok/tiktok1.mp4' %}" type="video/mp4" />
+          </video>
+          
+          
+         
+        
+        </div>
+      </div>
+      <div class="slide">
+        <div class="Placeholder-mob">
+          <video id="tiktok-video-2" class="video-js vjs-default-skin vjs-big-play-centered tiktok-video" controls preload="auto" data-setup='{ "fluid" : true }' width="100%">
+            <source src="{% static 'videos/tiktok/tiktok2.mp4' %}" type="video/mp4" />
+          </video>
+          
+          
+        </div>
+      </div>
+      <div class="slide">
+        <div class="Placeholder-mob">
+          <video id="tiktok-video-3" class="video-js vjs-default-skin vjs-big-play-centered tiktok-video" controls preload="auto" data-setup='{ "fluid" : true }' width="100%">
+            <source src="{% static 'videos/tiktok/tiktok3.mp4' %}" type="video/mp4" />
+          </video>
+        </div>
+      </div>
+    </div>
+    <div class="slider-dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+</div>
+
+<div class="mobi-slider facebook-slider">
+  <h2 class="subtitle mobile-sub-head">Facebook Ad Examples</h2>
+  <div class="slider">
+    <div class="slides">
+      <div class="slide">
+        <div class="Placeholder-mob">
+         
+          <video id="facebook-video-1" class="video-js vjs-default-skin vjs-big-play-centered facebook-video" controls preload="auto" data-setup='{ "fluid" : true }' width="100%">
+            <source src="{% static 'videos/facebook/facebook1.mp4' %}" type="video/mp4" />
+          </video>
+        </div>
+      </div>
+      <div class="slide">
+        <div class="Placeholder-mob">
+          
+          <video id="facebook-video-2" class="video-js vjs-default-skin vjs-big-play-centered facebook-video" controls preload="auto" data-setup='{ "fluid" : true }' width="100%">
+            <source src="{% static 'videos/facebook/facebook2.mp4' %}" type="video/mp4" />
+          </video>
+        </div>
+      </div>
+      <div class="slide">
+        <div class="Placeholder-mob">
+          
+          <video id="facebook-video-3" class="video-js vjs-default-skin vjs-big-play-centered facebook-video" controls preload="auto" data-setup='{ "fluid" : true }' width="100%">
+            <source src="{% static 'videos/facebook/facebook3.mp4' %}" type="video/mp4" />
+          </video>
+          
+        </div>
+        
+      </div>
+     
+    </div>
+    <div class="slider-dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+</div>
+
+<div class="mobi-slider youtube-slider">
+  <h2 class="subtitle mobile-sub-head">YouTube Ad Examples</h2>
+  <div class="slider">
+    <div class="slides">
+      <div class="slide">
+        <div class="Placeholder-mob">
+          <video id="youtube-video-1" class="video-js vjs-default-skin vjs-big-play-centered youtube-video" controls preload="auto" data-setup='{ "fluid" : true }' width="100%">
+            <source src="{% static 'videos/youtube/youtube1.mp4' %}" type="video/mp4" />
+          </video>
+          
+        </div>
+      </div>
+      <div class="slide">
+        <div class="Placeholder-mob">
+          
+          <video id="youtube-video-2" class="video-js vjs-default-skin vjs-big-play-centered youtube-video" controls preload="auto" data-setup='{ "fluid" : true }' width="100%">
+            <source src="{% static 'videos/youtube/youtube2.mp4' %}" type="video/mp4" />
+          </video>
+        </div>
+      </div>
+      <div class="slide">
+        <div class="Placeholder-mob">
+          <video id="youtube-video-3" class="video-js vjs-default-skin vjs-big-play-centered youtube-video" controls preload="auto" data-setup='{ "fluid" : true }' width="100%">
+            <source src="{% static 'videos/youtube/youtube3.mp4' %}" type="video/mp4" />
+          </video>
+        </div>
+      </div>
+      <!-- Additional slides can be added here -->
+    </div>
+    <div class="slider-dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+</div>
+
+
+
+
+    </div>
+
+    <div class="howitworks" id="HowItWorks">
+      <img src="{% static 'assets/background/Ellipse 2.svg' %}" alt="" class="" />
+      <img src="{% static 'assets/background/Ellipse 2.svg' %}" alt="" class="" />
+      <img src="{% static 'assets/background/Ellipse 2.svg' %}" alt="" class="" />
+      <img src="{% static 'assets/background/Ellipse 2.svg' %}" alt="" class="" />
+      <img src="{% static 'assets/background/Ellipse 2.svg' %}" alt="" class="" />
+
+      <div class="hiw-heading-text">
+        How does it <span class="highlight">work?</span><span>work?</span>
+      </div>
+
+      <div class="hiw-container">
+        <div class="hiw-element hiw-column">
+          <div class="hiw-element-placeholder"></div>
+          <div class="hiw-element-text-container">
+            <div class="hiw-element-heading">1. Build Your Asset Library</div>
+            <div class="hiw-element-text">
+              Upload and organize your video clips into folders (e.g., product shots, testimonials, problem scenarios).
+            </div>
+          </div>
+        </div>
+        <div class="hiw-element hiw-flex hiw-column">
+          <div class="hiw-element-placeholder"></div>
+          <div class="hiw-element-text-container">
+            <div class="hiw-element-heading">2. Upload Your Script</div>
+            <div class="hiw-element-text">
+              Our software will break your script down into slides like this
+            </div>
+          </div>
+        </div>
+        <div class="hiw-element hiw-column">
+          <div class="hiw-element-placeholder"></div>
+          <div class="hiw-element-text-container">
+            <div class="hiw-element-heading">3. Select Your AI Voice Over</div>
+            <div class="hiw-element-text">
+              You can chose any voice ID from eleven labs for your script
+            </div>
+          </div>
+        </div>
+        <div class="hiw-element hiw-flex hiw-column">
+          <div class="hiw-element-placeholder"></div>
+          <div class="hiw-element-text-container">
+            <div class="hiw-element-heading">4. Match Video Clips</div>
+            <div class="hiw-element-text">
+              For each line of your script, either upload a new video clip or select one from your asset library.
+            </div>
+          </div>
+        </div>
+        <div class="hiw-element hiw-column">
+          <div class="hiw-element-placeholder"></div>
+          <div class="hiw-element-text-container">
+            <div class="hiw-element-heading">5. Choose Background Music</div>
+            <div class="hiw-element-text">Specify when it should start.</div>
+          </div>
+        </div>
+        <div class="hiw-element hiw-flex hiw-column">
+          <div class="hiw-element-placeholder"></div>
+          <div class="hiw-element-text-container">
+            <div class="hiw-element-heading">6. Click "Create Video"</div>
+            <div class="hiw-element-text">
+              Get a fully produced video ad with your chosen AI voice-over, video clips, subtitles, and background music in minutes.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pricing" id="pricing">
+      <div class="top">
+        <p class="ptop-text">
+          Plans That <span class="highlight">Scale</span><span>Scale</span> With Business
+        </p>
+
+        <p class="ptop-p">
+          Think About How Much You’re Currently Paying Your Video Editor. With
+          <br />
+          VideoCrafter.io, You Can Create Videos In Minutes, Saving Both Time And Money.
+        </p>
+      </div>
+
+      <div class="middle">
+        <div class="p-cards-grid">
+          <div class="p-cards-grid-container">
+            <div class="p-cards-grid-item">
+              <span class="highlight g-head">Free Trial</span>
+
+              <p class="g-p">
+                Learn How VideoCrafter.io Works
+                <br />
+                <br />
+              </p>
+
+              <div class="price">
+                <span><span class="bold-size">Free</span></span>
+                <br />
+                <span class="price-promo">&nbsp;</span>
+              </div>
+
+              <div class="benefits">
+                <img src="{% static 'assets/icons/check.svg' %}" alt="" />
+                <span class="benefits-text">Create 1 Video</span>
+              </div>
+              
+              <a href="/accounts/register/" class="p-button">Get Started</a>
+            </div>
+
+            <div class="p-cards-grid-item mid">
+              <div class="mp">
+                <span class="highlight g-head">Growth Plan</span>
+                <span class="hype">Most popular</span>
+              </div>
+
+              <p class="g-p">Perfect For Scaling Your Video Advertising Campaigns</p>
+
+              <div class="price">
+                <span><span class="bold-size">$497</span> <span class="font">/Month</span><span>
+                  <br />
+                  <span class="price-promo">Just $19.88 Per VIdeo</span>
+                </div>
+
+                <div class="benefits">
+                  <img src="{% static 'assets/icons/check.svg' %}" alt="" />
+                  <span class="benefits-text">Create Up To 25 Videos Per Month</span>
+                </div>
+
+                <a href="/accounts/subscribe/{{ price_ids.growth }}?success_path={% url 'accounts:register' %}&cancel_path={% url 'home:home' %}"
+                   class="p-button">Get Started</a>
+              </div>
+
+              <div class="p-cards-grid-item">
+                <span class="highlight g-head">Pro Plan</span>
+
+                <p class="g-p">Ideal For High-Volume Marketers And Agencies</p>
+
+                <div class="price">
+                  <span><span class="bold-size">$997</span> <span class="font">/Month</span><span>
+                    <br />
+                    <span class="price-promo">Just $16.62 Per Video</span>
+                  </div>
+
+                  <div class="benefits">
+                    <img src="{% static 'assets/icons/check.svg' %}" alt="" />
+                    <span class="benefits-text">Create Up To 60 Videos Per Month</span>
+                  </div>
+                  <a href="/accounts/subscribe/{{ price_ids.pro }}?success_path={% url 'accounts:register' %}&cancel_path={% url 'home:home' %}"
+                     class="p-button">Get Started</a>
+                </div>
+
+                <div class="bottom">
+                  <div class="bottom-heading">All Plans Include</div>
+
+                  <div class="more-benefits">
+                    <div class="more-benefits-items">
+                      <img src="{% static 'assets/icons/check.svg' %}" alt="" />
+                      <span class="more-benefits-text">Ability to upload your own video clips and assets</span>
+                    </div>
+                    <div class="more-benefits-items">
+                      <img src="{% static 'assets/icons/check.svg' %}" alt="" />
+                      <span class="more-benefits-text">Customizable background music and timing</span>
+                    </div>
+                    <div class="more-benefits-items">
+                      <img src="{% static 'assets/icons/check.svg' %}" alt="" />
+                      <span class="more-benefits-text">Fast, easy, and intuitive interface</span>
+                    </div>
+                    <div class="more-benefits-items">
+                      <img src="{% static 'assets/icons/check.svg' %}" alt="" />
+                      <span class="more-benefits-text">No video editing skills required</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="cta" id="cta">
+          <img src="{% static 'assets/background/Ellipse 2.svg' %}"
+               alt=""
+               class="cta-circle cc1" />
+
+          <img src="{% static 'assets/background/Ellipse 2.svg' %}"
+               alt=""
+               class="cta-circle cc2" />
+
+          <img src="{% static 'assets/background/Ellipse 2.svg' %}"
+               alt=""
+               class="cta-circle cc3" />
+
+          <div class="cta-content-wrapper">
+            <div class="cta-content">
+              <span class="cta-text">Choose The Plan That’s Right For
+                <br />
+                You And Start Creating Videos Like A
+                <br />
+              Pro Today!</span>
+              <a href="#pricing" class="cta-button">Get Video Crafter Now</a>
+            </div>
+          </div>
+        </div>
+
+        <div id="earning" class="earning-section">
+          <h1 class="earning-title">
+            Become a VideoCrafter.io Affiliate And
+            <br />
+            Earn 30% Recurring Commissions!
+          </h1>
+
+          <p class="earning-paragraph">
+            Join the VideoCrafter.io affiliate program and start earning 30% recurring commissions on every customer you refer.
+            Build a steady stream of passive income by helping others create high-converting
+            Videos without relying on expensive editors!
+          </p>
+
+          <div class="cards-container">
+            <div class="card">
+              <span class="number">1</span>
+              <p class="title">Sign Up</p>
+              <p class="text">
+                Click the sign-up button below to join our affiliate program and start earning commissions!
+              </p>
+            </div>
+
+            <div class="card">
+              <span class="number">2</span>
+              <p class="title">Share Link</p>
+              <p class="text">
+                Promote VideoCrafter.io via your blog, website, or social media.
+              </p>
+            </div>
+
+            <div class="card">
+              <span class="number">3</span>
+              <p class="title">Earn Commissions</p>
+              <p class="text">
+                Earn 30% of every payment made by your referred customers for as long as they stay with us.
+              </p>
+            </div>
+          </div>
+          <button>Sign Up Now</button>
+        </div>
+
+        <div class="contact-section-wrapper" id="contact">
+          <div class="contact-section">
+            <h1>Contact us</h1>
+            <p>We’d love to hear from you. Please fill out this form.</p>
+            <form class="contact-form" id="contactForm">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="first-name">First name</label>
+                  <input type="text"
+                         id="first-name"
+                         name="first_name"
+                         placeholder="First name"
+                         required />
+                </div>
+                <div class="form-group">
+                  <label for="last-name">Last name</label>
+                  <input type="text"
+                         id="last-name"
+                         name="last_name"
+                         placeholder="Last name"
+                         required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email"
+                       id="email"
+                       name="email"
+                       placeholder="you@company.com"
+                       required />
+              </div>
+
+              <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" placeholder="" required></textarea>
+              </div>
+
+              <button type="submit">Send Message</button>
+            </form>
+          </div>
+        </div>
+
+        {% include "vlc/frontend/includes/footer.html" %}
+
+        <script>
+          videojs('youtube-video-1');
+          videojs('youtube-video-2');
+          videojs('youtube-video-3');
+
+          videojs('facebook-video-1');
+          videojs('facebook-video-2');
+          videojs('facebook-video-3');
+
+          
+
+          videojs('tiktok-video-1');
+          videojs('tiktok-video-2');
+          videojs('tiktok-video-3');
+        </script>
+        
+
+        <script>
+          const hamburgerIcon = "{% static 'assets/icons/Hamburger.svg' %}";
+          const xIcon = "{% static 'assets/icons/x.svg' %}";
+
+          function toggleMenu() {
+            const topbar = document.getElementById("topbar");
+            const hamburger = document.getElementById("hamburger");
+
+            const open = topbar.style.top === "0px";
+
+            if (open) {
+              topbar.style.top = "-497px";
+              hamburger.src = "{% static 'assets/icons/Hamburger.svg' %}";
+            } else {
+              topbar.style.top = "0";
+              hamburger.src = "{% static 'assets/icons/x.svg' %}";
+            }
+          }
+
+          hamburger.addEventListener("click", () => {
+            toggleMenu();
+          });
+
+          document.getElementById('contactForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('accounts/contact/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                  'X-CSRFToken': '{{ csrf_token }}',
+                },
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  alert(data.message);
+                  this.reset();
+                } else {
+                  alert(data.message);
+                }
+              })
+              .catch(error => console.error('Error:', error));
+          });
+        </script>
+
+        <script src="{% static 'landing/script.js' %}"></script>
+      </body>
+    </html>

@@ -1,0 +1,657 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control"
+          content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    {% include 'partials/head_c.html' %}
+
+    <link rel="stylesheet" href="{% static 'download.css' %}" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.5.0/remixicon.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.min.css">
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+
+    <style>
+      #plansPopup {
+        padding: 46px;
+        position: relative;
+        background: white;
+        border-radius: 16px
+      }
+
+      .plans-popup-container {
+        display: flex;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .close-popup {
+        width: 25px;
+        height: 25px;
+        padding: 5px;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        background-color: lightgray;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .p-cards-grid-container {
+        display: grid;
+        grid-template-columns: repeat(2, 400px);
+        column-gap: 20px;
+        width: fit-content;
+        height: fit-content;
+        padding: 20px;
+      }
+
+      .p-cards-grid-item {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+        border: solid 0.2px #0000001a;
+        border-radius: 8px;
+        padding: 28px 28px;
+      }
+
+      .p-cards-grid {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: left;
+        width: 100%;
+      }
+
+      .mid {
+        border: solid 2px #864af9;
+      }
+
+      .g-head {
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 32.4px;
+        letter-spacing: -0.01em;
+        text-align: left;
+      }
+
+      .g-p {
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 24px;
+        letter-spacing: -0.01em;
+        text-align: left;
+        margin-bottom: 28px;
+      }
+
+      .bold-size {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 38px;
+        font-weight: 700;
+        line-height: 54px;
+        text-align: center;
+      }
+
+      .font {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.6px;
+        font-weight: 800;
+        color: #00000080;
+      }
+
+      .price-promo {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 21px;
+        letter-spacing: -0.01em;
+        text-align: center;
+      }
+
+      .price {
+        margin-bottom: 20px;
+      }
+
+      .benefits {
+        display: flex;
+        column-gap: 10px;
+        align-items: center;
+        justify-items: center;
+        margin-bottom: 20px;
+      }
+
+      .benefits-text {
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 24px;
+        letter-spacing: -0.01em;
+        text-align: left;
+      }
+
+      .p-button {
+        width: 250px;
+        background: #864af9;
+        padding: 12px 32px;
+        width: 82%;
+        border: solid 1px #864af9;
+        border-radius: 8px;
+        text-align: center;
+        display: block;
+        color: white;
+        transition: 0.3s ease;
+      }
+
+      .p-button:hover {
+        background-color: #6b4fc1;
+      }
+
+      .mp {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .hype {
+        color: #864af9;
+        background: #9dbdff33;
+        font-size: 14px;
+        padding: 4px 8px 4px 8px;
+        border: solid 1px #9dbdff33;
+        border-radius: 50px;
+      }
+
+      .middle {
+        margin-bottom: 32px;
+      }
+
+      .bottom-heading {
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .more-benefits {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+
+
+          /* fix */
+      /* .video-js .vjs-time-control{display: block;} */
+
+      .video-js .vjs-current-time {
+        display: block;
+    }
+    .video-js .vjs-remaining-time {
+        display: none;
+    }
+    </style>
+  </head>
+  <body class="bg" style="position: relative; overflow-x: hidden;">
+
+    {% include 'sub_header.html' %}
+
+    <div class="progressbar"
+         style="display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 84px;
+                margin-bottom: 56px">
+      <div style="width: 624px;
+                  height: 10px;
+                  background: #EEEEEE;
+                  position: relative;
+                  display: flex;
+                  align-items: center">
+        <div style="position: absolute;
+                    width: 25px;
+                    height: 25px;
+                    background: #864AF9;
+                    border-radius: 90px;
+                    left: 0%;
+                    transform: translateX(-85%)"></div>
+        <div style="position: absolute;
+                    width: 25px;
+                    height: 25px;
+                    background: #864AF9;
+                    border-radius: 90px;
+                    left: 208px"></div>
+        <div style="position: absolute;
+                    width: 25px;
+                    height: 25px;
+                    background: #864AF9;
+                    border-radius: 90px;
+                    left: 416px"></div>
+        <div style="position: absolute;
+                    width: 25px;
+                    height: 25px;
+                    background: #864AF9;
+                    border-radius: 90px;
+                    left: 100%"></div>
+
+        <div style="position: absolute;
+                    width: 634px;
+                    height: 10px;
+                    background: #864AF9;
+                    border-radius: 90px;
+                    left: 0"></div>
+
+        <div style="position: absolute; top: -50px; left: -75.96px;">
+          Voice & Subtitle Design
+        </div>
+        <div style="position: absolute; top: -50px; left: 160px;">Scene Selection</div>
+        <div style="position: absolute; top: -50px; left: 312px;">
+          Background Music Selection
+        </div>
+        <div style="position: absolute; top: -50px; left: 594px;">Download</div>
+      </div>
+    </div>
+    <div class="container"
+         style="display: flex;
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 50px">
+
+      <div style="display: flex;
+                  text-align: center;
+                  width: 524px;
+                  height: fit-content;
+                  gap: 18px;
+                  background: white;
+                  border: 1px solid #0000004D;
+                  border-radius: 8px;
+                  justify-content: center;
+                  align-items: center;
+                  flex-direction: column;
+                  padding: 40px 24px">
+        <a href="{% url 'video_text:process_background_music' text_file.id %}"
+           style="display: flex;
+                  border: 1px solid #864AF9;
+                  box-sizing: border-box;
+                  align-items: center;
+                  justify-content: center;
+                  text-decoration: none;
+                  background: white;
+                  border-radius: 8px;
+                  font-family: Montserrat;
+                  font-size: 18px;
+                  font-weight: 500;
+                  line-height: 21.94px;
+                  text-align: left;
+                  color: #864AF9;
+                  padding: 5px 24px;
+                  width: 80%;
+                  gap: 10px">
+          <!-- <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+                    <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg> -->
+          <span style="line-height: 24px;">Go Back To Change Background Music</span>
+        </a>
+        <div>
+
+          <!-- {% include 'partials/back.html' %} -->
+
+          <span style="font-family: Montserrat;
+                       font-size: 24px;
+                       font-weight: 700;
+                       line-height: 29.26px;
+                       text-align: center">Your Video Has Been Generated Successfully</span>
+        </div>
+        <div id="video-container-box" style="display: flex;
+                    width: 373px;
+                      height: auto;
+                    border-radius: 8px;
+                    align-items: center;
+                    justify-content: center">
+          <div id="videoPreviewContainer"
+               style="width: 100%;
+                      height: 100%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      overflow: hidden">
+            <video id="download-video" width="100%" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto"
+            data-setup='{ "fluid" : true }' >
+              {% if bg_music == 'false' %}
+                <source src="{{ text_file.generated_watermarked_video.url }}"
+                        type="video/mp4" />
+
+              {% else %}
+
+                <source src="{{ text_file.generated_final_bgmw_video.url }}" type="video/mp4" />
+              {% endif %}
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        {% if user.subscription.plan.name|lower != 'free'%}
+        <a
+             href="/text/manage_textfile"
+             
+             style="display: flex;
+                    box-sizing: border-box;
+                    align-items: center;
+                    justify-content: center;
+                    text-decoration: none;
+                    background: white;
+                    border-radius: 8px;
+                    font-family: Montserrat;
+                    font-size: 18px;
+                    font-weight: 500;
+                   
+                    line-height: 21.94px;
+                    text-align: left;
+                    color: #864AF9;
+                    width: 100%;
+                    padding: 12px 24px;
+                    border:0.8px solid #864AF9;
+                    gap: 10px">
+            <!-- <i style="width: 24px; height: 24px;color: #864AF9; " class="ri-save-line"></i> -->
+            <span style="line-height: 24px;">Save as Draft</span>
+          </a>
+        {% if bg_music == 'false' %}
+          <a id="downloadButton"
+             href="{% url 'video_text:download_file' file_key=text_file.generated_final_video.name textfile_id=text_file.id %}"
+             download
+             style="display: flex;
+                    box-sizing: border-box;
+                    align-items: center;
+                    justify-content: center;
+                    text-decoration: none;
+                    background: #864AF9;
+                    border-radius: 8px;
+                    font-family: Montserrat;
+                    font-size: 18px;
+                    font-weight: 500;
+                    line-height: 21.94px;
+                    text-align: left;
+                    color: white;
+                    padding: 12px 24px;
+                    width: 100%;
+                    gap: 10px">
+            <svg width="24"
+                 height="24"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+
+              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span  id="download_text" style="line-height: 24px;">Download</span>
+          </a>
+        {% else %}
+          <a id="downloadButton"
+             href="{% url 'video_text:download_file' file_key=text_file.generated_final_bgm_video.name textfile_id=text_file.id %}"
+             download
+             style="display: flex;
+                    box-sizing: border-box;
+                    align-items: center;
+                    justify-content: center;
+                    text-decoration: none;
+                    background: #864AF9;
+                    border-radius: 8px;
+                    font-family: Montserrat;
+                    font-size: 18px;
+                    font-weight: 500;
+                    line-height: 21.94px;
+                    text-align: left;
+                    color: white;
+                    padding: 12px 24px;
+                    width: 100%;
+                    gap: 10px">
+            <svg width="24"
+                 height="24"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+
+              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span  id="download_text" style="line-height: 24px;">Download</span>
+          </a>
+        {% endif %}
+        {% else %}
+        <a id="downloadButton"
+        href="#"
+        style="display: flex;
+               box-sizing: border-box;
+               align-items: center;
+               justify-content: center;
+               text-decoration: none;
+               background: #864AF9;
+               border-radius: 8px;
+               font-family: Montserrat;
+               font-size: 18px;
+               font-weight: 500;
+               line-height: 21.94px;
+               text-align: left;
+               color: white;
+               padding: 12px 24px;
+               width: 100%;
+               gap: 10px">
+       <svg width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+
+         <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+       </svg>
+       <span id="download_text" style="line-height: 24px;">Download</span>
+     </a>
+        {%endif%}
+
+        <p style="margin-top:-15px;font-size:12px;">
+          *Please Note That  When You Click Download, Watermark Will Be Removed
+        </p>
+        
+      </div>
+
+    </div>
+
+    <div class="plans-popup-container hidden">
+      <div id="plansPopup">
+        <div class="close-popup">
+          <img src="{% static 'assets/icons/x.svg' %}" alt="" />
+        </div>
+
+        <div class="plans">
+          <div class="p-cards-grid-container">
+            <div class="p-cards-grid-item mid">
+              <div class="mp">
+                <span class="highlight g-head" style="text-transform: capitalize;">{{ plans.0.name }} Plan</span>
+                <span class="hype">Most popular</span>
+              </div>
+              <p class="g-p">Perfect For Scaling Your Video Advertising Campaigns</p>
+              <div class="price">
+                <span><span class="bold-size">${{ plans.0.price }}</span> <span class="font">/Month</span><span>
+                  <br />
+                  <span class="price-promo">Just ${{ plans.0.price_per_vsl }} Per VSL</span>
+                </div>
+                <div class="benefits">
+                  <img src="{% static 'assets/icons/check.svg' %}" alt="" />
+                  <span class="benefits-text">Create Up To {{ plans.0.vsl_limit }} Videos Per Month</span>
+                </div>
+                <a href="{% url 'accounts:upgrade_subscription' price_id=plans.0.stripe_price_id %}?success_path=/accounts/manage-subscription&cancel_path=/accounts/manage-subscription&user_url=/text/download_video/{{text_file.id}}"
+                   class="p-button"
+                   style="text-decoration: none">Get Started</a>
+              </div>
+              <div class="p-cards-grid-item">
+                <span class="highlight g-head" style="text-transform: capitalize;">{{ plans.1.name }} Plan</span>
+                <p class="g-p">Ideal For High-Volume Marketers And Agencies</p>
+                <div class="price">
+                  <span><span class="bold-size">${{ plans.1.price }}</span> <span class="font">/Month</span><span>
+                    <br />
+                    <span class="price-promo">Just ${{ plans.1.price_per_vsl }} Per VSL</span>
+                  </div>
+                  <div class="benefits">
+                    <img src="{% static 'assets/icons/check.svg' %}" alt="" />
+                    <span class="benefits-text">Create Up To {{ plans.1.vsl_limit }} Video Per Month</span>
+                  </div>
+                  <a href="{% url 'accounts:upgrade_subscription' price_id=plans.1.stripe_price_id %}?success_path=/accounts/manage-subscription&cancel_path=/accounts/manage-subscription&user_url=/text/download_video/{{text_file.id}}"
+                     class="p-button"
+                     style="text-decoration: none">Get Started</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+
+ 
+
+
+  document.addEventListener("DOMContentLoaded", function () {
+
+
+
+
+
+            
+    const player = videojs("download-video");
+
+    player.ready(function () {
+
+
+
+      
+        player.on("loadedmetadata", function () {
+            const video = player.el().querySelector("video"); // Get the underlying video element
+            const aspectRatio = video.videoWidth / video.videoHeight;
+
+            console.log("Video.js Aspect Ratio:", aspectRatio);
+            console.log("Comparison ratio (19/6):", 19 / 6);
+
+            
+
+
+
+            if (Math.abs(aspectRatio - (16 / 9)) < 0.01) {  // Allow a small margin for floating-point precision
+                console.log("Triggered: Adjusting video container width for 16:9");
+                document.getElementById("video-container-box").style.width = "500px"; // Adjust as needed
+            }else if (Math.abs(aspectRatio - (9 / 16)) < 0.01) {  
+                console.log("Triggered: Adjusting video container width for 9:16");
+                document.getElementById("video-container-box").style.width = "350px"; // Adjust for 9:16
+                // document.getElementById("video-container-box").style.height = "373px";
+            }
+
+
+          
+
+        });
+    });
+});
+
+  
+
+
+document.querySelector('.close-popup').addEventListener('click', () => {
+  document.querySelector('.plans-popup-container').classList.add('hidden');
+});
+
+document.getElementById('downloadButton').addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent the default anchor behavior
+
+    if ('{{ user.subscription.plan.name|lower }}' === 'free') {
+        document.querySelector('.plans-popup-container').classList.remove('hidden');
+    } else {
+        // Fetch the URL to start the download
+        const href = event.currentTarget.getAttribute('href');
+        startProcessingAnimation(); // Show processing animation
+
+        fetch(href)
+            .then(response => {
+                if (response.ok) {
+                    // Create a temporary link to trigger the download
+                    const tempLink = document.createElement('a');
+                    tempLink.href = href;
+                    tempLink.setAttribute('download', 'videocrafter.mp4');
+                    document.body.appendChild(tempLink);
+                    tempLink.click();
+                    document.body.removeChild(tempLink);
+
+                    // Monitor network activity to detect when the download starts
+                    const startTime = performance.now();
+                    const checkDownload = setInterval(() => {
+                        const entries = performance.getEntriesByType('resource');
+                        const downloadStarted = entries.some(entry => 
+                            entry.name === href && entry.initiatorType === 'link'
+                        );
+
+                        if (downloadStarted || performance.now() - startTime > 5000) {
+                            clearInterval(checkDownload);
+                            stopProcessingAnimation()
+                            window.location.href = '/text';
+                        }
+                    }, 100); // Check every 100ms
+                } else {
+                    console.error('Download failed or could not start.');
+                    alert('Download failed. Please try again.');
+                    stopProcessingAnimation()
+
+                }
+            })
+            .catch(error => {
+                console.error('Error initiating the download:', error);
+                alert('An error occurred. Please try again.');
+                stopProcessingAnimation()
+
+            });
+    }
+});
+function startProcessingAnimation() {
+        const button_text = $('#download_text');
+        let dots = 0;
+
+        // Clear any existing interval to avoid multiple intervals running
+        if (button_text.data('intervalId')) {
+          clearInterval(button_text.data('intervalId'));
+        }
+
+        // Set the interval to change the text every 500 milliseconds
+        const intervalId = setInterval(function () {
+          dots = (dots + 1) % 4; // Cycle between 0, 1, 2, and 3
+          let loadingText = 'Downloading' + '.'.repeat(dots); // Add dots dynamically
+          button_text.text(loadingText);
+        }, 500); // 500 milliseconds = 0.5 seconds
+
+        // Store the interval ID in the button text element for later use
+        button_text.data('intervalId', intervalId);
+      }
+
+function stopProcessingAnimation() {
+  const button_text = $('#download_text');
+  const intervalId = button_text.data('intervalId');
+
+  if (intervalId) {
+    clearInterval(intervalId);
+    button_text.data('intervalId', null); // Remove the stored interval ID
+    button_text.text('Download'); // Optionally reset the text or set it to another value
+  }
+}
+
+</script>
+
+      </body>
+    </html>

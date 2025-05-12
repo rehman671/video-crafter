@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/reset.css' %}">
+    <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
+    <title>VideoCrafter.io</title>
+</head>
+<body>
+    <div>
+        <div class="password-reset_container">
+            <img
+                src="{% static 'images/elipse.svg' %}"
+                alt="Background"
+                class="password-reset_backgroundImage"
+            />
+            <div class="password-reset_formContainer">
+                <form class="password-reset_form">
+                    <div class="password-reset_logo">
+                        <div>
+                            <a href="{% url 'index' %}">
+                                <img
+                                    src="{% static 'images/logo.svg' %}"
+                                    alt="Company logo"
+                                    class="signup_logoSvg"
+                                />
+                            </a>
+                        </div>
+                        <span class="password-reset_logoText">Password Reset Sent</span>
+                        <p>
+                            A link to reset your password has been sent to your email. Please check your inbox and follow the instructions.
+                        </p>
+                        <p>
+                            Once you've reset your password, you can
+                            <a href="{% url 'login' %}" style="color: #007BFF;"> Login</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
