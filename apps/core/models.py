@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 class Font(models.Model):
     name = models.CharField(max_length=255)
     font_path = models.CharField(max_length=255)
+    css_name = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.name

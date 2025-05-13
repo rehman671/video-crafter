@@ -214,7 +214,7 @@
                         name="font_select">
                         <option class="text3" value="" disabled="" selected="">Select A Font</option>
                         {% for font in fonts %}
-                        <option class="text3" style="font-family:{{ font.name }}" value="{{ font.name }}"> {{ font.name }} </option>
+                        <option class="text3" style="font-family:{{ font.css_name }}" value="{{ font.css_name }}"> {{ font.name }} </option>
                         {% endfor %}
 
                     </select></div>

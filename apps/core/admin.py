@@ -4,7 +4,7 @@ from .models import Font, Plan, Subscription, BillingInfo, TempSubscription, Use
 # Register your models here.
 @admin.register(Font)
 class FontAdmin(admin.ModelAdmin):
-    list_display = ('name', 'font_path')
+    list_display = ('name', 'font_path', 'css_name')
     search_fields = ('name',)
     ordering = ('name',)
 

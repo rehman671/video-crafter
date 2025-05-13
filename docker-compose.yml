@@ -24,7 +24,7 @@ services:
       - db
       - redis
     command: >
-      bash -c "./check_gpu.sh && python3.10 manage.py migrate && python3.10 manage.py runserver 0.0.0.0:8000"
+      bash -c "./check_gpu.sh  && python3.10 manage.py makemigrations && python3.10 manage.py migrate && python3.10 manage.py runserver 0.0.0.0:8000"
 
   db:
     image: postgres:14-alpine

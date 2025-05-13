@@ -84,4 +84,4 @@ RUN chmod +x /app/check_gpu.sh
 EXPOSE 8000
 
 # Run application
-CMD ["bash", "-c", "export $(cat /app/.env | xargs) && python3.10 manage.py migrate && python3.10 manage.py collectstatic && python3.10 manage.py runserver 0.0.0.0:8000"]
+CMD ["bash", "-c", "export $(cat /app/.env | xargs) && python3.10 manage.py makemigrations && python3.10 manage.py migrate && python3.10 manage.py collectstatic && python3.10 manage.py runserver 0.0.0.0:8000"]

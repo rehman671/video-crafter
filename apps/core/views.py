@@ -319,7 +319,7 @@ def preview(request):
             # Only get Font if font_select is not empty
             font = None
             if form_data['font_select']:
-                font = Font.objects.get(name=form_data['font_select'])
+                font = Font.objects.get(css_name=form_data['font_select'])
             else:
                 raise Exception("Please select a font.")
                 
