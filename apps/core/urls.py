@@ -5,7 +5,8 @@ from apps.core.views import (
     user_login, scene_view, download_video, manage_subscription, 
     stripe_billing_portal, purchase_credits, credits_success, stripe_webhook,
     upgrade_plan, asset_view, delete_asset, rename_asset, verify_email,
-    register_view, register, password_reset_request, password_reset_confirm, loading_view, proxy_video_download
+    register_view, register, password_reset_request, password_reset_confirm, loading_view, proxy_video_download,
+    cancel_subscription
 )
 
 urlpatterns = [
@@ -24,9 +25,10 @@ urlpatterns = [
    path("password_reset/", index, name="password_reset"),
    path("manage_subscription/", manage_subscription, name="manage_subscription"),  # Add this URL pattern
 #    path("asset_library", index, name="asset_library"),
-#    path("recent_videos", index, name="recent_videos"),
-   path("billing_portal/", stripe_billing_portal, name="billing_portal"),  # Add this URL pattern
+#    path("recent_videos", index, name="recent_videos"),  
+ path("billing_portal/", stripe_billing_portal, name="billing_portal"),  # Add this URL pattern
    path("upgrade-plan/<int:plan_id>/", upgrade_plan, name="upgrade_plan"),  # Add plan upgrade URL
+   path("cancel-subscription/", cancel_subscription, name="cancel_subscription"),  # Add subscription cancellation URL
    
    # Credit purchase URLs
    path("accounts/add-credits", purchase_credits, name="purchase_credits"),

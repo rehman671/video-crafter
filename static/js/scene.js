@@ -2084,36 +2084,125 @@ function renderSlides(send_update=true) {
             });
         }
         
-        if (slide.isEditing) {
-            const textarea = document.getElementById(`slide_text_${slide.id}`);
-            textarea.addEventListener('input', (e) => {
-                const newText = e.target.value;
-                slides = slides.map(s =>
-                    s.id === slide.id ? { ...s, text: newText, markedText: newText } : s
-                );
-                
-                // Update character count
-                const charCount = newText.length;
-                const charCountElement = e.target.parentElement.querySelector(`.char-count, .char-count-exceeded`);
-                if (charCountElement) {
-                    charCountElement.textContent = `${charCount}/${MAX_SUBTITLE_LENGTH}`;
-                    charCountElement.className = charCount > MAX_SUBTITLE_LENGTH ? 'char-count-exceeded' : 'char-count';
-                }
-                
-                // Show/hide error message
-                const errorMessage = document.getElementById(`error-message_${slide.id}`);
-                if (errorMessage) {
-                    if (charCount > MAX_SUBTITLE_LENGTH) {
-                        errorMessage.textContent = `Subtitle text cannot exceed ${MAX_SUBTITLE_LENGTH} characters (current: ${charCount})`;
-                        errorMessage.style.display = 'block';
-                        textarea.style.border = '1px solid red';
-                    } else {
-                        errorMessage.style.display = 'none';
-                        textarea.style.border = '';
-                    }
-                }
-            });
+       if (slide.isEditing) {
+    const textarea = document.getElementById(`slide_text_${slide.id}`);
+    
+    // Add keydown event listener to prevent typing at limit
+    textarea.addEventListener('keydown', (e) => {
+        const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+        const currentLength = textarea.value.length;
+        const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
+        const isTextSelected = selectedText.length > 0;
+        
+        // Allow backspace, delete, arrow keys, home, end, etc.
+        const allowedKeys = [8, 9, 37, 38, 39, 40, 46, 36, 35, 33, 34];
+        
+        // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+        if (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) {
+            return;
         }
+        
+        // If we're at the limit and trying to add more characters
+        if (currentLength >= maxLength && !allowedKeys.includes(e.keyCode) && !isTextSelected) {
+            e.preventDefault();
+            
+            // Show error message
+            const errorMessage = document.getElementById(`error-message_${slide.id}`);
+            if (errorMessage) {
+                errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters`;
+                errorMessage.style.display = "block";
+            }
+            
+            // Add shake animation to the textarea
+            textarea.style.animation = 'shake 0.5s ease-in-out';
+            setTimeout(() => {
+                textarea.style.animation = '';
+            }, 500);
+            
+            return false;
+        }
+    });
+    
+    // Add paste event listener to handle pasted content
+    textarea.addEventListener('paste', (e) => {
+        e.preventDefault();
+        
+        const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+        const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        const currentText = textarea.value;
+        const selectionStart = textarea.selectionStart;
+        const selectionEnd = textarea.selectionEnd;
+        
+        // Calculate new text after paste
+        const newText = currentText.substring(0, selectionStart) + pastedText + currentText.substring(selectionEnd);
+        
+        if (newText.length > maxLength) {
+            // Calculate how much we can paste
+            const remainingLength = maxLength - currentText.length + (selectionEnd - selectionStart);
+            const truncatedPaste = pastedText.substring(0, Math.max(0, remainingLength));
+            
+            // Insert truncated text
+            textarea.value = currentText.substring(0, selectionStart) + truncatedPaste + currentText.substring(selectionEnd);
+            
+            // Update cursor position
+            const newCursorPos = selectionStart + truncatedPaste.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+            
+            // Show error message
+            const errorMessage = document.getElementById(`error-message_${slide.id}`);
+            if (errorMessage) {
+                errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters. Pasted text was truncated.`;
+                errorMessage.style.display = "block";
+            }
+            
+            // Trigger input event to update UI
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        } else {
+            // Allow normal paste
+            textarea.value = newText;
+            const newCursorPos = selectionStart + pastedText.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+    
+    // Original input event listener with modification to hard-limit length
+    textarea.addEventListener('input', (e) => {
+        const newText = e.target.value;
+        const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+        
+        // Hard limit - truncate if somehow exceeds
+        if (newText.length > maxLength) {
+            e.target.value = newText.substring(0, maxLength);
+            return;
+        }
+        
+        slides = slides.map(s =>
+            s.id === slide.id ? { ...s, text: newText, markedText: newText } : s
+        );
+        
+        // Update character count
+        const charCount = e.target.value.length;
+        const charCountElement = e.target.parentElement.querySelector(`.char-count, .char-count-exceeded`);
+        if (charCountElement) {
+            charCountElement.textContent = `${charCount}/${maxLength}`;
+            charCountElement.className = charCount >= maxLength ? 'char-count-exceeded' : 'char-count';
+        }
+        
+        // Show/hide error message
+        const errorMessage = document.getElementById(`error-message_${slide.id}`);
+        if (errorMessage) {
+            if (charCount >= maxLength) {
+                errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters`;
+                errorMessage.style.display = 'block';
+                textarea.style.border = '1px solid red';
+            } else {
+                errorMessage.style.display = 'none';
+                textarea.style.border = '';
+            }
+        }
+    });
+}
     });
     
     document.getElementById('no_of_slides').value = slideCount;

@@ -148,15 +148,22 @@
                         style="padding-left: 5px;"
                     > Create up to {{ plan.ad_variations_per_month }} Videos per month
                 </p>
-                <a href="{% url 'upgrade_plan' plan_id=plan.id %}" class="link-tag">
-                    {% if user_subscription.plan.id == plan.id %}
-                        Current Plan
-                    {% elif plan.price_per_month < user_subscription.plan.price_per_month %}
-                        Downgrade Subscription
-                    {% else %}
-                        Upgrade Subscription
-                    {% endif %}
-                </a>
+                {% if user_subscription.plan.id == plan.id and user_subscription.status != 'canceled' %}
+                    <form action="{% url 'cancel_subscription' %}" method="post" style="display: block;">
+                        {% csrf_token %}
+                        <button type="submit" class="link-tag cancel">Cancel Plan</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'upgrade_plan' plan_id=plan.id %}" class="link-tag">
+                        {% if user_subscription.status == 'canceled' and user_subscription.plan.id == plan.id %}
+                            Resubscribe
+                        {% elif plan.price_per_month < user_subscription.plan.price_per_month %}
+                            Downgrade Subscription
+                        {% else %}
+                            Upgrade Subscription
+                        {% endif %}
+                    </a>
+                {% endif %}
             </div>
             {% endif %}
             {% empty %}

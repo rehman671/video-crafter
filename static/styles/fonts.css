@@ -1,30 +1,38 @@
 @font-face {
-    font-family: 'Montserrat';
-    src: url('/public/fonts/Montserrat.ttf') format('truetype');
+    font-family: 'Montserrat-Regular';
+    src: url('/static/public/fonts/Montserrat.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
-    font-family: 'Montserrat-Bold';
-    src: url('/public/fonts/Montserrat-Bold.ttf') format('truetype');
-    font-weight: 700;
+    font-family: 'Montserrat-Medium';
+    src: url('/static/public/fonts/Montserrat-Medium.ttf') format('truetype');
+    font-weight: 500;
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
     font-family: 'Montserrat-SemiBold';
-    src: url('/public/fonts/Montserrat-SemiBold.ttf') format('truetype');
+    src: url('/static/public/fonts/Montserrat-SemiBold.ttf') format('truetype');
     font-weight: 600;
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
+    font-family: 'Montserrat-Bold';
+    src: url('/static/public/fonts/Montserrat-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
     font-family: 'Montserrat-ExtraBold';
-    src: url('/public/fonts/Montserrat-ExtraBold.ttf') format('truetype');
+    src: url('/static/public/fonts/Montserrat-ExtraBold.ttf') format('truetype');
     font-weight: 800;
     font-style: normal;
     font-display: swap;
@@ -32,35 +40,56 @@
 
 @font-face {
     font-family: 'Arial';
-    src: url('/public/fonts/Arial.ttf') format('truetype');
+    src: url('/static/public/fonts/Arial.ttf') format('truetype');
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
     font-family: 'Helvetica';
-    src: url('/public/fonts/Helvetica.otf') format('opentype');
+    src: url('/static/public/fonts/Helvetica.otf') format('opentype');
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
     font-family: 'tiktokfont';
-    src: url('/public/fonts/tiktokfont.otf') format('opentype');
+    src: url('/static/public/fonts/tiktokfont.otf') format('opentype');
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
     font-family: 'OpenSans-Semibold';
-    src: url('/public/fonts/OpenSans-Semibold.ttf') format('truetype');
+    src: url('/static/public/fonts/OpenSans-Semibold.ttf') format('truetype');
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
     font-family: 'Roboto-Medium';
-    src: url('/public/fonts/Roboto-Medium.ttf') format('truetype');
+    src: url('/static/public/fonts/Roboto-Medium.ttf') format('truetype');
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'delulu';
+    src: url('/static/public/fonts/delulu.ttf') format('truetype');
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'OpenSans-CondLight';
+    src: url('/static/public/fonts/OpenSans-CondLight.ttf') format('truetype');
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'SegoeUIEmoji';
+    src: url('/static/public/fonts/SegoeUIEmoji.TTF') format('truetype');
     font-style: normal;
     font-display: swap;
 }

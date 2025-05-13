@@ -372,7 +372,7 @@ def scene_view(request, video_id):
     try:
         video = Video.objects.get(id=video_id, user=request.user)
         
-        if Subscription.objects.filter(user=request.user, status='active').first().unused_credits <= 0:
+        if Subscription.objects.filter(user=request.user, status__in=['active', 'canceled', 'cancelling']).first().unused_credits <= 0:
             messages.warning(request, "This video is currently being processed or has encountered an error.")
             return redirect(request.META.get('HTTP_REFERER', 'preview'))
         
@@ -518,7 +518,7 @@ def stripe_billing_portal(request):
     try:
         # Add debugging
         print("Starting stripe_billing_portal function")        
-        subscription = Subscription.objects.get(user=request.user, status__in=['active', 'canceling'])
+        subscription = Subscription.objects.get(user=request.user, status__in=['active', 'canceling', 'canceled'])
         print(f"Found subscription: {subscription.id}, status: {subscription.status}")
         
         billing_info, created = BillingInfo.objects.get_or_create(user=request.user)
@@ -731,9 +731,9 @@ def credits_success(request):
             return redirect('manage_subscription')
             
         # Add the credits to the subscription
-        subscription = Subscription.objects.get(id=subscription_id)
-        subscription.unused_credits += credits_amount
-        subscription.save()
+        # subscription = Subscription.objects.get(id=subscription_id)
+        # subscription.unused_credits += credits_amount
+        # subscription.save()
         
         print(request, f"Successfully added {credits_amount} credits to your account!")
         
@@ -886,7 +886,7 @@ def handle_subscription_updated(subscription):
             # Check if subscription is set to cancel at period end
             cancel_at_period_end = getattr(subscription, 'cancel_at_period_end', False)
             if cancel_at_period_end and db_subscription.status != 'canceling':
-                db_subscription.status = 'canceling'
+                db_subscription.status = 'canceled'
                 db_subscription.save()
             
             # Update period end date
@@ -1186,13 +1186,6 @@ def upgrade_plan(request, plan_id):
         
         # Get the new plan
         new_plan = Plan.objects.get(id=plan_id)
-        
-        # Don't process if it's the same plan
-        if current_subscription.plan.id == new_plan.id:
-            messages.info(request, f"You are already subscribed to the {new_plan.name} plan.")
-            return redirect('manage_subscription')
-        
-        # Create metadata for Stripe
         metadata = {
             'is_upgrade': 'true',
             'user_id': str(request.user.id),
@@ -1200,6 +1193,56 @@ def upgrade_plan(request, plan_id):
             'old_subscription_id': current_subscription.stripe_subscription_id,
         }
         
+        # Don't process if it's the same plan
+        if current_subscription and current_subscription.stripe_subscription_id and not current_subscription.status in ['canceled', 'cancelling']:
+            # This is an upgrade/downgrade
+            print(f"User has existing subscription to {current_subscription.plan.name}")
+            metadata["is_upgrade"] = "true"
+            metadata["old_subscription_id"] = current_subscription.stripe_subscription_id
+            
+            # Check if this is a downgrade (new plan price is lower than current plan)
+            is_downgrade = new_plan.price_per_month < current_subscription.plan.price_per_month
+            
+            if is_downgrade:
+                # Handle downgrade: Update the subscription directly without charging
+                print(f"Downgrading from {current_subscription.plan.name} to {new_plan.name}")
+                
+                try:
+                    # Update the subscription in Stripe to the new plan
+                    # This changes the subscription at the end of the current billing period
+                    stripe_subscription = stripe.Subscription.retrieve(
+                        current_subscription.stripe_subscription_id
+                    )
+                    
+                    # Update to the new price, but apply at period end to avoid immediate charges
+                    stripe.Subscription.modify(
+                        current_subscription.stripe_subscription_id,
+                        items=[{
+                            'id': stripe_subscription['items']['data'][0]['id'],
+                            'price': new_plan.stripe_price_id,
+                        }],
+                        proration_behavior='none',  # Don't prorate (don't charge or credit immediately)
+                        cancel_at_period_end=False,  # Don't cancel, just change the plan
+                    )
+                    
+                    # Update the subscription in our database
+                    current_subscription.plan = new_plan
+                    current_subscription.save()
+                    
+                    messages.success(request, f"Your subscription will be downgraded to {new_plan.name} at the end of your current billing period.")
+                    return redirect('manage_subscription')
+                    
+                except stripe.error.StripeError as e:
+                    print(f"Stripe error during downgrade: {str(e)}")
+                    messages.error(request, f"Error processing downgrade: {str(e)}")
+                    return redirect("manage_subscription")
+
+        if current_subscription.plan.id == new_plan.id and current_subscription.status not in ['canceled', 'cancelling']:
+            messages.info(request, f"You are already subscribed to the {new_plan.name} plan.")
+            return redirect('manage_subscription')
+        
+        # Create metadata for Stripe
+
         # Get billing info for the customer ID
         billing_info, created = BillingInfo.objects.get_or_create(user=request.user)
         
@@ -1812,3 +1855,61 @@ def proxy_video_download(request, video_id):
     except Exception as e:
         print(request, f"Error downloading video: {str(e)}")
         return redirect('download_video', video_id=video_id)
+
+
+@login_required(login_url='login')
+def cancel_subscription(request):
+    """View to handle subscription cancellation"""
+    if request.method == "POST":
+        try:
+            # Get user's active subscription
+            subscription = Subscription.objects.filter(
+                user=request.user, 
+                status__in=['active', 'canceling', 'canceled']
+            ).first()
+            
+            if not subscription:
+                messages.error(request, "No active subscription found.")
+                return redirect('manage_subscription')
+            
+            # Cancel the subscription in Stripe
+            stripe_subscription_id = subscription.stripe_subscription_id
+            if stripe_subscription_id:
+                try:
+                    print(f"Canceling subscription in Stripe: {stripe_subscription_id}")
+                    
+                    # Cancel at period end instead of immediately
+                    stripe_sub = stripe.Subscription.modify(
+                        stripe_subscription_id,
+                        cancel_at_period_end=True
+                    )
+                    
+                    # Check if cancel_at_period_end is True, regardless of status
+                    if stripe_sub.cancel_at_period_end:
+                        subscription.status = 'canceled'
+                        subscription.save()
+                        print(f"Successfully canceled subscription, will end at period end")
+                        messages.success(
+                            request, 
+                            "Your subscription has been canceled. You'll have access until the end of your billing period."
+                        )
+                    else:
+                        print(f"Failed to cancel subscription: cancel_at_period_end is False")
+                        messages.error(request, "Failed to cancel subscription. Please try again.")
+                except stripe.error.StripeError as e:
+                    print(f"Stripe error during cancellation: {str(e)}")
+                    messages.error(request, f"Stripe error: {str(e)}")
+            else:
+                # No Stripe subscription, just mark as canceled in our database
+                subscription.status = 'canceled'
+                subscription.save()
+                messages.success(request, "Your subscription has been canceled.")
+                
+        except Exception as e:
+            print(f"Error during cancellation: {str(e)}")
+            messages.error(request, f"An error occurred: {str(e)}")
+        
+        return redirect('manage_subscription')
+    
+    # If not POST, redirect to plans view
+    return redirect('manage_subscription')
