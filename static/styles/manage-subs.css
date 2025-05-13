@@ -45,6 +45,7 @@ body {
     transition: allease-out 0.2s;
     font-size: 17px;
     font-weight: 500;
+    width: 210px;
 }
 
 .info-header a:hover {

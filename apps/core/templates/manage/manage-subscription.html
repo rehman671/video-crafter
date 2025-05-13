@@ -9,8 +9,136 @@
     <link rel="stylesheet" href="{% static 'styles/main.css' %}">
     <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
     <title>VideoCrafter.io</title>
+    <style>
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            z-index: 1001;
+        }
+
+        .modal h2 {
+            margin: 0 0 20px;
+            color: #191919;
+            font-size: 24px;
+        }
+
+        .modal p {
+            margin: 0 0 25px;
+            color: #666;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .modal-button {
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-button {
+            background: #ff4545;
+            color: white;
+        }
+
+        .confirm-button:hover {
+            background: #ff3030;
+        }
+
+        .cancel-button {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .cancel-button:hover {
+            background: #e5e5e5;
+        }
+    </style>
 </head>
 <body>
+    <script>
+        let currentForm = null;
+        let currentLink = null;
+
+        function showModal(title, message, callback) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('confirmationModal').style.display = 'block';
+            document.getElementById('confirmButton').onclick = () => {
+                closeModal();
+                callback();
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+            currentForm = null;
+            currentLink = null;
+        }
+
+        function confirmCancel(form) {
+            currentForm = form;
+            showModal(
+                'Cancel Subscription',
+                'Are you sure you want to cancel your subscription? This action cannot be undone.',
+                () => {
+                    if (currentForm) currentForm.submit();
+                }
+            );
+            return false;
+        }
+        
+        function confirmDowngrade(link, event) {
+            event.preventDefault();
+            currentLink = link;
+            showModal(
+                'Downgrade Subscription',
+                'Are you sure you want to downgrade your subscription? This may affect your available features.',
+                () => {
+                    if (currentLink) window.location.href = currentLink.href;
+                }
+            );
+            return false;
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('confirmationModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+
     <header class="header">
         <div class="main-div">
             <div class="sub-main-div">
@@ -149,14 +277,25 @@
                     > Create up to {{ plan.ad_variations_per_month }} Videos per month
                 </p>
                 {% if user_subscription.plan.id == plan.id and user_subscription.status != 'canceled' %}
-                    <form action="{% url 'cancel_subscription' %}" method="post" style="display: block;">
+                    <form action="{% url 'cancel_subscription' %}" method="post" style="display: block;" onsubmit="return confirmCancel(this);">
                         {% csrf_token %}
                         <button type="submit" class="link-tag cancel">Cancel Plan</button>
                     </form>
                 {% else %}
-                    <a href="{% url 'upgrade_plan' plan_id=plan.id %}" class="link-tag">
+                    <a href="{% url 'upgrade_plan' plan_id=plan.id %}" class="link-tag" 
+                        {% if user_subscription.status == 'active' and plan.price_per_month < user_subscription.plan.price_per_month %}
+                            onclick="return confirmDowngrade(this, event);"
+                        {% endif %}>
                         {% if user_subscription.status == 'canceled' and user_subscription.plan.id == plan.id %}
                             Resubscribe
+                        {% elif user_subscription.status == 'canceled' %}
+                        Subscribe
+                        {% elif user_subscription.status == 'active' and plan.price_per_month > user_subscription.plan.price_per_month %}
+                            Upgrade Subscription
+                        {% elif user_subscription.status == 'active' and plan.price_per_month < user_subscription.plan.price_per_month %}
+                            Downgrade Subscription
+                        {% elif user_subscription.status == 'active' and plan.price_per_month == user_subscription.plan.price_per_month %}
+                            Current Plan
                         {% elif plan.price_per_month < user_subscription.plan.price_per_month %}
                             Downgrade Subscription
                         {% else %}
@@ -209,6 +348,20 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- Add the modal HTML structure -->
+    <div class="modal-overlay" id="confirmationModal">
+        <div class="modal">
+            <h2 id="modalTitle">Confirmation</h2>
+            <p id="modalMessage">Are you sure you want to proceed?</p>
+            <div class="modal-buttons">
+                <button class="modal-button cancel-button" onclick="closeModal()">No, Cancel</button>
+                <button class="modal-button confirm-button" id="confirmButton">Yes, Proceed</button>
+            </div>
+        </div>
+    </div>
+
     <script src="{% static 'js/header-toggle.js' %}"></script>
 </body>
 </html>
+``` 

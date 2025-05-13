@@ -17,7 +17,7 @@ let timeoutId = null;
 function toggleMenu(event, folderId) {
     event.stopPropagation();
     if (timeoutId) clearTimeout(timeoutId);
-    
+
     timeoutId = setTimeout(() => {
         if (activeMenuId === folderId) {
             document.getElementById(`actions-${folderId}`).style.display = 'none';
@@ -59,8 +59,59 @@ function closeModal() {
 
 // Function to create a ZIP file from the selected folder
 async function createZipFromFolder(files) {
-    showProgress(10, "Creating ZIP file...");
-    
+    // Define video extensions to accept
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.m4v', '.mpg', '.mpeg', '.3gp', '.3g2'];
+
+    // Filter to include only video files and log what's being excluded
+    const allFiles = Array.from(files);
+    const videoFiles = [];
+    const excludedFiles = [];
+
+    console.log(`\n🎬 PROCESSING FOLDER FOR VIDEO FILES`);
+    console.log(`Total files to process: ${allFiles.length}`);
+
+    for (const file of allFiles) {
+        const fileName = file.name.toLowerCase();
+        const extension = fileName.substring(fileName.lastIndexOf('.'));
+        const isVideo = videoExtensions.includes(extension);
+
+        if (isVideo) {
+            videoFiles.push(file);
+            console.log(`✅ INCLUDING VIDEO: ${file.webkitRelativePath} (${extension})`);
+        } else {
+            excludedFiles.push(file);
+            console.log(`❌ EXCLUDING NON-VIDEO: ${file.webkitRelativePath} (${extension || 'no extension'})`);
+        }
+    }
+
+    // Log summary
+    console.log(`\n📊 FILE FILTERING SUMMARY:`);
+    console.log(`Total files found: ${allFiles.length}`);
+    console.log(`Video files to include: ${videoFiles.length}`);
+    console.log(`Non-video files excluded: ${excludedFiles.length}`);
+
+    // Log excluded file types breakdown
+    const excludedTypes = {};
+    excludedFiles.forEach(file => {
+        const ext = file.name.split('.').pop() || 'no-extension';
+        excludedTypes[ext] = (excludedTypes[ext] || 0) + 1;
+    });
+
+    if (Object.keys(excludedTypes).length > 0) {
+        console.log(`\n🚫 EXCLUDED FILE TYPES:`);
+        Object.entries(excludedTypes).forEach(([ext, count]) => {
+            console.log(`  .${ext}: ${count} file(s)`);
+        });
+    }
+
+    if (videoFiles.length === 0) {
+        console.error('⚠️ No video files found to compress!');
+        alert('No video files found in the selected folder. Please select a folder containing video files.');
+        return null;
+    }
+
+    showProgress(10, `Creating ZIP file with ${videoFiles.length} video files (excluded ${excludedFiles.length} non-video files)...`);
+
     // Load JSZip dynamically
     if (typeof JSZip === 'undefined') {
         await loadJSZip();
@@ -68,30 +119,33 @@ async function createZipFromFolder(files) {
 
     const zip = new JSZip();
     let processedCount = 0;
-    const totalFiles = files.length;
-    
+    const totalFiles = videoFiles.length;
+
     // Extract the root folder name from the first file's path
-    const rootFolder = files[0].webkitRelativePath.split('/')[0];
+    const rootFolder = videoFiles[0].webkitRelativePath.split('/')[0];
+    console.log(`\n📦 Creating ZIP for root folder: ${rootFolder}`);
 
     try {
-        // Add each file to the ZIP
-        for (const file of files) {
+        // Add each video file to the ZIP
+        for (const file of videoFiles) {
             const relativePath = file.webkitRelativePath;
-            
+            console.log(`  Adding to ZIP: ${relativePath}`);
+
             // Create a promise to read the file
             const fileContent = await readFileAsArrayBuffer(file);
-            
+
             // Add to ZIP with relative path preserved
             zip.file(relativePath, fileContent);
-            
+
             // Update progress
             processedCount++;
             const percent = Math.floor(10 + (processedCount / totalFiles) * 60);
-            showProgress(percent, `Adding file ${processedCount} of ${totalFiles}`);
+            showProgress(percent, `Adding video file ${processedCount} of ${totalFiles}`);
         }
-        
+
         // Generate the ZIP file
         showProgress(70, "Generating ZIP file...");
+        console.log('\n🗜️ Compressing ZIP file...');
         const content = await zip.generateAsync({
             type: "blob",
             compression: "DEFLATE",
@@ -100,13 +154,14 @@ async function createZipFromFolder(files) {
             const percent = Math.floor(70 + metadata.percent * 0.2);
             showProgress(percent, `Compressing: ${metadata.percent.toFixed(1)}%`);
         });
-        
+
         showProgress(90, "Finalizing ZIP file...");
-        
+
         // Create a File object from the Blob
         const zipFile = new File([content], `${rootFolder}.zip`, { type: "application/zip" });
-        
+
         showProgress(95, "ZIP file ready for upload");
+        console.log(`✅ ZIP file created successfully with ${videoFiles.length} video files`);
         return zipFile;
     } catch (error) {
         console.error("Error creating ZIP file:", error);
@@ -114,7 +169,6 @@ async function createZipFromFolder(files) {
         return null;
     }
 }
-
 // Helper function to load JSZip library dynamically
 function loadJSZip() {
     return new Promise((resolve, reject) => {
@@ -147,6 +201,21 @@ function showProgress(percent, message) {
     console.log(message);
 }
 
+// Helper function to check if a file is a video file
+function isVideoFile(file) {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.m4v', '.mpg', '.mpeg', '.3gp', '.3g2'];
+    const fileName = file.name.toLowerCase();
+    const extension = fileName.substring(fileName.lastIndexOf('.'));
+    const isVideo = videoExtensions.includes(extension);
+
+    // Log the check result for debugging
+    if (!isVideo) {
+        console.log(`🔍 Not a video file: ${file.name} (extension: ${extension})`);
+    }
+
+    return isVideo;
+}
+
 // Modified upload form handler to process subfolders individually
 // Modified upload form handler to process subfolders individually - without spinner
 document.getElementById('uploadForm').addEventListener('submit', async (e) => {
@@ -161,47 +230,64 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         // Initialize UI for upload process
         updateProgressBar(0);
         updateUploadStatus('Starting upload process...');
-        
+
         // Disable the upload button and show uploading text
         const uploadButton = document.querySelector('.upload-btn');
         if (uploadButton) {
             uploadButton.disabled = true;
             uploadButton.textContent = 'Uploading...';
         }
-        
+
         // Get CSRF token
         const csrfToken = getCsrfToken();
-        
+
         // Get the root folder name
         const rootFolder = files[0].webkitRelativePath.split('/')[0];
         console.log("Root folder:", rootFolder);
-        
+
         // Organize files by subfolder
         const subfolders = {};
+        // Organize video files by subfolder
         for (const file of files) {
+            // Only process video files
+            if (!isVideoFile(file)) {
+                console.log(`Skipping non-video file: ${file.webkitRelativePath}`);
+                continue;
+            }
+
             const pathParts = file.webkitRelativePath.split('/');
-            
+
             // Skip files directly in the root folder (we want only subfolders)
             if (pathParts.length <= 2) continue;
-            
+
             const subfolder = pathParts[1];
             if (!subfolders[subfolder]) {
                 subfolders[subfolder] = [];
             }
             subfolders[subfolder].push(file);
         }
-        
+
         console.log("Subfolders found:", Object.keys(subfolders));
-        
+
         // If no subfolders found, fall back to zipping the whole folder
         if (Object.keys(subfolders).length === 0) {
             console.log("No subfolders found, zipping entire folder");
             updateUploadStatus('No subfolders found, processing entire folder...');
-            
+            const videoFiles = Array.from(files).filter(file => isVideoFile(file));
+
+            if (videoFiles.length === 0) {
+                alert('No video files found in the selected folder');
+                updateUploadStatus('No video files found');
+                if (uploadButton) {
+                    uploadButton.disabled = false;
+                    uploadButton.textContent = 'Upload';
+                }
+                return;
+            }
             const zipFile = await createZipFromFolder(files);
             if (!zipFile) {
                 updateUploadStatus('Failed to create ZIP file');
-                
+
                 // Re-enable the upload button
                 if (uploadButton) {
                     uploadButton.disabled = false;
@@ -209,9 +295,9 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                 }
                 return;
             }
-            
+
             const result = await uploadZipFile(zipFile, rootFolder, csrfToken);
-            
+
             // Handle result
             if (result.success) {
                 updateUploadStatus('Upload completed successfully!');
@@ -219,25 +305,25 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                 setTimeout(() => window.location.reload(), 1500);
             } else {
                 updateUploadStatus("Upload failed: " + (result.error || "Unknown error"));
-                
+
                 // Re-enable the upload button
                 if (uploadButton) {
                     uploadButton.disabled = false;
                     uploadButton.textContent = 'Upload';
                 }
             }
-            
+
             return;
         }
-        
+
         // Display status
         updateUploadStatus(`Found ${Object.keys(subfolders).length} subfolders to process`);
-        
+
         // Initialize progress tracking
         const totalSubfolders = Object.keys(subfolders).length;
         let completedSubfolders = 0;
         let successCount = 0;
-        
+
         try {
             // Process each subfolder in sequence
             for (const [subfolderName, files] of Object.entries(subfolders)) {
@@ -248,24 +334,24 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                         completedSubfolders++;
                         continue;
                     }
-                    
+
                     // Update status
                     const folderIndex = completedSubfolders + 1;
                     updateUploadStatus(`Processing subfolder: ${subfolderName} (${folderIndex}/${totalSubfolders})`);
-                    
+
                     console.log(`Creating ZIP for subfolder: ${subfolderName}`);
-                    
+
                     // Create ZIP for this subfolder
                     const zipFile = await createZipFromSubfolder(files, subfolderName);
                     if (!zipFile) {
                         throw new Error(`Failed to create ZIP for subfolder: ${subfolderName}`);
                     }
-                    
+
                     console.log(`Uploading ZIP for subfolder: ${subfolderName}`);
-                    
+
                     // Upload the ZIP file
                     const result = await uploadZipFile(zipFile, subfolderName, csrfToken);
-                    
+
                     // Update progress
                     completedSubfolders++;
                     if (result.success) {
@@ -274,31 +360,31 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                     } else {
                         console.error(`Failed to upload subfolder: ${subfolderName}`, result.error);
                     }
-                    
+
                     // Update progress bar
                     const progressPercent = Math.round((completedSubfolders / totalSubfolders) * 100);
                     updateProgressBar(progressPercent);
                     updateUploadStatus(`Processed ${completedSubfolders}/${totalSubfolders} subfolders (${successCount} successful)`);
-                    
+
                 } catch (error) {
                     console.error(`Error processing subfolder ${subfolderName}:`, error);
                     completedSubfolders++;
-                    
+
                     // Update progress bar even on error
                     const progressPercent = Math.round((completedSubfolders / totalSubfolders) * 100);
                     updateProgressBar(progressPercent);
                     updateUploadStatus(`Error on subfolder ${subfolderName}: ${error.message}`);
                 }
             }
-            
+
             // Process results
             if (successCount === totalSubfolders) {
                 updateUploadStatus('All subfolders uploaded successfully!');
                 updateProgressBar(100);
-                
+
                 // Show success message in modal
                 addSuccessMessage("Upload successful! Refreshing page...");
-                
+
                 // Reload page after a brief delay
                 setTimeout(() => {
                     window.location.reload();
@@ -306,10 +392,10 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             } else if (successCount > 0) {
                 // Some uploads successful
                 updateUploadStatus(`Completed with ${successCount}/${totalSubfolders} subfolders uploaded successfully.`);
-                
+
                 // Show mixed success message
                 addSuccessMessage(`Completed with ${successCount}/${totalSubfolders} subfolders uploaded successfully. Refreshing page...`);
-                
+
                 // Reload page after a brief delay
                 setTimeout(() => {
                     window.location.reload();
@@ -317,7 +403,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             } else {
                 // All uploads failed
                 updateUploadStatus(`Failed to upload any subfolders. Please try again.`);
-                
+
                 // Re-enable the upload button
                 if (uploadButton) {
                     uploadButton.disabled = false;
@@ -327,18 +413,18 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         } catch (error) {
             console.error("Error in folder upload process:", error);
             updateUploadStatus(`Error: ${error.message}`);
-            
+
             // Re-enable the upload button
             if (uploadButton) {
                 uploadButton.disabled = false;
                 uploadButton.textContent = 'Upload';
             }
         }
-        
+
     } catch (error) {
         console.error("Error during upload:", error);
         updateUploadStatus("Upload failed: " + error.message);
-        
+
         // Re-enable the upload button
         const uploadButton = document.querySelector('.upload-btn');
         if (uploadButton) {
@@ -349,8 +435,42 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 });
 // Function to create a ZIP file from subfolder files
 async function createZipFromSubfolder(files, subfolderName) {
-    updateUploadStatus(`Creating ZIP for subfolder: ${subfolderName}`);
-    
+    // Define video extensions to accept
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.m4v', '.mpg', '.mpeg', '.3gp', '.3g2'];
+
+    console.log(`\n🗂️ Processing subfolder: ${subfolderName}`);
+    console.log(`Files passed to function: ${files.length}`);
+
+    // Filter video files and log what we find
+    const allFiles = Array.from(files);
+    const videoFiles = [];
+    const unexpectedFiles = [];
+
+    for (const file of allFiles) {
+        const fileName = file.name.toLowerCase();
+        const extension = fileName.substring(fileName.lastIndexOf('.'));
+        const isVideo = videoExtensions.includes(extension);
+
+        if (isVideo) {
+            videoFiles.push(file);
+            console.log(`✅ VIDEO in subfolder: ${file.webkitRelativePath}`);
+        } else {
+            unexpectedFiles.push(file);
+            console.log(`⚠️ UNEXPECTED NON-VIDEO in subfolder: ${file.webkitRelativePath}`);
+        }
+    }
+
+    if (unexpectedFiles.length > 0) {
+        console.warn(`⚠️ Found ${unexpectedFiles.length} non-video files in subfolder - excluding them`);
+    }
+
+    if (videoFiles.length === 0) {
+        console.log(`❌ No video files in subfolder: ${subfolderName}`);
+        return null;
+    }
+
+    updateUploadStatus(`Creating ZIP for subfolder: ${subfolderName} (${videoFiles.length} video files)`);
+
     // Load JSZip dynamically if it's not already loaded
     if (typeof JSZip === 'undefined') {
         await loadJSZip();
@@ -358,28 +478,30 @@ async function createZipFromSubfolder(files, subfolderName) {
 
     const zip = new JSZip();
     let processedCount = 0;
-    const totalFiles = files.length;
-    
+    const totalFiles = videoFiles.length;
+
     try {
-        // Add each file to the ZIP, preserving the subfolder structure
-        for (const file of files) {
+        // Add each video file to the ZIP, preserving the subfolder structure
+        for (const file of videoFiles) {
             // Get the relative path starting from the subfolder
             const pathParts = file.webkitRelativePath.split('/');
             const relativePath = pathParts.slice(1).join('/'); // Remove the main folder name
-            
+
+            console.log(`📦 Adding to subfolder ZIP: ${relativePath}`);
+
             // Create a promise to read the file
             const fileContent = await readFileAsArrayBuffer(file);
-            
+
             // Add to ZIP with relative path preserved
             zip.file(relativePath, fileContent);
-            
+
             // Update progress
             processedCount++;
-            updateUploadStatus(`${subfolderName} - Adding file ${processedCount} of ${totalFiles}`);
+            updateUploadStatus(`${subfolderName} - Adding video file ${processedCount} of ${totalFiles}`);
         }
-        
+
         // Generate the ZIP file
-        updateUploadStatus(`${subfolderName} - Compressing files...`);
+        updateUploadStatus(`${subfolderName} - Compressing video files...`);
         const content = await zip.generateAsync({
             type: "blob",
             compression: "DEFLATE",
@@ -387,14 +509,15 @@ async function createZipFromSubfolder(files, subfolderName) {
         }, (metadata) => {
             updateUploadStatus(`${subfolderName} - Compressing: ${metadata.percent.toFixed(1)}%`);
         });
-        
+
         // Create a File object from the Blob
         const zipFile = new File([content], `${subfolderName}.zip`, { type: "application/zip" });
-        
+
         updateUploadStatus(`${subfolderName} - ZIP file ready for upload`);
+        console.log(`✅ Subfolder ZIP created successfully with ${videoFiles.length} video files`);
         return zipFile;
     } catch (error) {
-        console.error(`Error creating ZIP for subfolder ${subfolderName}:`, error);
+        console.error(`❌ Error creating ZIP for subfolder ${subfolderName}:`, error);
         updateUploadStatus(`Error creating ZIP for subfolder ${subfolderName}: ${error.message}`);
         return null;
     }
@@ -405,24 +528,24 @@ function uploadZipFile(zipFile, folderName, csrfToken) {
     return new Promise((resolve, reject) => {
         // Create a FormData object for this upload
         const formData = new FormData();
-        
+
         // Add the ZIP file
         formData.append('zip_file', zipFile);
-        
+
         // Add the folder name
         formData.append('main_folder_name', folderName);
-        
+
         // Create an XHR request
         const xhr = new XMLHttpRequest();
-        
+
         xhr.upload.addEventListener('progress', (event) => {
             if (event.lengthComputable) {
                 const percentComplete = Math.round((event.loaded / event.total) * 100);
                 updateUploadStatus(`Uploading ${folderName}: ${percentComplete}%`);
             }
         });
-        
-        xhr.addEventListener('load', function() {
+
+        xhr.addEventListener('load', function () {
             if (xhr.status === 200) {
                 try {
                     // Some APIs may return empty response with 200 status - treat this as success
@@ -431,10 +554,10 @@ function uploadZipFile(zipFile, folderName, csrfToken) {
                         resolve({ success: true });
                         return;
                     }
-                    
+
                     // Try to parse JSON response
                     const response = JSON.parse(xhr.responseText);
-                    
+
                     // Consider 200 status as success even if response doesn't have a success field
                     if (response.success === undefined || response.success) {
                         updateUploadStatus(`Uploaded ${folderName} successfully!`);
@@ -456,19 +579,19 @@ function uploadZipFile(zipFile, folderName, csrfToken) {
                 resolve({ success: false, error: `Server returned ${xhr.status}` });
             }
         });
-        
-        xhr.addEventListener('error', function() {
+
+        xhr.addEventListener('error', function () {
             // Network error
             updateUploadStatus(`Upload failed for ${folderName}: Network error`);
             resolve({ success: false, error: 'Network error' });
         });
-        
-        xhr.addEventListener('abort', function() {
+
+        xhr.addEventListener('abort', function () {
             // Upload aborted
             updateUploadStatus(`Upload aborted for ${folderName}`);
             resolve({ success: false, error: 'Upload aborted' });
         });
-        
+
         // Send the request
         xhr.open('POST', document.getElementById('uploadForm').action);
         xhr.setRequestHeader('X-CSRFToken', csrfToken);
@@ -479,10 +602,10 @@ function uploadZipFile(zipFile, folderName, csrfToken) {
 function startRename(id, currentName) {
     // Show an alert to verify this function is being called
     alert("Starting rename for asset ID: " + id + " with current name: " + currentName);
-    
+
     renamingFolderId = id;
     newFolderName = currentName;
-    
+
     // Find the correct element to modify based on whether it's a folder or file
     let item;
     if (document.querySelector(`.folder-item[data-folder-id="${id}"]`)) {
@@ -499,19 +622,19 @@ function startRename(id, currentName) {
             }
         }
     }
-    
+
     if (!item) {
         alert("Could not find item to rename: " + id);
         return;
     }
-    
+
     // Close all action menus
     document.querySelectorAll('.actions').forEach(menu => menu.style.display = 'none');
-    
+
     // Create inline rename form
     const container = item.parentElement;
     const currentContent = container.innerHTML;
-    
+
     // Create input field
     const input = document.createElement('input');
     input.type = 'text';
@@ -519,7 +642,7 @@ function startRename(id, currentName) {
     input.style.padding = '5px';
     input.style.marginRight = '5px';
     input.style.width = '200px';
-    
+
     // Create save button
     const saveBtn = document.createElement('button');
     saveBtn.textContent = 'Save';
@@ -529,7 +652,7 @@ function startRename(id, currentName) {
     saveBtn.style.border = 'none';
     saveBtn.style.borderRadius = '4px';
     saveBtn.style.cursor = 'pointer';
-    
+
     // Create cancel button
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = 'Cancel';
@@ -539,64 +662,64 @@ function startRename(id, currentName) {
     cancelBtn.style.border = 'none';
     cancelBtn.style.borderRadius = '4px';
     cancelBtn.style.cursor = 'pointer';
-    
+
     // Replace content with form
     container.innerHTML = '';
     container.appendChild(input);
     container.appendChild(saveBtn);
     container.appendChild(cancelBtn);
-    
+
     // Focus input field
     input.focus();
     input.select();
-    
+
     // Cancel button event
-    cancelBtn.addEventListener('click', function() {
+    cancelBtn.addEventListener('click', function () {
         container.innerHTML = currentContent;
     });
-    
+
     // Save button event
-    saveBtn.addEventListener('click', function() {
+    saveBtn.addEventListener('click', function () {
         const newName = input.value.trim();
         if (!newName) {
             container.innerHTML = currentContent;
             return;
         }
-        
+
         // Display loading indicator
         // document.getElementById('loader').style.display = 'block';
-        
+
         // Get CSRF token
         const csrfToken = getCsrfToken();
         alert("Sending rename request with CSRF token: " + (csrfToken ? "Found token" : "No token found"));
-        
+
         // Make a direct form submission instead of fetch
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/rename-asset/${id}/`;
         form.style.display = 'none';
-        
+
         // Add CSRF token
         const csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
         csrfInput.name = 'csrfmiddlewaretoken';
         csrfInput.value = csrfToken;
         form.appendChild(csrfInput);
-        
+
         // Add new name
         const nameInput = document.createElement('input');
         nameInput.type = 'hidden';
         nameInput.name = 'new_name';
         nameInput.value = newName;
         form.appendChild(nameInput);
-        
+
         // Add form to document and submit
         document.body.appendChild(form);
         form.submit();
     });
-    
+
     // Handle enter/escape keys
-    input.addEventListener('keydown', function(e) {
+    input.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
             saveBtn.click();
         } else if (e.key === 'Escape') {
@@ -609,14 +732,14 @@ function deleteFolder(id) {
     if (confirm("Are you sure you want to delete this item? This cannot be undone.")) {
         isLoading = true;
         document.getElementById('loader').style.display = 'block';
-        
+
         // Get the CSRF token from a cookie or meta tag
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
-                         document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='))?.split('=')[1];
-        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+            document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='))?.split('=')[1];
+
         console.log("Deleting asset ID:", id);
         console.log("CSRF Token:", csrfToken ? "Found token" : "No token found");
-        
+
         // Make API call to delete the asset
         fetch(`/delete-asset/${id}/`, {
             method: 'POST',
@@ -626,63 +749,63 @@ function deleteFolder(id) {
                 'Accept': 'application/json'
             }
         })
-        .then(response => {
-            console.log("Delete response status:", response.status);
-            if (response.ok) {
-                return response.json().then(data => {
-                    console.log("Delete successful:", data);
-                    
-                    // Show success message
-                    const successMessage = document.createElement('div');
-                    successMessage.className = 'success-message';
-                    successMessage.textContent = data.message || 'Asset deleted successfully!';
-                    successMessage.style.position = 'fixed';
-                    successMessage.style.top = '20px';
-                    successMessage.style.left = '50%';
-                    successMessage.style.transform = 'translateX(-50%)';
-                    successMessage.style.backgroundColor = '#4CAF50';
-                    successMessage.style.color = 'white';
-                    successMessage.style.padding = '15px 20px';
-                    successMessage.style.borderRadius = '4px';
-                    successMessage.style.zIndex = '9999';
-                    document.body.appendChild(successMessage);
-                    
-                    // Remove from UI
-                    removeAssetFromUI(id);
-                    
-                    // Remove the message and reload after a delay
-                    setTimeout(() => {
-                        if (successMessage.parentNode) {
-                            successMessage.parentNode.removeChild(successMessage);
+            .then(response => {
+                console.log("Delete response status:", response.status);
+                if (response.ok) {
+                    return response.json().then(data => {
+                        console.log("Delete successful:", data);
+
+                        // Show success message
+                        const successMessage = document.createElement('div');
+                        successMessage.className = 'success-message';
+                        successMessage.textContent = data.message || 'Asset deleted successfully!';
+                        successMessage.style.position = 'fixed';
+                        successMessage.style.top = '20px';
+                        successMessage.style.left = '50%';
+                        successMessage.style.transform = 'translateX(-50%)';
+                        successMessage.style.backgroundColor = '#4CAF50';
+                        successMessage.style.color = 'white';
+                        successMessage.style.padding = '15px 20px';
+                        successMessage.style.borderRadius = '4px';
+                        successMessage.style.zIndex = '9999';
+                        document.body.appendChild(successMessage);
+
+                        // Remove from UI
+                        removeAssetFromUI(id);
+
+                        // Remove the message and reload after a delay
+                        setTimeout(() => {
+                            if (successMessage.parentNode) {
+                                successMessage.parentNode.removeChild(successMessage);
+                            }
+                            window.location.reload();
+                        }, 1500);
+                    });
+                } else {
+                    return response.json().then(
+                        // Handle error with data
+                        data => {
+                            console.error("Delete failed:", data);
+                            alert(data.error || "Failed to delete asset. Please try again.");
+                        },
+                        // Handle error without json response
+                        () => {
+                            console.error("Delete failed with status:", response.status);
+                            alert("Failed to delete asset. Server responded with status: " + response.status);
                         }
-                        window.location.reload();
-                    }, 1500);
-                });
-            } else {
-                return response.json().then(
-                    // Handle error with data
-                    data => {
-                        console.error("Delete failed:", data);
-                        alert(data.error || "Failed to delete asset. Please try again.");
-                    },
-                    // Handle error without json response
-                    () => {
-                        console.error("Delete failed with status:", response.status);
-                        alert("Failed to delete asset. Server responded with status: " + response.status);
-                    }
-                );
-            }
-        })
-        .catch(error => {
-            console.error("Error deleting asset:", error);
-            alert("Error connecting to server: " + error.message);
-        })
-        .finally(() => {
-            isLoading = false;
-            document.getElementById('loader').style.display = 'none';
-        });
+                    );
+                }
+            })
+            .catch(error => {
+                console.error("Error deleting asset:", error);
+                alert("Error connecting to server: " + error.message);
+            })
+            .finally(() => {
+                isLoading = false;
+                document.getElementById('loader').style.display = 'none';
+            });
     }
-    
+
     if (activeMenuId === id) {
         document.getElementById(`actions-${id}`).style.display = 'none';
         activeMenuId = null;
@@ -703,7 +826,7 @@ function getCsrfToken() {
 function removeAssetFromUI(id) {
     // Check if it's a folder
     const folderItem = document.querySelector(`.folder-item[data-folder-id="${id}"]`);
-    
+
     if (folderItem) {
         // It's a folder, also remove all child items
         const childItems = document.querySelectorAll(`.child-item[data-parent-id="${id}"]`);
@@ -745,11 +868,11 @@ function updateUploadStatus(message) {
             statusElement.style.margin = '10px 0';
             statusElement.style.fontSize = '14px';
             statusElement.style.color = '#555';
-            
+
             // Find proper insertion point
             const buttons = modalContent.querySelector('.modal-buttons');
             const form = modalContent.querySelector('form');
-            
+
             // Append to form if it exists
             if (form) {
                 // Find the div with progress bar to insert after
@@ -768,7 +891,7 @@ function updateUploadStatus(message) {
                 modalContent.appendChild(statusElement);
             }
         }
-        
+
         statusElement.textContent = message;
     }
 }
@@ -780,7 +903,7 @@ function addSuccessMessage(message) {
         if (existingMsg) {
             existingMsg.remove();
         }
-        
+
         // Create success message
         const successMsg = document.createElement('div');
         successMsg.className = 'success-message';
@@ -789,7 +912,7 @@ function addSuccessMessage(message) {
         successMsg.style.textAlign = 'center';
         successMsg.style.fontWeight = 'bold';
         successMsg.textContent = message;
-        
+
         // Find proper place to add the message
         const form = modalContent.querySelector('form');
         if (form) {
