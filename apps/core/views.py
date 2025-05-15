@@ -34,6 +34,7 @@ from apps.core.models import UserAsset
 from django.utils.encoding import force_bytes, force_str
 from apps.processors.utils import generate_signed_url
 
+
 def index(request):
     plans = Plan.objects.filter(show_on_frontend=True).order_by('price_per_month')
     return render(request, 'index.html', {'plans': plans})
@@ -441,7 +442,13 @@ def download_video(request, video_id):
             video_processor = VideoProcessorService(video)
             
             # Apply all background music tracks at once
-            result = video_processor.apply_all_background_music(bg_music_queryset)
+            print("------------------------------------------------------------------")
+            print("------------------------------------------------------------------")
+            result = video_processor.apply_background_music(bg_music_queryset)
+            print("------------------------------------------------------------------")
+            print("------------------------------------------------------------------")
+            print("------------------------------------------------------------------")
+            print("------------------------------------------------------------------")
             if result:
                 print(f"Successfully applied {bg_music_queryset.count()} background music tracks to video {video.id}")
             else:

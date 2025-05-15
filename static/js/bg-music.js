@@ -18,24 +18,72 @@ function handleAddMp3() {
 }
 
 function handleDeleteMp3(id) {
-    if (mp3Templates.length > 1) {
-        // Remove the file from storage
-        formDataStorage.delete(`bg_music_${id}`);
-        
-        mp3Templates = mp3Templates
-            .filter(template => template.id !== id)
-            .map((template, index) => {
-                // Update ID and rename in form data if needed
-                const newId = index + 1;
-                if (template.id !== newId && template.file) {
-                    const file = formDataStorage.get(`bg_music_${template.id}`);
-                    formDataStorage.delete(`bg_music_${template.id}`);
-                    if (file) formDataStorage.append(`bg_music_${newId}`, file);
-                }
-                return { ...template, id: newId };
-            });
-        renderMp3Templates();
+    console.log("handleDeleteMp3 called with id:", id);
+    
+    // Find the template to delete
+    const templateToDelete = mp3Templates.find(template => template.id === id);
+    
+    if (!templateToDelete) {
+        console.error("Template not found for id:", id);
+        return;
     }
+    
+    // If it has a music ID (existing track), use the server delete endpoint
+    if (templateToDelete.musicId) {
+        console.log("Deleting existing music track:", templateToDelete.musicId);
+        if (confirm('Are you sure you want to delete this background music?')) {
+            fetch('/delete-background-music/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    bg_music_id: templateToDelete.musicId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    removeTemplateFromList(id);
+                } else {
+                    console.error("Failed to delete background music:", data.error);
+                    alert("Failed to delete background music: " + data.error);
+                }
+            })
+            .catch(error => {
+                console.error("Error during delete:", error);
+                alert("An error occurred while deleting: " + error);
+            });
+        }
+        return;
+    }
+    
+    // For new tracks, just remove locally
+    if (mp3Templates.length > 1) {
+        removeTemplateFromList(id);
+    } else {
+        alert("You must have at least one MP3 track.");
+    }
+}
+
+function removeTemplateFromList(id) {
+    // Remove the file from storage
+    formDataStorage.delete(`bg_music_${id}`);
+    
+    mp3Templates = mp3Templates
+        .filter(template => template.id !== id)
+        .map((template, index) => {
+            // Update ID and rename in form data if needed
+            const newId = index + 1;
+            if (template.id !== newId && template.file) {
+                const file = formDataStorage.get(`bg_music_${template.id}`);
+                formDataStorage.delete(`bg_music_${template.id}`);
+                if (file) formDataStorage.append(`bg_music_${newId}`, file);
+            }
+            return { ...template, id: newId };
+        });
+    renderMp3Templates();
 }
 
 function handleClearFile(id) {
@@ -56,12 +104,12 @@ function formatTimeInput(value) {
     return cleaned;
 }
 
-function handleTimeChange(id, field, element) {
-    const formattedValue = formatTimeInput(element.value);
-    element.value = formattedValue;
+function handleTimeChange(id, field, value) {
+    const formattedValue = formatTimeInput(value);
     mp3Templates = mp3Templates.map(template =>
         template.id === id ? { ...template, [field]: formattedValue } : template
     );
+    return formattedValue;
 }
 
 function handleFileChange(id, input) {
@@ -77,24 +125,13 @@ function handleFileChange(id, input) {
     }
 }
 
-function handleVolumeChange(id, slider) {
-    const value = parseInt(slider.value) || 50; // Default to 50 if NaN
-    console.log("Volume changed to:", value);
+function handleVolumeChange(id, value) {
+    const volumeValue = parseInt(value) || 50;
+    console.log("Volume changed to:", volumeValue);
     mp3Templates = mp3Templates.map(template =>
-        template.id === id ? { ...template, volume: value } : template
+        template.id === id ? { ...template, volume: volumeValue } : template
     );
-    const container = slider.closest('.uploadmp3');
-    if (container) {
-        const percentageEl = container.querySelector('.volume-percentage');
-        if (percentageEl) {
-            percentageEl.textContent = `${value}%`;
-        }
-    }
-    
-    // Ensure the value is properly set
-    slider.value = value;
-    slider.setAttribute('value', value);
-    slider.style.setProperty('--value', value);
+    return volumeValue;
 }
 
 function convertTimeToString(seconds) {
@@ -117,7 +154,7 @@ function initializeFromServerData() {
         musicElements.forEach(element => {
             // Get the file name from the output element
             const fileOutput = element.querySelector('.output');
-            const fileName = fileOutput.textContent.trim();
+            const fileName = fileOutput ? fileOutput.textContent.trim() : 'Choose File';
             
             // Get start time and end time
             const startTimeInput = element.querySelector('.startTime');
@@ -133,10 +170,16 @@ function initializeFromServerData() {
             const musicId = element.getAttribute('data-music-id');
             console.log("Found music track with ID:", musicId);
             
+            // Only treat as valid ID if it's not empty
+            const validMusicId = musicId && musicId !== 'None' && musicId !== 'null' && musicId !== 'undefined' ? musicId : null;
+            if (validMusicId) {
+                console.log("Found valid music ID:", validMusicId);
+            }
+            
             // Create a template object from server data
             mp3Templates.push({
                 id: id,
-                musicId: musicId, // Store the actual background music ID for existing tracks
+                musicId: validMusicId, // Store the actual background music ID for existing tracks
                 file: fileName !== 'Choose File' ? { name: fileName } : null,
                 startTime: startTimeInput ? startTimeInput.value : "",
                 endTime: endTimeInput ? endTimeInput.value : "",
@@ -152,12 +195,16 @@ function initializeFromServerData() {
         if (existingBgMusic) {
             // Remove the default elements
             const container = document.getElementById('musicContainer');
-            musicElements.forEach(element => {
-                container.removeChild(element);
-            });
-            
-            renderMp3Templates();
-            return true;
+            if (container) {
+                musicElements.forEach(element => {
+                    if (container.contains(element)) {
+                        container.removeChild(element);
+                    }
+                });
+                
+                renderMp3Templates();
+                return true;
+            }
         }
     }
     
@@ -174,6 +221,11 @@ function initializeFromServerData() {
 
 function renderMp3Templates() {
     const container = document.getElementById('musicContainer');
+    if (!container) {
+        console.error("Music container element not found");
+        return;
+    }
+    
     // Clone buttons to preserve event listeners
     const addButton = document.getElementById('addMusicBtn')?.cloneNode(true);
     const proceedDiv = document.getElementById('proceed')?.cloneNode(true);
@@ -190,6 +242,7 @@ function renderMp3Templates() {
         div.className = 'uploadmp3';
         // Set data-music-id attribute from the stored musicId (if it exists)
         div.setAttribute('data-music-id', template.musicId || '');
+        
         // Add hidden input for music ID if it exists
         const hiddenInputs = template.musicId ? 
         `<input type="hidden" name="bg_music_id_${template.musicId}" value="${template.musicId}">
@@ -199,16 +252,15 @@ function renderMp3Templates() {
             ${hiddenInputs}
             <div class="mp-label bg-text">
                 MP3 ${template.id}
-                <button type="button" class="delete-btn">Delete</button>
+                <button type="button" class="delete-btn" data-template-id="${template.id}">Delete</button>
             </div>
             <div class="file-input-container">
                 <div class="choose-file-sty">
                     <img src="/static/images/upload-icon.svg" alt="">
                     <input class="fileInput" type="file" accept="audio/mpeg" 
-                           name="${template.musicId ? `existing_music_${template.musicId}_file` : `bg_music_${template.id}`}" 
-                           onchange="handleFileChange(${template.id}, this)">
+                           name="${template.musicId ? `existing_music_${template.musicId}_file` : `bg_music_${template.id}`}">
                     <div class="output">${template.file ? template.file.name : 'Choose File'}</div>
-                    ${template.file ? `<button type="button" class="clear-btn" onclick="handleClearFile(${template.id})">×</button>` : ''}
+                    ${template.file ? `<button type="button" class="clear-btn">×</button>` : ''}
                 </div>
             </div>
             <div class="bg-text">
@@ -219,13 +271,13 @@ function renderMp3Templates() {
                     <span class="text start-text">Start:</span>
                     <input type="text" placeholder="00:00" class="time startTime" maxlength="5" 
                            name="${template.musicId ? `existing_music_${template.musicId}_from_when` : `from_when_${template.id}`}" 
-                           value="${template.startTime}" oninput="handleTimeChange(${template.id}, 'startTime', this)">
+                           value="${template.startTime}">
                 </div>
                 <div class="start-sub-div">
                     <span class="text start-text">End:</span>
                     <input type="text" placeholder="00:00" class="time endTime" maxlength="5" 
                            name="${template.musicId ? `existing_music_${template.musicId}_to_when` : `to_when_${template.id}`}" 
-                           value="${template.endTime}" oninput="handleTimeChange(${template.id}, 'endTime', this)">
+                           value="${template.endTime}">
                 </div>
             </div>
             <div>
@@ -237,16 +289,62 @@ function renderMp3Templates() {
                     <input type="range" min="0" max="100" class="slider" 
                            name="${template.musicId ? `existing_music_${template.musicId}_bg_level` : `bg_level_${template.id}`}" 
                            value="${template.volume}" 
-                           style="--value: ${template.volume}" oninput="handleVolumeChange(${template.id}, this)">
+                           style="--value: ${template.volume}">
                 </div>
             </div>
         `;
         container.appendChild(div);
+        
+        // Set up event listeners after the element is added to DOM
+        const deleteBtn = div.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const templateId = parseInt(this.getAttribute('data-template-id'));
+            console.log("Delete button clicked for template:", templateId);
+            handleDeleteMp3(templateId);
+        });
+        
+        const fileInput = div.querySelector('.fileInput');
+        fileInput.addEventListener('change', function() {
+            handleFileChange(template.id, this);
+        });
+        
+        const clearBtn = div.querySelector('.clear-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                handleClearFile(template.id);
+            });
+        }
+        
+        const startTimeInput = div.querySelector('.startTime');
+        startTimeInput.addEventListener('input', function() {
+            this.value = handleTimeChange(template.id, 'startTime', this.value);
+        });
+        
+        const endTimeInput = div.querySelector('.endTime');
+        endTimeInput.addEventListener('input', function() {
+            this.value = handleTimeChange(template.id, 'endTime', this.value);
+        });
+        
+        const volumeSlider = div.querySelector('.slider');
+        volumeSlider.addEventListener('input', function() {
+            const newValue = handleVolumeChange(template.id, this.value);
+            this.value = newValue;
+            this.style.setProperty('--value', newValue);
+            const container = this.closest('.uploadmp3');
+            const percentageEl = container.querySelector('.volume-percentage');
+            if (percentageEl) {
+                percentageEl.textContent = `${newValue}%`;
+            }
+        });
     });
 
     container.appendChild(addButton);
     container.appendChild(proceedDiv);
-    container.querySelector('#addMusicBtn').addEventListener('click', handleAddMp3);
+    
+    // Re-attach listener to the cloned add button
+    addButton.addEventListener('click', handleAddMp3);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -267,105 +365,104 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Update the text display as well
         const container = slider.closest('.uploadmp3');
-        const percentageEl = container.querySelector('.volume-percentage');
-        if (percentageEl) {
-            percentageEl.textContent = `${value}%`;
-        }
-        
-        // Add input event listener to each slider
-        slider.addEventListener('input', function() {
-            // Find the MP3 ID from the slider's name (bg_level_X)
-            const nameMatch = this.name?.match(/bg_level_(\d+)/);
-            if (nameMatch && nameMatch[1]) {
-                const id = parseInt(nameMatch[1]);
-                handleVolumeChange(id, this);
+        if (container) {
+            const percentageEl = container.querySelector('.volume-percentage');
+            if (percentageEl) {
+                percentageEl.textContent = `${value}%`;
             }
-        });
+        }
     });
     
-    document.getElementById('addMusicBtn').addEventListener('click', handleAddMp3);
+    const addMusicBtn = document.getElementById('addMusicBtn');
+    if (addMusicBtn) {
+        addMusicBtn.addEventListener('click', handleAddMp3);
+    }
     
-    // Add form submission interceptor to handle file uploads
-    document.getElementById('bg_form').addEventListener('submit', function(event) {
-        // Don't submit the form normally yet
-        event.preventDefault();
-        
-        console.log("Form submission intercepted");
-        
-        // Add existing music IDs to the form data explicitly
-        mp3Templates.forEach(template => {
-            if (template.musicId) {
-                console.log(`Ensuring music ID ${template.musicId} is included in form data`);
-                
-                // Double check if we already have this ID in the form
-                const input1Name = `bg_music_id_${template.musicId}`;
-                const input2Name = `existing_music_${template.musicId}_id`;
-                
-                // Check if these inputs exist in the form
-                const input1 = this.querySelector(`input[name="${input1Name}"]`);
-                const input2 = this.querySelector(`input[name="${input2Name}"]`);
-                
-                if (!input1) {
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = input1Name;
-                    hiddenInput.value = template.musicId;
-                    this.appendChild(hiddenInput);
-                    console.log(`Added hidden input for bg_music_id_${template.musicId}`);
+    // Add form submission interceptor to ensure music IDs are included
+    const bgForm = document.getElementById('bg_form');
+    if (bgForm) {
+        bgForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            console.log("Form submission intercepted");
+            
+            const actualForm = new FormData(this);
+            
+            // Add existing music IDs to the form data explicitly
+            mp3Templates.forEach(template => {
+                if (template.musicId) {
+                    console.log(`Adding music ID ${template.musicId} to form data`);
+                    
+                    // Add the ID fields for existing music
+                    actualForm.append(`bg_music_id_${template.musicId}`, template.musicId);
+                    actualForm.append(`existing_music_${template.musicId}_id`, template.musicId);
+                    
+                    // If there's a new file for this template, add it with the correct name
+                    const fileKey = `bg_music_${template.id}`;
+                    if (formDataStorage.has(fileKey)) {
+                        const file = formDataStorage.get(fileKey);
+                        actualForm.append(`existing_music_${template.musicId}_file`, file);
+                        console.log(`Added updated file for existing music ${template.musicId}`);
+                    }
+                } else {
+                    // This is a new music track
+                    const fileKey = `bg_music_${template.id}`;
+                    if (formDataStorage.has(fileKey)) {
+                        const file = formDataStorage.get(fileKey);
+                        actualForm.append(fileKey, file);
+                        console.log(`Added file for new music track ${template.id}`);
+                    }
                 }
-                
-                if (!input2) {
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = input2Name;
-                    hiddenInput.value = template.musicId;
-                    this.appendChild(hiddenInput);
-                    console.log(`Added hidden input for existing_music_${template.musicId}_id`);
+            });
+
+            // Add time seconds values
+            document.querySelectorAll('.time').forEach(input => {
+                const nameAttr = input.getAttribute('name');
+                if (nameAttr) {
+                    const timeValue = input.value.trim();
+                    let seconds = 0;
+                    
+                    if (timeValue && timeValue.includes(':')) {
+                        const parts = timeValue.split(':');
+                        if (parts.length === 2) {
+                            const minutes = parseInt(parts[0], 10) || 0;
+                            const secs = parseInt(parts[1], 10) || 0;
+                            seconds = (minutes * 60) + secs;
+                        }
+                    } else if (timeValue) {
+                        seconds = parseInt(timeValue, 10) || 0;
+                    }
+                    
+                    actualForm.append(nameAttr + '_seconds', seconds.toString());
                 }
+            });
+            
+            // Show loading spinner
+            const submitButton = document.getElementById('submitBgButton');
+            if (submitButton) {
+                submitButton.classList.add('loading');
             }
+
+            // Submit the form with our custom FormData
+            fetch(this.action || window.location.href, {
+                method: 'POST',
+                body: actualForm,
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = response.url;
+                } else {
+                    console.error('Form submission failed');
+                    if (submitButton) {
+                        submitButton.classList.remove('loading');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+                if (submitButton) {
+                    submitButton.classList.remove('loading');
+                }
+            });
         });
-        
-        // First create a FormData from the form
-        const actualForm = new FormData(this);
-        
-        // CRITICAL: Make sure all bg_music_id fields are included
-        document.querySelectorAll('input[name^="bg_music_id_"]').forEach(input => {
-            console.log(`Found music ID input: ${input.name} = ${input.value}`);
-            actualForm.append(input.name, input.value);
-        });
-        
-        // Now add our stored files to the form
-        for (let [key, value] of formDataStorage.entries()) {
-            actualForm.append(key, value);
-        }
-        
-        // Debug: Log what's being submitted
-        console.log("Files and form data being submitted:");
-        for (let [key, value] of actualForm.entries()) {
-            if (value instanceof File) {
-                console.log(`${key}: File: ${value.name}, Size: ${value.size} bytes`);
-            } else {
-                console.log(`${key}: ${value} (${typeof value})`);
-            }
-        }
-        
-        // Submit the form with our custom FormData
-        fetch(this.action, {
-            method: 'POST',
-            body: actualForm,
-            // Don't set Content-Type header, let the browser set it with boundary
-        })
-        .then(response => {
-            if (response.ok) {
-                // Redirect to the next page or handle success
-                window.location.href = `/download/${actualForm.get('video_id')}`;
-            } else {
-                console.error('Form submission failed');
-                // Handle error
-            }
-        })
-        .catch(error => {
-            console.error('Error submitting form:', error);
-        });
-    });
+    }
 });

@@ -1722,18 +1722,67 @@ function clearPopupFile() {
     renderPopup();
 }
 
-function handleTopicChange(e) {
-    popupTopic = e.target.value;
-    popupVideoClip = ""; // Reset video clip
-    popupFile = null; // Clear file to enforce single selection
-    popupErrorMessage = "";
-    document.getElementById("upload-text").textContent = "Choose File";
-    document.getElementById("clear-file").style.display = "none";
-    const submitButton = document.getElementById("submit-clip");
-    submitButton.disabled = true; // Disable until video clip selected
-    renderPopup();
-}
+function handleTopicChange(event) {
+    const selectedTopic = event.target.value;
+    console.log("Topic selected:", selectedTopic);
+    popupTopic = selectedTopic;
+    
+    // Clear file input when dropdown is used
+    const fileInput = document.getElementById('slide_file');
+    if (fileInput) {
+        fileInput.value = '';
+        popupFile = null;
+        
+        // Reset file upload UI
+        const uploadText = document.getElementById("upload-text");
+        if (uploadText) {
+            uploadText.textContent = "Choose File";
+        }
+        
+        const clearFileBtn = document.getElementById("clear-file");
+        if (clearFileBtn) {
+            clearFileBtn.style.display = "none";
+        }
+    }
+    
+    // Rebuild video select dropdown with only the selected folder's videos
+    const videoSelect = document.getElementById('videoSelect');
+    if (!videoSelect) return;
 
+    // Clear all options except the default one
+    videoSelect.innerHTML = '<option value="" disabled selected>Select A Video Clip</option>';
+    
+    if (selectedTopic && window.assetFolders && window.assetFolders[selectedTopic]) {
+        const videos = window.assetFolders[selectedTopic];
+        
+        if (videos.length > 0) {
+            // Create optgroup for the selected folder only
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = selectedTopic;
+            optgroup.setAttribute('data-folder', selectedTopic);
+            
+            // Add options for each video
+            videos.forEach(video => {
+                const option = document.createElement('option');
+                option.value = video.key;
+                option.textContent = video.filename;
+                option.setAttribute('data-url', video.url);
+                optgroup.appendChild(option);
+            });
+            
+            videoSelect.appendChild(optgroup);
+        }
+    }
+    
+    // Reset selected video
+    popupVideoClip = "";
+    
+    // Update submit button state
+    const submitButton = document.getElementById('submit-clip');
+    if (submitButton) {
+        submitButton.disabled = true;
+    }
+}
 function handleVideoClipChange(e) {
     popupVideoClip = e.target.value;
     popupFile = null;

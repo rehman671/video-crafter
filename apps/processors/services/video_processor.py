@@ -10,10 +10,9 @@ from functools import partial
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.conf import settings
-
+from apps.core.utils import get_media_info, process_background_track, create_final_mix
 # Set up logging
 logger = logging.getLogger(__name__)
-
 
 class VideoProcessorService:
 
@@ -2073,603 +2072,6 @@ class VideoProcessorService:
                 # Re-raise if we're already using CPU encoding
                 raise
             
-    def apply_background_music(self, bg_music: BackgroundMusic):
-        """
-        Applies background music to the video output.
-        If music duration exceeds video duration, music is trimmed to match.
-        Background music plays alongside the original video audio (not replacing it).
-        
-        Args:
-            bg_music: BackgroundMusic object containing audio file and timing information
-        
-        Returns:
-            bool: True if successful, False otherwise
-        """
-        video = self.video
-        
-        # Check if the video has an output file
-        if not video.output:
-            logger.error(f"No output file found for video {video.id}")
-            return False
-        
-        # Check if background music has a valid audio file
-        if not bg_music.audio_file:
-            logger.error(f"No audio file associated with background music for video {video.id}")
-            return False
-            
-        try:
-
-            
-            logger.info(f"Applying background music to video {video.id}")
-            
-            # Create temporary files for processing
-            with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp_video:
-                # Download the video file to temp location
-                with default_storage.open(video.output_with_bg.name, 'rb') as s3_video:
-                    tmp_video.write(s3_video.read())
-                video_temp_path = tmp_video.name
-                
-            with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp_audio:
-                # Download the audio file to temp location
-                with default_storage.open(bg_music.audio_file.name, 'rb') as s3_audio:
-                    tmp_audio.write(s3_audio.read())
-                audio_temp_path = tmp_audio.name
-            
-            # Create output temp file
-            temp_output_path = tempfile.mktemp(suffix='.mp4')
-            
-            # Get video duration using ffprobe
-            video_duration_cmd = [
-                "ffprobe", 
-                "-v", "error", 
-                "-show_entries", "format=duration", 
-                "-of", "default=noprint_wrappers=1:nokey=1", 
-                video_temp_path
-            ]
-            video_duration = float(subprocess.check_output(video_duration_cmd).decode("utf-8").strip())
-            
-            # Check if the video has an audio track
-            has_audio_cmd = [
-                "ffprobe",
-                "-v", "error",
-                "-select_streams", "a",
-                "-show_entries", "stream=codec_type",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                video_temp_path
-            ]
-            
-            has_audio_result = subprocess.run(has_audio_cmd, capture_output=True, text=True)
-            has_audio = has_audio_result.stdout.strip() == "audio"
-            
-            # Get audio duration
-            audio_duration_cmd = [
-                "ffprobe", 
-                "-v", "error", 
-                "-show_entries", "format=duration", 
-                "-of", "default=noprint_wrappers=1:nokey=1", 
-                audio_temp_path
-            ]
-            try:
-                audio_duration = float(subprocess.check_output(audio_duration_cmd).decode("utf-8").strip())
-            except:
-                audio_duration = 0
-                
-            # Check if audio needs to be trimmed
-            start_time = min(bg_music.start_time, video_duration)
-            
-            # Handle case where start_time equals end_time or end_time is not specified correctly
-            if bg_music.end_time <= bg_music.start_time or bg_music.end_time > video_duration:
-                # Use the minimum of video duration or audio duration from the start point
-                end_time = min(video_duration, start_time + audio_duration)
-            else:
-                end_time = min(bg_music.end_time, video_duration)
-                
-            # Ensure we have a positive duration
-            if end_time <= start_time:
-                # Default to playing until the end of the video
-                end_time = video_duration
-                
-            duration = end_time - start_time
-            
-            # Ensure we have a positive duration
-            if duration <= 0:
-                # If duration is still not positive, use a minimum duration or the entire audio
-                duration = min(audio_duration, video_duration - start_time)
-                end_time = start_time + duration
-                
-                # If we still have zero duration, start from the beginning
-                if duration <= 0:
-                    start_time = 0
-                    duration = min(audio_duration, video_duration)
-                    end_time = start_time + duration
-                    
-                print(f"Adjusted timing to ensure positive duration: start={start_time:.2f}, end={end_time:.2f}, duration={duration:.2f}")
-            
-            # Use volume from bg_music (range 0 to 1)
-            volume_level = bg_music.volumn if hasattr(bg_music, 'volumn') and 0 <= bg_music.volumn <= 1 else 0.3
-            
-            # Print report of the background music processing
-            print(f"\nBackground Music Processing Report:")
-            print(f"- Video ID: {video.id}")
-            print(f"- Video Duration: {video_duration:.2f} seconds")
-            print(f"- Audio Duration: {audio_duration:.2f} seconds")
-            print(f"- Music File: {os.path.basename(bg_music.audio_file.name)}")
-            print(f"- Start Time: {start_time:.2f} seconds")
-            print(f"- End Time: {end_time:.2f} seconds")
-            print(f"- Volume Level: {volume_level:.2f}")
-            print(f"- Duration: {duration:.2f} seconds")
-            print(f"- Output: {temp_output_path}")
-            print(f"- Video has existing audio track: {has_audio}")
-            
-            # Check if our duration is too small
-            if duration < 0.1:
-                print(f"Warning: Duration is too small ({duration:.2f}s), defaulting to full audio length")
-                start_time = 0
-                duration = min(audio_duration, video_duration)
-                end_time = start_time + duration
-            
-            # First, prepare a trimmed version of the background music
-            trimmed_audio_path = tempfile.mktemp(suffix='.mp3')
-            audio_trim_cmd = [
-                "ffmpeg",
-                "-y",
-                "-i", audio_temp_path,
-                "-ss", "0",  # Start from beginning of audio file
-                "-t", str(duration),  # Duration to extract
-                "-af", f"volume={volume_level}",  # Apply volume adjustment
-                "-c:a", "mp3",  # Codec
-                trimmed_audio_path
-            ]
-            
-            print(f"Preparing trimmed audio: {' '.join(audio_trim_cmd)}")
-            try:
-                subprocess.run(audio_trim_cmd, capture_output=True, check=True)
-            except subprocess.CalledProcessError as e:
-                print(f"Error trimming audio: {str(e)}")
-                # Use the original audio if trimming fails
-                trimmed_audio_path = audio_temp_path
-            
-            # Method selection based on whether the video has audio
-            if has_audio:
-                # APPROACH 1: Extract original audio from video
-                original_audio_path = tempfile.mktemp(suffix='.mp3')
-                extract_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", video_temp_path,
-                    "-vn",  # No video
-                    "-c:a", "mp3",  # Codec
-                    original_audio_path
-                ]
-                
-                print(f"Extracting original audio: {' '.join(extract_cmd)}")
-                try:
-                    subprocess.run(extract_cmd, capture_output=True, check=True)
-                except subprocess.CalledProcessError as e:
-                    print(f"Error extracting original audio: {str(e)}")
-                    # Continue with other approaches if extraction fails
-                    has_audio = False
-            
-            if has_audio:
-                # KEY CHANGE: Instead of silencing the original audio, reduce its volume during the background music
-                # This allows both audio tracks to be heard
-                reduced_vol_path = tempfile.mktemp(suffix='.mp3')
-                original_audio_volume = 2  # Adjust this value to balance with bg music
-                
-                volume_filter = (
-                    f"volume={original_audio_volume}:enable='between(t,{start_time},{end_time})',"
-                    f"volume=1:enable='not(between(t,{start_time},{end_time}))'")
-                
-                reduce_vol_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", original_audio_path,
-                    "-af", volume_filter,
-                    "-c:a", "mp3",
-                    reduced_vol_path
-                ]
-                
-                print(f"Creating audio with reduced volume during bg music: {' '.join(reduce_vol_cmd)}")
-                try:
-                    subprocess.run(reduce_vol_cmd, capture_output=True, check=True)
-                except subprocess.CalledProcessError as e:
-                    print(f"Error creating reduced volume audio: {str(e)}")
-                    # Just use the original audio
-                    reduced_vol_path = original_audio_path
-                
-                # Create a version of the trimmed background music with silence everywhere except where it should play
-                music_timing_path = tempfile.mktemp(suffix='.mp3')
-                # We need to create an audio file that's the full length of the video
-                padding_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", trimmed_audio_path,
-                    "-af", f"apad=whole_dur={video_duration}",
-                    "-c:a", "mp3",
-                    music_timing_path
-                ]
-                
-                print(f"Creating padded background music: {' '.join(padding_cmd)}")
-                try:
-                    subprocess.run(padding_cmd, capture_output=True, check=True)
-                    music_positioned = True
-                except subprocess.CalledProcessError as e:
-                    print(f"Error padding music: {str(e)}")
-                    music_positioned = False
-                    
-                if music_positioned:
-                    # Create a temporary file with the positioned music
-                    positioned_music_path = tempfile.mktemp(suffix='.mp3')
-                    position_cmd = [
-                        "ffmpeg",
-                        "-y",
-                        "-i", music_timing_path,
-                        "-af", f"adelay={int(start_time*1000)}|{int(start_time*1000)}",
-                        "-c:a", "mp3",
-                        positioned_music_path
-                    ]
-                    
-                    print(f"Positioning music at {start_time}s: {' '.join(position_cmd)}")
-                    try:
-                        subprocess.run(position_cmd, capture_output=True, check=True)
-                    except subprocess.CalledProcessError as e:
-                        print(f"Error positioning music: {str(e)}")
-                        # Use the padded version
-                        positioned_music_path = music_timing_path
-                        
-                    # Mix the original audio (with reduced volume during bg music) and the positioned background music
-                    mixed_audio_path = tempfile.mktemp(suffix='.mp3')
-                    mix_cmd = [
-                        "ffmpeg",
-                        "-y",
-                        "-i", reduced_vol_path,
-                        "-i", positioned_music_path,
-                        "-filter_complex", "amix=inputs=2:duration=first:weights=1 1",
-                        "-c:a", "mp3",
-                        mixed_audio_path
-                    ]
-                    
-                    print(f"Mixing audio: {' '.join(mix_cmd)}")
-                    try:
-                        subprocess.run(mix_cmd, capture_output=True, check=True)
-                        # The mix worked, now combine with video
-                        final_cmd = [
-                            "ffmpeg",
-                            "-y",
-                            "-i", video_temp_path,
-                            "-i", mixed_audio_path,
-                            "-c:v", "copy",
-                            "-c:a", "aac",
-                            "-map", "0:v",
-                            "-map", "1:a",
-                            "-shortest",
-                            temp_output_path
-                        ]
-                        
-                        print(f"Final combine: {' '.join(final_cmd)}")
-                        subprocess.run(final_cmd, capture_output=True, check=True)
-                        success = True
-                    except subprocess.CalledProcessError as e:
-                        print(f"Error in audio mixing or final combine: {str(e)}")
-                        success = False
-                else:
-                    success = False
-                
-                # Clean up intermediate audio files
-                for temp_file in [original_audio_path, reduced_vol_path, music_timing_path, 
-                                positioned_music_path if 'positioned_music_path' in locals() else None, 
-                                mixed_audio_path if 'mixed_audio_path' in locals() else None]:
-                    if temp_file and os.path.exists(temp_file):
-                        try:
-                            os.unlink(temp_file)
-                        except:
-                            pass
-            else:
-                # No existing audio, simpler approach
-                success = False
-            
-            # If the complex approach failed or there's no audio, try a simpler approach
-            if not success or not has_audio:
-                # APPROACH 2: For videos without audio or if the complex approach failed
-                print("Using direct overlay approach for video without audio")
-                
-                # Create silent base for the full video duration
-                silent_base_path = tempfile.mktemp(suffix='.mp3')
-                try:
-                    # First try with anullsrc
-                    silence_cmd = [
-                        "ffmpeg",
-                        "-y",
-                        "-f", "lavfi",
-                        "-i", f"anullsrc=r=44100:cl=stereo:d={video_duration}",
-                        "-c:a", "mp3",
-                        silent_base_path
-                    ]
-                    
-                    print(f"Creating silent base with anullsrc: {' '.join(silence_cmd)}")
-                    subprocess.run(silence_cmd, capture_output=True, check=True)
-                    silence_created = True
-                except:
-                    # If anullsrc fails, create a very short silence and extend it
-                    try:
-                        # Generate 0.1s of silence
-                        silence_gen_cmd = [
-                            "ffmpeg",
-                            "-y",
-                            "-f", "lavfi",
-                            "-i", "anullsrc=r=44100:cl=stereo:d=0.1",
-                            "-c:a", "mp3",
-                            silent_base_path
-                        ]
-                        
-                        print(f"Creating short silence: {' '.join(silence_gen_cmd)}")
-                        subprocess.run(silence_gen_cmd, capture_output=True, check=True)
-                        
-                        # Now extend it to full duration
-                        extended_silence_path = tempfile.mktemp(suffix='.mp3')
-                        extend_cmd = [
-                            "ffmpeg",
-                            "-y",
-                            "-i", silent_base_path,
-                            "-af", f"apad=whole_dur={video_duration}",
-                            "-c:a", "mp3",
-                            extended_silence_path
-                        ]
-                        
-                        print(f"Extending silence: {' '.join(extend_cmd)}")
-                        subprocess.run(extend_cmd, capture_output=True, check=True)
-                        
-                        # Replace the original silence with the extended one
-                        os.unlink(silent_base_path)
-                        silent_base_path = extended_silence_path
-                        silence_created = True
-                    except:
-                        print("Could not create silent base, using direct approach")
-                        silence_created = False
-                
-                if silence_created:
-                    # Now overlay the trimmed background music at the specified position
-                    overlay_cmd = [
-                        "ffmpeg",
-                        "-y",
-                        "-i", silent_base_path,
-                        "-i", trimmed_audio_path,
-                        "-filter_complex", f"[1:a]adelay={int(start_time*1000)}|{int(start_time*1000)}[delayed];[0:a][delayed]amix=inputs=2:duration=first[a]",
-                        "-map", "[a]",
-                        "-c:a", "mp3",
-                        "-b:a", "192k",
-                        tempfile.mktemp(suffix='.mp3')
-                    ]
-                    
-                    print(f"Creating overlay audio: {' '.join(overlay_cmd)}")
-                    try:
-                        result = subprocess.run(overlay_cmd, capture_output=True, check=True)
-                        final_audio_path = result.stdout.decode().strip()
-                        
-                        # Combine with video
-                        final_cmd = [
-                            "ffmpeg",
-                            "-y",
-                            "-i", video_temp_path,
-                            "-i", final_audio_path,
-                            "-c:v", "copy",
-                            "-c:a", "aac",
-                            "-map", "0:v",
-                            "-map", "1:a",
-                            "-shortest",
-                            temp_output_path
-                        ]
-                        
-                        print(f"Final combine: {' '.join(final_cmd)}")
-                        subprocess.run(final_cmd, capture_output=True, check=True)
-                        success = True
-                    except subprocess.CalledProcessError as e:
-                        print(f"Overlay or combine failed: {str(e)}")
-                        success = False
-                
-                # Last resort if previous methods failed
-                if not success:
-                    print("Using fallback direct approach")
-                    # Create a trimmed version of the input video
-                    silent_video_path = tempfile.mktemp(suffix='.mp4')
-                    silent_cmd = [
-                        "ffmpeg",
-                        "-y",
-                        "-i", video_temp_path,
-                        "-an",  # Remove audio
-                        "-c:v", "copy",
-                        silent_video_path
-                    ]
-                    
-                    print(f"Creating silent video: {' '.join(silent_cmd)}")
-                    try:
-                        subprocess.run(silent_cmd, capture_output=True, check=True)
-                    except subprocess.CalledProcessError as e:
-                        print(f"Error creating silent video: {str(e)}")
-                        # Use the original video
-                        silent_video_path = video_temp_path
-                        
-                    # Create a precisely timed audio segment
-                    precise_audio_path = tempfile.mktemp(suffix='.mp3')
-                    
-                    # Create an audio track with specific timing
-                    ffmpeg_complex_filter = (
-                        # Create a silent audio track for the entire video duration
-                        f"-f lavfi -t {video_duration} -i anullsrc=r=44100:cl=stereo " +
-                        # Add the trimmed music starting at the specified time
-                        f"-i {trimmed_audio_path} " +
-                        # Mix them together
-                        f"-filter_complex \"[1:a]adelay={int(start_time*1000)}|{int(start_time*1000)}[delayed];" +
-                        f"[0:a][delayed]amix=inputs=2:duration=first[a]\" " +
-                        # Output the mixed audio
-                        f"-map \"[a]\" -c:a aac -b:a 192k {precise_audio_path}"
-                    )
-                    
-                    print(f"Attempting complex filter: {ffmpeg_complex_filter}")
-                    try:
-                        os.system(f"ffmpeg -y {ffmpeg_complex_filter}")
-                        
-                        # If that worked, combine with the video
-                        final_cmd = [
-                            "ffmpeg",
-                            "-y",
-                            "-i", silent_video_path,
-                            "-i", precise_audio_path,
-                            "-c:v", "copy",
-                            "-c:a", "aac",
-                            "-map", "0:v",
-                            "-map", "1:a",
-                            "-shortest",
-                            temp_output_path
-                        ]
-                        
-                        print(f"Final combine: {' '.join(final_cmd)}")
-                        subprocess.run(final_cmd, capture_output=True, check=True)
-                    except:
-                        print("Complex filter failed, using direct audio overlay")
-                        
-                        # Absolutely simplest approach - use direct concatenation
-                        concat_list_path = tempfile.mktemp(suffix='.txt')
-                        with open(concat_list_path, 'w') as f:
-                            if start_time > 0:
-                                # Create a silent MP3 for the pre-music segment
-                                pre_silence_path = tempfile.mktemp(suffix='.mp3')
-                                pre_silence_cmd = [
-                                    "ffmpeg",
-                                    "-y",
-                                    "-f", "lavfi",
-                                    "-i", f"anullsrc=r=44100:cl=stereo:d={start_time}",
-                                    "-c:a", "mp3",
-                                    pre_silence_path
-                                ]
-                                
-                                try:
-                                    subprocess.run(pre_silence_cmd, capture_output=True)
-                                    f.write(f"file '{pre_silence_path}'\n")
-                                except:
-                                    print("Could not create pre-silence")
-                            
-                            # Add the background music segment
-                            f.write(f"file '{trimmed_audio_path}'\n")
-                            
-                            # If there's time after the music, add silence
-                            if end_time < video_duration:
-                                post_silence_duration = video_duration - end_time
-                                post_silence_path = tempfile.mktemp(suffix='.mp3')
-                                post_silence_cmd = [
-                                    "ffmpeg",
-                                    "-y",
-                                    "-f", "lavfi",
-                                    "-i", f"anullsrc=r=44100:cl=stereo:d={post_silence_duration}",
-                                    "-c:a", "mp3",
-                                    post_silence_path
-                                ]
-                                
-                                try:
-                                    subprocess.run(post_silence_cmd, capture_output=True)
-                                    f.write(f"file '{post_silence_path}'\n")
-                                except:
-                                    print("Could not create post-silence")
-                        
-                        # Concatenate the audio segments
-                        concat_audio_path = tempfile.mktemp(suffix='.mp3')
-                        concat_cmd = [
-                            "ffmpeg",
-                            "-y",
-                            "-f", "concat",
-                            "-safe", "0",
-                            "-i", concat_list_path,
-                            "-c:a", "mp3",
-                            concat_audio_path
-                        ]
-                        
-                        print(f"Concatenating audio segments: {' '.join(concat_cmd)}")
-                        try:
-                            subprocess.run(concat_cmd, capture_output=True, check=True)
-                            
-                            # Finally, combine with the video
-                            last_cmd = [
-                                "ffmpeg",
-                                "-y",
-                                "-i", silent_video_path,
-                                "-i", concat_audio_path,
-                                "-c:v", "copy",
-                                "-c:a", "aac",
-                                "-map", "0:v",
-                                "-map", "1:a",
-                                "-shortest",
-                                temp_output_path
-                            ]
-                            
-                            print(f"Final combine: {' '.join(last_cmd)}")
-                            subprocess.run(last_cmd, capture_output=True, check=True)
-                        except subprocess.CalledProcessError as e:
-                            print(f"Error in final concatenation: {str(e)}")
-                            
-                            # As an absolute last resort, just use the simple approach
-                            print("Using absolute simplest approach - direct overlay without timing")
-                            last_resort_cmd = [
-                                "ffmpeg",
-                                "-y",
-                                "-i", video_temp_path,
-                                "-i", trimmed_audio_path,  # Use the trimmed music directly
-                                "-c:v", "copy",
-                                "-c:a", "aac",
-                                "-map", "0:v",
-                                "-map", "1:a",  # Use audio directly
-                                "-shortest",
-                                temp_output_path
-                            ]
-                            
-                            print(f"Last resort command: {' '.join(last_resort_cmd)}")
-                            subprocess.run(last_resort_cmd, capture_output=True, check=True)
-            
-            # Verify the output has audio
-            verify_cmd = [
-                "ffprobe",
-                "-v", "error",
-                "-select_streams", "a",
-                "-show_entries", "stream=codec_type",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                temp_output_path
-            ]
-            
-            verify_result = subprocess.run(verify_cmd, capture_output=True, text=True)
-            has_output_audio = verify_result.stdout.strip() == "audio"
-            
-            print(f"- Output video has audio track: {has_output_audio}")
-            
-            # Update the video output_with_bg file instead of the original output
-            filename = f"{os.path.splitext(os.path.basename(video.output.name))[0]}_with_bg.mp4"
-            with open(temp_output_path, 'rb') as f:
-                # Save to output_with_bg instead of output
-                video.output_with_bg.save(filename, File(f), save=True)
-
-
-            # Clean up temporary files
-            for temp_file in [video_temp_path, audio_temp_path, temp_output_path, trimmed_audio_path]:
-                if os.path.exists(temp_file):
-                    try:
-                        os.unlink(temp_file)
-                    except:
-                        pass
-            
-            logger.info(f"Successfully applied background music to video {video.id}, saved as output_with_bg")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error applying background music to video {video.id}: {str(e)}")
-            print(f"Error applying background music: {str(e)}")
-            # Clean up temporary files if they exist
-            for var_name in ['video_temp_path', 'audio_temp_path', 'temp_output_path', 'trimmed_audio_path']:
-                if var_name in locals() and locals()[var_name] and os.path.exists(locals()[var_name]):
-                    try:
-                        os.unlink(locals()[var_name])
-                    except:
-                        pass
-            return False
-
-
          
     def apply_background_music_watermark(self, bg_music: BackgroundMusic):
         """
@@ -3267,701 +2669,259 @@ class VideoProcessorService:
             return False
 
 
-    def apply_all_background_music(self, bg_music_queryset):
+
+
+    def apply_background_music(self,  bg_music_queryset):
         """
-        Applies multiple background music tracks to the video output in a single operation.
-        All tracks are mixed together with proper timing and volume adjustments.
+        Applies multiple background music tracks to a video while preserving the original audio.
+        
+        This function:
+        - Downloads video and audio files from storage (e.g., S3)
+        - Processes each background track with proper timing and volume
+        - Mixes background music with original audio (if present)
+        - Saves the result back to storage
         
         Args:
-            bg_music_queryset: QuerySet of BackgroundMusic objects containing audio files and timing information
+            video: Video object with 'output' FileField and optional 'output_with_bg' FileField
+            bg_music_queryset: QuerySet of BackgroundMusic objects with:
+                - audio_file: FileField containing the audio file
+                - start_time: float, when to start playing this track
+                - end_time: float, when to stop playing this track
+                - volumn: float (0.0-1.0), volume level for this track
         
         Returns:
             bool: True if successful, False otherwise
         """
+        # Validate inputs
         video = self.video
-        
-        # Check if the video has an output file
         if not video.output:
             logger.error(f"No output file found for video {video.id}")
             return False
         
-        # Check if there are any background music tracks to process
         if not bg_music_queryset.exists():
             logger.info(f"No background music tracks found for video {video.id}")
             return True
         
+        # Lists to track temporary files for cleanup
+        temp_files = []
+        
         try:
-            logger.info(f"Applying {bg_music_queryset.count()} background music tracks to video {video.id}")
+            logger.info(f"Processing {bg_music_queryset.count()} background music tracks for video {video.id}")
             
-            # Create temporary files for processing
+            # Step 1: Download video to temporary file
             with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp_video:
-                # Download the video file to temp location
-                with default_storage.open(video.output.name, 'rb') as s3_video:
-                    tmp_video.write(s3_video.read())
-                video_temp_path = tmp_video.name
+                with default_storage.open(video.output.name, 'rb') as video_file:
+                    tmp_video.write(video_file.read())
+                video_path = tmp_video.name
+                temp_files.append(video_path)
             
-            # Create output temp file
-            temp_output_path = tempfile.mktemp(suffix='.mp4')
+            # Step 2: Get video properties
+            video_info = get_media_info(video_path)
+            video_duration = video_info['duration']
+            has_audio = video_info['has_audio']
             
-            # Get video duration using ffprobe
-            video_duration_cmd = [
-                "ffprobe", 
-                "-v", "error", 
-                "-show_entries", "format=duration", 
-                "-of", "default=noprint_wrappers=1:nokey=1", 
-                video_temp_path
-            ]
-            video_duration = float(subprocess.check_output(video_duration_cmd).decode("utf-8").strip())
+            print(f"Video duration: {video_duration:.2f}s, Has audio: {has_audio}")
             
-            # Check if the video has an audio track
-            has_audio_cmd = [
-                "ffprobe",
-                "-v", "error",
-                "-select_streams", "a",
-                "-show_entries", "stream=codec_type",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                video_temp_path
-            ]
-            
-            has_audio_result = subprocess.run(has_audio_cmd, capture_output=True, text=True)
-            has_audio = has_audio_result.stdout.strip() == "audio"
-            
-            # Process all background music tracks
-            audio_tracks = []
-            temp_audio_files = []
-            filter_complex_parts = []
+            # Step 3: Process background music tracks
+            processed_tracks = []
             
             for idx, bg_music in enumerate(bg_music_queryset):
                 if not bg_music.audio_file:
                     logger.warning(f"Skipping background music {bg_music.id} - no audio file")
                     continue
                 
-                # Download the audio file to temp location
+                # Download audio file
                 with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp_audio:
-                    with default_storage.open(bg_music.audio_file.name, 'rb') as s3_audio:
-                        tmp_audio.write(s3_audio.read())
-                    audio_temp_path = tmp_audio.name
-                    temp_audio_files.append(audio_temp_path)
+                    with default_storage.open(bg_music.audio_file.name, 'rb') as audio_file:
+                        tmp_audio.write(audio_file.read())
+                    audio_path = tmp_audio.name
+                    temp_files.append(audio_path)
                 
-                # Get audio duration
-                audio_duration_cmd = [
-                    "ffprobe", 
-                    "-v", "error", 
-                    "-show_entries", "format=duration", 
-                    "-of", "default=noprint_wrappers=1:nokey=1", 
-                    audio_temp_path
-                ]
-                try:
-                    audio_duration = float(subprocess.check_output(audio_duration_cmd).decode("utf-8").strip())
-                except:
-                    audio_duration = 0
+                # Process timing
+                track_info = process_background_track(
+                    audio_path=audio_path,
+                    video_duration=video_duration,
+                    start_time=bg_music.start_time,
+                    end_time=bg_music.end_time,
+                    volume=getattr(bg_music, 'volumn', 0.3),
+                    track_index=idx
+                )
                 
-                # Calculate timing for this track
-                start_time = min(bg_music.start_time, video_duration)
-                
-                if bg_music.end_time <= bg_music.start_time or bg_music.end_time > video_duration:
-                    end_time = min(video_duration, start_time + audio_duration)
-                else:
-                    end_time = min(bg_music.end_time, video_duration)
-                
-                if end_time <= start_time:
-                    end_time = video_duration
-                
-                duration = end_time - start_time
-                
-                if duration <= 0:
-                    duration = min(audio_duration, video_duration - start_time)
-                    end_time = start_time + duration
+                if track_info:
+                    processed_tracks.append(track_info)
+                    temp_files.append(track_info['processed_path'])
                     
-                    if duration <= 0:
-                        start_time = 0
-                        duration = min(audio_duration, video_duration)
-                        end_time = start_time + duration
-                
-                # Use volume from bg_music (range 0 to 1)
-                volume_level = bg_music.volumn if hasattr(bg_music, 'volumn') and 0 <= bg_music.volumn <= 1 else 0.3
-                
-                # Print report for this track
-                print(f"\nBackground Music Track {idx + 1}:")
-                print(f"- Music File: {os.path.basename(bg_music.audio_file.name)}")
-                print(f"- Start Time: {start_time:.2f} seconds")
-                print(f"- End Time: {end_time:.2f} seconds")
-                print(f"- Volume Level: {volume_level:.2f}")
-                print(f"- Duration: {duration:.2f} seconds")
-                
-                # Create trimmed and volume-adjusted version of this track
-                trimmed_audio_path = tempfile.mktemp(suffix='.mp3')
-                temp_audio_files.append(trimmed_audio_path)
-                
-                audio_trim_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", audio_temp_path,
-                    "-ss", "0",
-                    "-t", str(duration),
-                    "-af", f"volume={volume_level}",
-                    "-c:a", "mp3",
-                    trimmed_audio_path
-                ]
-                
-                subprocess.run(audio_trim_cmd, capture_output=True, check=True)
-                
-                # Add this track to the filter complex
-                audio_tracks.append({
-                    'path': trimmed_audio_path,
-                    'start_time': start_time,
-                    'end_time': end_time,
-                    'volume': volume_level,
-                    'index': idx + 1  # Start from 1 (0 is reserved for original audio)
-                })
-                
-                # Create filter for this track with proper timing
-                filter_complex_parts.append(f"[{idx + 1}:a]adelay={int(start_time*1000)}|{int(start_time*1000)}[a{idx + 1}]")
+                    # Print track info
+                    print(f"\nTrack {idx + 1}: {os.path.basename(bg_music.audio_file.name)}")
+                    print(f"  Start: {track_info['start_time']:.2f}s, End: {track_info['end_time']:.2f}s")
+                    print(f"  Volume: {track_info['volume']:.2f}, Duration: {track_info['duration']:.2f}s")
             
-            if not audio_tracks:
-                logger.warning(f"No valid audio tracks found for video {video.id}")
+            if not processed_tracks:
+                logger.warning("No valid background tracks after processing")
                 return False
             
-            # Prepare the final complex filter
-            if has_audio:
-                # First, check if we have the original audio file
-                original_audio_path = None
-                
-                if hasattr(video, 'audio_file') and video.audio_file:
-                    # Use the original audio file if available
-                    print(f"Using original audio file from video.audio_file")
-                    with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp_audio:
-                        with default_storage.open(video.audio_file.name, 'rb') as s3_audio:
-                            tmp_audio.write(s3_audio.read())
-                        original_audio_path = tmp_audio.name
-                        temp_audio_files.append(original_audio_path)
-                else:
-                    # Extract original audio from video
-                    print(f"Extracting original audio from video")
-                    original_audio_path = tempfile.mktemp(suffix='.mp3')
-                    temp_audio_files.append(original_audio_path)
-                    
-                    extract_cmd = [
-                        "ffmpeg",
-                        "-y",
-                        "-i", video_temp_path,
-                        "-vn",
-                        "-ac", "2",  # Ensure stereo
-                        "-ar", "44100",  # Standard sample rate
-                        "-c:a", "mp3",
-                        "-b:a", "320k",  # Maximum quality
-                        original_audio_path
-                    ]
-                    subprocess.run(extract_cmd, capture_output=True, check=True)
-                
-                # SIMPLE APPROACH: Keep original at full volume, add background music with reduced volume
-                filter_complex_parts_all = []
-                
-                # Original audio stays at FULL VOLUME - no changes!
-                filter_complex_parts_all.append("[0:a]volume=1[orig]")
-                
-                # Add all background music tracks with delays AND reduced volume
-                # Background music is already volume-adjusted during trimming
-                filter_complex_parts_all.extend(filter_complex_parts)
-                
-                # Use amerge to combine tracks without reducing original volume
-                # First, we'll layer all the background music together
-                if len(audio_tracks) > 1:
-                    # Mix all background music together first
-                    bg_mix_inputs = [f"[a{i+1}]" for i in range(len(audio_tracks))]
-                    bg_mix = f"{';'.join(bg_mix_inputs)}amix=inputs={len(audio_tracks)}:duration=longest[bgmix]"
-                    filter_complex_parts_all.append(bg_mix)
-                    
-                    # Then overlay the mixed background on the original
-                    final_mix = "[orig][bgmix]amerge=inputs=2[merged];[merged]pan=stereo|FL<0.5*FL+0.5*FC|FR<0.5*FR+0.5*FC[final]"
-                else:
-                    # Single background track - directly overlay on original
-                    final_mix = f"[orig][a1]amerge=inputs=2[merged];[merged]pan=stereo|FL<0.5*FL+0.5*FC|FR<0.5*FR+0.5*FC[final]"
-                
-                # Combine all filter parts
-                complete_filter = ';'.join(filter_complex_parts_all) + ';' + final_mix
-                
-                # Create the final command
-                ffmpeg_cmd = ["ffmpeg", "-y", "-i", original_audio_path]
-                
-                # Add all background music inputs
-                for track in audio_tracks:
-                    ffmpeg_cmd.extend(["-i", track['path']])
-                
-                mixed_audio_path = tempfile.mktemp(suffix='.mp3')
-                temp_audio_files.append(mixed_audio_path)
-                
-                ffmpeg_cmd.extend([
-                    "-filter_complex", complete_filter,
-                    "-map", "[final]",
-                    "-c:a", "mp3",
-                    "-b:a", "320k",  # Maximum quality
-                    mixed_audio_path
-                ])
-                
-                print(f"Filter complex: {complete_filter}")
-                print(f"Mixing all audio tracks with FULL ORIGINAL VOLUME: {' '.join(ffmpeg_cmd[:6])}...")
-                
-                subprocess.run(ffmpeg_cmd, capture_output=True, check=True)
-                
-                # Combine with video using maximum quality settings
-                final_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", video_temp_path,
-                    "-i", mixed_audio_path,
-                    "-c:v", "copy",
-                    "-c:a", "aac",
-                    "-b:a", "320k",  # Maximum quality
-                    "-ac", "2",
-                    "-ar", "44100",
-                    "-map", "0:v",
-                    "-map", "1:a",
-                    "-shortest",
-                    temp_output_path
-                ]
-                
-                subprocess.run(final_cmd, capture_output=True, check=True)
-                
-                # Combine with video
-                final_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", video_temp_path,
-                    "-i", mixed_audio_path,
-                    "-c:v", "copy",
-                    "-c:a", "aac",
-                    "-map", "0:v",
-                    "-map", "1:a",
-                    "-shortest",
-                    temp_output_path
-                ]
-                
-                subprocess.run(final_cmd, capture_output=True, check=True)
-            else:
-                # Video has no audio - create mixed background music directly
-                # Create a silent base
-                silent_base_path = tempfile.mktemp(suffix='.mp3')
-                temp_audio_files.append(silent_base_path)
-                
-                silence_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-f", "lavfi",
-                    "-i", f"anullsrc=r=44100:cl=stereo:d={video_duration}",
-                    "-c:a", "mp3",
-                    silent_base_path
-                ]
-                subprocess.run(silence_cmd, capture_output=True, check=True)
-                
-                # Build complex filter for all background music
-                filter_complex = ';'.join(filter_complex_parts)
-                mix_inputs = ["[0:a]"] + [f"[a{i+1}]" for i in range(len(audio_tracks))]
-                filter_complex += f";{';'.join(mix_inputs)}amix=inputs={len(mix_inputs)}:duration=first[final]"
-                
-                # Create mixed audio
-                ffmpeg_cmd = ["ffmpeg", "-y", "-i", silent_base_path]
-                
-                for track in audio_tracks:
-                    ffmpeg_cmd.extend(["-i", track['path']])
-                
-                ffmpeg_cmd.extend([
-                    "-filter_complex", filter_complex,
-                    "-map", "[final]",
-                    "-c:a", "mp3",
-                    tempfile.mktemp(suffix='.mp3')
-                ])
-                
-                mixed_audio_path = ffmpeg_cmd[-1]
-                temp_audio_files.append(mixed_audio_path)
-                
-                subprocess.run(ffmpeg_cmd, capture_output=True, check=True)
-                
-                # Combine with video
-                final_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", video_temp_path,
-                    "-i", mixed_audio_path,
-                    "-c:v", "copy",
-                    "-c:a", "aac",
-                    "-map", "0:v",
-                    "-map", "1:a",
-                    "-shortest",
-                    temp_output_path
-                ]
-                
-                subprocess.run(final_cmd, capture_output=True, check=True)
+            # Step 4: Create final mix
+            output_path = tempfile.mktemp(suffix='.mp4')
+            temp_files.append(output_path)
             
-            # Verify the output has audio
-            verify_cmd = [
-                "ffprobe",
-                "-v", "error",
-                "-select_streams", "a",
-                "-show_entries", "stream=codec_type",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                temp_output_path
-            ]
+            success = create_final_mix(
+                video_path=video_path,
+                processed_tracks=processed_tracks,
+                output_path=output_path,
+                has_original_audio=has_audio
+            )
             
-            verify_result = subprocess.run(verify_cmd, capture_output=True, text=True)
-            has_output_audio = verify_result.stdout.strip() == "audio"
+            if not success:
+                logger.error("Failed to create final mix")
+                return False
             
-            print(f"\n- Output video has audio track: {has_output_audio}")
+            # Step 5: Save output
+            output_filename = f"{os.path.splitext(os.path.basename(video.output.name))[0]}_with_bg.mp4"
+            with open(output_path, 'rb') as output_file:
+                video.output_with_bg.save(output_filename, File(output_file), save=True)
             
-            # Update the video output_with_bg file
-            filename = f"{os.path.splitext(os.path.basename(video.output.name))[0]}_with_bg.mp4"
-            with open(temp_output_path, 'rb') as f:
-                video.output_with_bg.save(filename, File(f), save=True)
-            
-            # Clean up all temporary files
-            for temp_file in [video_temp_path, temp_output_path] + temp_audio_files:
-                if temp_file and os.path.exists(temp_file):
-                    try:
-                        os.unlink(temp_file)
-                    except:
-                        pass
-            
-            logger.info(f"Successfully applied all background music to video {video.id}")
+            logger.info(f"Successfully applied background music to video {video.id}")
             return True
             
         except Exception as e:
-            logger.error(f"Error applying background music to video {video.id}: {str(e)}")
-            print(f"Error applying background music: {str(e)}")
-            
-            # Clean up temporary files on error
-            for temp_file in [video_temp_path, temp_output_path] + temp_audio_files if 'temp_audio_files' in locals() else []:
+            logger.error(f"Error processing video {video.id}: {str(e)}")
+            return False
+        
+        finally:
+            # Cleanup temporary files
+            for temp_file in temp_files:
                 if temp_file and os.path.exists(temp_file):
                     try:
                         os.unlink(temp_file)
-                    except:
-                        pass
-            return False
+                    except Exception as e:
+                        logger.warning(f"Failed to delete temp file {temp_file}: {e}")
 
 
-    def apply_all_background_music_watermark(self, bg_music_queryset):
+
+    def apply_all_background_music_watermark(self,  bg_music_queryset):
         """
-        Applies multiple background music tracks to the watermarked video output in a single operation.
-        All tracks are mixed together with proper timing and volume adjustments.
+        Applies multiple background music tracks to a video while preserving the original audio.
+        
+        This function:
+        - Downloads video and audio files from storage (e.g., S3)
+        - Processes each background track with proper timing and volume
+        - Mixes background music with original audio (if present)
+        - Saves the result back to storage
         
         Args:
-            bg_music_queryset: QuerySet of BackgroundMusic objects containing audio files and timing information
+            video: Video object with 'output' FileField and optional 'output_with_bg' FileField
+            bg_music_queryset: QuerySet of BackgroundMusic objects with:
+                - audio_file: FileField containing the audio file
+                - start_time: float, when to start playing this track
+                - end_time: float, when to stop playing this track
+                - volumn: float (0.0-1.0), volume level for this track
         
         Returns:
             bool: True if successful, False otherwise
         """
+        # Validate inputs
         video = self.video
-        
-        # Check if the video has an output file
         if not video.output_with_watermark:
-            logger.error(f"No watermarked output file found for video {video.id}")
+            logger.error(f"No output file found for video {video.id}")
             return False
         
-        # Check if there are any background music tracks to process
         if not bg_music_queryset.exists():
             logger.info(f"No background music tracks found for video {video.id}")
             return True
         
+        # Lists to track temporary files for cleanup
+        temp_files = []
+        
         try:
-            logger.info(f"Applying {bg_music_queryset.count()} background music tracks to watermarked video {video.id}")
+            logger.info(f"Processing {bg_music_queryset.count()} background music tracks for video {video.id}")
             
-            # Create temporary files for processing
+            # Step 1: Download video to temporary file
             with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp_video:
-                # Download the watermarked video file to temp location
-                with default_storage.open(video.output_with_watermark.name, 'rb') as s3_video:
-                    tmp_video.write(s3_video.read())
-                video_temp_path = tmp_video.name
+                with default_storage.open(video.output_with_watermark.name, 'rb') as video_file:
+                    tmp_video.write(video_file.read())
+                video_path = tmp_video.name
+                temp_files.append(video_path)
             
-            # Create output temp file
-            temp_output_path = tempfile.mktemp(suffix='.mp4')
+            # Step 2: Get video properties
+            video_info = get_media_info(video_path)
+            video_duration = video_info['duration']
+            has_audio = video_info['has_audio']
             
-            # Get video duration using ffprobe
-            video_duration_cmd = [
-                "ffprobe", 
-                "-v", "error", 
-                "-show_entries", "format=duration", 
-                "-of", "default=noprint_wrappers=1:nokey=1", 
-                video_temp_path
-            ]
-            video_duration = float(subprocess.check_output(video_duration_cmd).decode("utf-8").strip())
+            print(f"Video duration: {video_duration:.2f}s, Has audio: {has_audio}")
             
-            # Check if the video has an audio track
-            has_audio_cmd = [
-                "ffprobe",
-                "-v", "error",
-                "-select_streams", "a",
-                "-show_entries", "stream=codec_type",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                video_temp_path
-            ]
-            
-            has_audio_result = subprocess.run(has_audio_cmd, capture_output=True, text=True)
-            has_audio = has_audio_result.stdout.strip() == "audio"
-            
-            # Process all background music tracks
-            audio_tracks = []
-            temp_audio_files = []
-            filter_complex_parts = []
+            # Step 3: Process background music tracks
+            processed_tracks = []
             
             for idx, bg_music in enumerate(bg_music_queryset):
                 if not bg_music.audio_file:
                     logger.warning(f"Skipping background music {bg_music.id} - no audio file")
                     continue
                 
-                # Download the audio file to temp location
+                # Download audio file
                 with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp_audio:
-                    with default_storage.open(bg_music.audio_file.name, 'rb') as s3_audio:
-                        tmp_audio.write(s3_audio.read())
-                    audio_temp_path = tmp_audio.name
-                    temp_audio_files.append(audio_temp_path)
+                    with default_storage.open(bg_music.audio_file.name, 'rb') as audio_file:
+                        tmp_audio.write(audio_file.read())
+                    audio_path = tmp_audio.name
+                    temp_files.append(audio_path)
                 
-                # Get audio duration
-                audio_duration_cmd = [
-                    "ffprobe", 
-                    "-v", "error", 
-                    "-show_entries", "format=duration", 
-                    "-of", "default=noprint_wrappers=1:nokey=1", 
-                    audio_temp_path
-                ]
-                try:
-                    audio_duration = float(subprocess.check_output(audio_duration_cmd).decode("utf-8").strip())
-                except:
-                    audio_duration = 0
+                # Process timing
+                track_info = process_background_track(
+                    audio_path=audio_path,
+                    video_duration=video_duration,
+                    start_time=bg_music.start_time,
+                    end_time=bg_music.end_time,
+                    volume=getattr(bg_music, 'volumn'),
+                    track_index=idx
+                )
                 
-                # Calculate timing for this track
-                start_time = min(bg_music.start_time, video_duration)
-                
-                if bg_music.end_time <= bg_music.start_time or bg_music.end_time > video_duration:
-                    end_time = min(video_duration, start_time + audio_duration)
-                else:
-                    end_time = min(bg_music.end_time, video_duration)
-                
-                if end_time <= start_time:
-                    end_time = video_duration
-                
-                duration = end_time - start_time
-                
-                if duration <= 0:
-                    duration = min(audio_duration, video_duration - start_time)
-                    end_time = start_time + duration
+                if track_info:
+                    processed_tracks.append(track_info)
+                    temp_files.append(track_info['processed_path'])
                     
-                    if duration <= 0:
-                        start_time = 0
-                        duration = min(audio_duration, video_duration)
-                        end_time = start_time + duration
-                
-                # Use volume from bg_music (range 0 to 1)
-                volume_level = bg_music.volumn if hasattr(bg_music, 'volumn') and 0 <= bg_music.volumn <= 1 else 0.3
-                
-                # Print report for this track
-                print(f"\nBackground Music Track {idx + 1} (Watermarked):")
-                print(f"- Music File: {os.path.basename(bg_music.audio_file.name)}")
-                print(f"- Start Time: {start_time:.2f} seconds")
-                print(f"- End Time: {end_time:.2f} seconds")
-                print(f"- Volume Level: {volume_level:.2f}")
-                print(f"- Duration: {duration:.2f} seconds")
-                
-                # Create trimmed and volume-adjusted version of this track
-                trimmed_audio_path = tempfile.mktemp(suffix='.mp3')
-                temp_audio_files.append(trimmed_audio_path)
-                
-                audio_trim_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", audio_temp_path,
-                    "-ss", "0",
-                    "-t", str(duration),
-                    "-af", f"volume={volume_level}",
-                    "-c:a", "mp3",
-                    trimmed_audio_path
-                ]
-                
-                subprocess.run(audio_trim_cmd, capture_output=True, check=True)
-                
-                # Add this track to the filter complex
-                audio_tracks.append({
-                    'path': trimmed_audio_path,
-                    'start_time': start_time,
-                    'end_time': end_time,
-                    'volume': volume_level,
-                    'index': idx + 1  # Start from 1 (0 is reserved for original audio)
-                })
-                
-                # Create filter for this track with proper timing
-                filter_complex_parts.append(f"[{idx + 1}:a]adelay={int(start_time*1000)}|{int(start_time*1000)}[a{idx + 1}]")
+                    # Print track info
+                    print(f"\nTrack {idx + 1}: {os.path.basename(bg_music.audio_file.name)}")
+                    print(f"  Start: {track_info['start_time']:.2f}s, End: {track_info['end_time']:.2f}s")
+                    print(f"  Volume: {track_info['volume']:.2f}, Duration: {track_info['duration']:.2f}s")
             
-            if not audio_tracks:
-                logger.warning(f"No valid audio tracks found for video {video.id}")
+            if not processed_tracks:
+                logger.warning("No valid background tracks after processing")
                 return False
             
-            # Prepare the final complex filter
-            if has_audio:
-                # Extract original audio and reduce its volume during background music
-                original_audio_path = tempfile.mktemp(suffix='.mp3')
-                temp_audio_files.append(original_audio_path)
-                
-                extract_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", video_temp_path,
-                    "-vn",
-                    "-c:a", "mp3",
-                    original_audio_path
-                ]
-                subprocess.run(extract_cmd, capture_output=True, check=True)
-                
-                # Create a single filter complex for all audio mixing
-                filter_complex = []
-                
-                # Add volume control for original audio
-                volume_sections = []
-                for track in audio_tracks:
-                    volume_sections.append(f"volume=0.7:enable='between(t,{track['start_time']},{track['end_time']})'")
-                
-                if volume_sections:
-                    filter_complex.append(f"[0:a]{','.join(volume_sections)}[orig]")
-                else:
-                    filter_complex.append("[0:a]volume=1[orig]")
-                
-                # Add all background music tracks with delays
-                filter_complex.extend(filter_complex_parts)
-                
-                # Mix all tracks together
-                mix_inputs = ["[orig]"] + [f"[a{i+1}]" for i in range(len(audio_tracks))]
-                filter_complex.append(f"{';'.join(filter_complex)};{';'.join(mix_inputs)}amix=inputs={len(mix_inputs)}:duration=first[final]")
-                
-                # Create the final command
-                ffmpeg_cmd = ["ffmpeg", "-y", "-i", original_audio_path]
-                
-                # Add all background music inputs
-                for track in audio_tracks:
-                    ffmpeg_cmd.extend(["-i", track['path']])
-                
-                ffmpeg_cmd.extend([
-                    "-filter_complex", ';'.join(filter_complex),
-                    "-map", "[final]",
-                    "-c:a", "mp3",
-                    tempfile.mktemp(suffix='.mp3')
-                ])
-                
-                print(f"Mixing all audio tracks for watermarked video: {' '.join(ffmpeg_cmd[:10])}...")  # Print first part of command
-                mixed_audio_path = ffmpeg_cmd[-1]
-                temp_audio_files.append(mixed_audio_path)
-                
-                subprocess.run(ffmpeg_cmd, capture_output=True, check=True)
-                
-                # Combine with video
-                final_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", video_temp_path,
-                    "-i", mixed_audio_path,
-                    "-c:v", "copy",
-                    "-c:a", "aac",
-                    "-map", "0:v",
-                    "-map", "1:a",
-                    "-shortest",
-                    temp_output_path
-                ]
-                
-                subprocess.run(final_cmd, capture_output=True, check=True)
-            else:
-                # Video has no audio - create mixed background music directly
-                # Create a silent base
-                silent_base_path = tempfile.mktemp(suffix='.mp3')
-                temp_audio_files.append(silent_base_path)
-                
-                silence_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-f", "lavfi",
-                    "-i", f"anullsrc=r=44100:cl=stereo:d={video_duration}",
-                    "-c:a", "mp3",
-                    silent_base_path
-                ]
-                subprocess.run(silence_cmd, capture_output=True, check=True)
-                
-                # Build complex filter for all background music
-                filter_complex = ';'.join(filter_complex_parts)
-                mix_inputs = ["[0:a]"] + [f"[a{i+1}]" for i in range(len(audio_tracks))]
-                filter_complex += f";{';'.join(mix_inputs)}amix=inputs={len(mix_inputs)}:duration=first[final]"
-                
-                # Create mixed audio
-                ffmpeg_cmd = ["ffmpeg", "-y", "-i", silent_base_path]
-                
-                for track in audio_tracks:
-                    ffmpeg_cmd.extend(["-i", track['path']])
-                
-                ffmpeg_cmd.extend([
-                    "-filter_complex", filter_complex,
-                    "-map", "[final]",
-                    "-c:a", "mp3",
-                    tempfile.mktemp(suffix='.mp3')
-                ])
-                
-                mixed_audio_path = ffmpeg_cmd[-1]
-                temp_audio_files.append(mixed_audio_path)
-                
-                subprocess.run(ffmpeg_cmd, capture_output=True, check=True)
-                
-                # Combine with video
-                final_cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", video_temp_path,
-                    "-i", mixed_audio_path,
-                    "-c:v", "copy",
-                    "-c:a", "aac",
-                    "-map", "0:v",
-                    "-map", "1:a",
-                    "-shortest",
-                    temp_output_path
-                ]
-                
-                subprocess.run(final_cmd, capture_output=True, check=True)
+            # Step 4: Create final mix
+            output_path = tempfile.mktemp(suffix='.mp4')
+            temp_files.append(output_path)
             
-            # Verify the output has audio
-            verify_cmd = [
-                "ffprobe",
-                "-v", "error",
-                "-select_streams", "a",
-                "-show_entries", "stream=codec_type",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                temp_output_path
-            ]
+            success = create_final_mix(
+                video_path=video_path,
+                processed_tracks=processed_tracks,
+                output_path=output_path,
+                has_original_audio=has_audio
+            )
             
-            verify_result = subprocess.run(verify_cmd, capture_output=True, text=True)
-            has_output_audio = verify_result.stdout.strip() == "audio"
+            if not success:
+                logger.error("Failed to create final mix")
+                return False
             
-            print(f"\n- Watermarked output video has audio track: {has_output_audio}")
+            # Step 5: Save output
+            output_filename = f"{os.path.splitext(os.path.basename(video.output.name))[0]}_with_bg.mp4"
+            with open(output_path, 'rb') as output_file:
+                video.output_with_bg_watermark.save(output_filename, File(output_file), save=True)
             
-            # Update the video output_with_bg_watermark file
-            filename = f"{os.path.splitext(os.path.basename(video.output.name))[0]}_with_bg_watermark.mp4"
-            with open(temp_output_path, 'rb') as f:
-                video.output_with_bg_watermark.save(filename, File(f), save=True)
-            
-            # Clean up all temporary files
-            for temp_file in [video_temp_path, temp_output_path] + temp_audio_files:
-                if temp_file and os.path.exists(temp_file):
-                    try:
-                        os.unlink(temp_file)
-                    except:
-                        pass
-            
-            logger.info(f"Successfully applied all background music to watermarked video {video.id}")
+            logger.info(f"Successfully applied background music to video {video.id}")
             return True
             
         except Exception as e:
-            logger.error(f"Error applying background music to watermarked video {video.id}: {str(e)}")
-            print(f"Error applying background music: {str(e)}")
-            
-            # Clean up temporary files on error
-            for temp_file in [video_temp_path, temp_output_path] + temp_audio_files if 'temp_audio_files' in locals() else []:
+            logger.error(f"Error processing video {video.id}: {str(e)}")
+            return False
+        
+        finally:
+            # Cleanup temporary files
+            for temp_file in temp_files:
                 if temp_file and os.path.exists(temp_file):
                     try:
                         os.unlink(temp_file)
-                    except:
-                        pass
-            return False
+                    except Exception as e:
+                        logger.warning(f"Failed to delete temp file {temp_file}: {e}")
 
 
         

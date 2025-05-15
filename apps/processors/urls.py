@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    BackgroundMusicViewSet, 
+    # BackgroundMusicViewSet, 
     # upload_background_music,
     add_music_from_url,
     delete_clip,

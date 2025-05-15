@@ -209,9 +209,32 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
         print(video.id)
         with video.srt_file.open('r') as srt_file:
             srt_data = json.load(srt_file)
-        
+        threshold = (
+            Subclip.objects
+            .filter(clip__sequence__lt=instance.clip.sequence, clip__video=instance.clip.video)
+            .order_by('clip__sequence')
+            .last()
+            .end_time
+            if Subclip.objects.filter(clip__sequence__lt=instance.clip.sequence).exists()
+            else 0
+        )
+        print(f"Threshold for subclip: {threshold}")
+        print(Subclip.objects
+            .filter(clip__sequence__lt=instance.clip.sequence)
+            .order_by('clip__sequence')
+            .last())
+        # Convert threshold to float if needed
+        threshold = float(threshold)
+
+        # Filter fragments after the threshold
+        filtered_fragments = [
+            fragment for fragment in srt_data['fragments']
+            if float(fragment['begin']) >= threshold
+]
+
         # Get all fragments sorted by begin time
-        all_fragments = sorted(srt_data.get('fragments', []), key=lambda x: float(x.get('begin', 0)))
+        all_fragments = sorted(filtered_fragments, key=lambda x: float(x.get('begin', 0)))
+
         print(f"Total fragments in SRT: {len(all_fragments)}")
         
         # Get subclip text in lowercase for comparison
@@ -235,7 +258,7 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
         print(f"Full transcript: '{full_transcript}'")
         print(f"Searching for: '{subclip_text}'")
         print("-----------------------------------")
-        print(srt_data)
+        print(filtered_fragments)
         print("-----------------------------------")
         # Find the subclip text in the transcript
         if subclip_text in full_transcript:
@@ -447,7 +470,7 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
 
 
 @receiver(pre_save, sender=Clips)
-def configure_subclip(sender, instance:Clips, **kwargs):
+def configure_subclip_from_clips(sender, instance:Clips, **kwargs):
     # Check if this is an existing instance being updated
     if instance.pk:
         try:

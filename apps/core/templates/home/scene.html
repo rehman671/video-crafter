@@ -719,51 +719,98 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("Added folder: {{ folder.name }} with {{ folder.assets|length }} total assets");
         {% endfor %}
 
-        function handleTopicChange(event) {
-            const selectedTopic = event.target.value;
-            console.log("Topic selected:", selectedTopic);
-            popupTopic = selectedTopic;
-            
-            // Show/hide video clips based on the selected folder
-            const videoSelect = document.getElementById('videoSelect');
-            if (!videoSelect) return;
-
-            // Show options for the selected folder, hide others
-            const optgroups = videoSelect.querySelectorAll('optgroup');
-            optgroups.forEach(group => {
-                if (group.getAttribute('data-folder') === selectedTopic) {
-                    group.style.display = 'block';
-                } else {
-                    group.style.display = 'none';
-                }
-            });
-
-            // Enable all options in the selected group
-            const options = videoSelect.querySelectorAll(`optgroup[data-folder="${selectedTopic}"] option`);
-            options.forEach(option => {
-                option.disabled = false;
-            });
-
-            // Reset selected video
-            popupVideoClip = "";
-            videoSelect.value = "";
-            
-            // Update submit button state
-            const submitButton = document.getElementById('submit-clip');
-            if (submitButton) {
-                submitButton.disabled = !popupFile;
-            }
+function handleTopicChange(event) {
+    const selectedTopic = event.target.value;
+    console.log("Topic selected:", selectedTopic);
+    popupTopic = selectedTopic;
+    
+    // Clear file input when dropdown is used
+    const fileInput = document.getElementById('slide_file');
+    if (fileInput) {
+        fileInput.value = '';
+        popupFile = null;
+        
+        // Reset file upload UI
+        const uploadText = document.getElementById("upload-text");
+        if (uploadText) {
+            uploadText.textContent = "Choose File";
         }
+        
+        const clearFileBtn = document.getElementById("clear-file");
+        if (clearFileBtn) {
+            clearFileBtn.style.display = "none";
+        }
+    }
+    
+    // Show/hide video clips based on the selected folder
+    const videoSelect = document.getElementById('videoSelect');
+    if (!videoSelect) return;
+
+    // Clear previous selection
+    videoSelect.value = "";
+    popupVideoClip = "";
+    
+    // Reset all options to hidden
+    const allOptions = videoSelect.querySelectorAll('option');
+    allOptions.forEach(option => {
+        if (option.value !== "") { // Don't hide the default "Select A Video Clip" option
+            option.style.display = 'none';
+            option.disabled = true;
+        }
+    });
+    const allOptGroups = videoSelect.querySelectorAll('optgroup');
+    allOptGroups.forEach(optgroup => {
+        optgroup.style.display = 'none'; // Hide all optgroups initially
+    });
+    
+    // Show only options for the selected folder
+    const selectedOptgroup = videoSelect.querySelector(`optgroup[data-folder="${selectedTopic}"]`);
+    if (selectedOptgroup) {
+        // Make the optgroup visible
+        selectedOptgroup.style.display = 'block';
+        
+        // Enable and show all options within this optgroup
+        const optionsInGroup = selectedOptgroup.querySelectorAll('option');
+        optionsInGroup.forEach(option => {
+            option.style.display = 'block';
+            option.disabled = false;
+        });
+    }
+    
+    // Update submit button state
+    const submitButton = document.getElementById('submit-clip');
+    if (submitButton) {
+        submitButton.disabled = true;
+    }
+}
 
         function handleVideoClipChange(event) {
             const selectedVideo = event.target.value;
             console.log("Video selected:", selectedVideo);
             popupVideoClip = selectedVideo;
             
+            // Clear file input when video is selected
+            const fileInput = document.getElementById('slide_file');
+            if (fileInput) {
+                fileInput.value = '';
+                popupFile = null;
+                
+                // Reset file upload UI
+                const uploadText = document.getElementById("upload-text");
+                if (uploadText) {
+                    uploadText.textContent = "Choose File";
+                }
+                
+                const clearFileBtn = document.getElementById("clear-file");
+                if (clearFileBtn) {
+                    clearFileBtn.style.display = "none";
+                }
+            }
+            
             // Enable submit button
             const submitButton = document.getElementById('submit-clip');
             if (submitButton) {
-                submitButton.disabled = false;
+                submitButton.disabled = !selectedVideo;
             }
         }
 
@@ -774,12 +821,26 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (fileInput && fileInput.files && fileInput.files.length > 0) {
                 popupFile = fileInput.files[0];
-                console.log("Selected file:", popupFile.name);
+                const fileName = popupFile.name;
+                console.log("File selected:", fileName);
                 
-                // Update UI
+                // Clear dropdown selections when file is chosen
+                const topicSelect = document.getElementById('selected_topic');
+                const videoSelect = document.getElementById('videoSelect');
+                
+                if (topicSelect) {
+                    topicSelect.value = "";
+                    popupTopic = "";
+                }
+                
+                if (videoSelect) {
+                    videoSelect.value = "";
+                    popupVideoClip = "";
+                }
+                
+                // Update upload text UI
                 const uploadText = document.getElementById("upload-text");
                 if (uploadText) {
-                    const fileName = popupFile.name;
                     const lastDotIndex = fileName.lastIndexOf('.');
                     const nameWithoutExt = lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : '';
                     const extension = lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : '';
@@ -1673,15 +1734,15 @@ document.addEventListener('DOMContentLoaded', addNotificationStyles);
                                             </div>
                                             <div class="form-group">
                                                 <select id="videoSelect" name="selected_video" class="form-select" onchange="handleVideoClipChange(event)" ${assetsDisabled}>
-                                                    <option value="" disabled ${!popupVideoClip ? 'selected' : ''}>Select A Video Clip</option>
-                                                    {% for asset_folder in asset_folders %}
-                                                        <optgroup label="{{ asset_folder.name }}" data-folder="{{ asset_folder.name }}" style="display: ${popupTopic === '{{ asset_folder.name }}' ? 'block' : 'none'};">
-                                                            {% for video in asset_folder.assets %}
-                                                            <option value="{{ video.key }}" data-folder="{{ asset_folder.name }}" ${popupTopic === "{{ asset_folder.name }}" && popupVideoClip === "{{ video.key }}" ? 'selected' : ''}>{{ video.filename }}</option>
-                                                            {% endfor %}
-                                                        </optgroup>
-                                                    {% endfor %}
-                                                </select>
+                                    <option value="" disabled ${!popupVideoClip ? 'selected' : ''}>Select A Video Clip</option>
+                                    {% for asset_folder in asset_folders %}
+                                        <optgroup label="{{ asset_folder.name }}" data-folder="{{ asset_folder.name }}" style="display: none;">
+                                            {% for video in asset_folder.assets %}
+                                            <option value="{{ video.key }}" data-url="{{ video.s3_url }}" style="display: none;" disabled>{{ video.filename }}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                    {% endfor %}
+                                </select>
                                                 ${assetsMessage}
                                                 <p style="color: red; font-size: 13px; margin-top: 5px;" id="error-slide">${popupErrorMessage}</p>
                                             </div>

@@ -324,7 +324,159 @@ window.addEventListener('DOMContentLoaded', () => {
     handleFontSizeChange({ target: document.getElementById('mySlider') });
     handleBorderRadiusChange({ target: document.getElementById('subtitleBorderRadiusSlider') });
 });
+function handleTopicChange(event) {
+    const selectedTopic = event.target.value;
+    console.log("Topic selected:", selectedTopic);
+    popupTopic = selectedTopic;
+    
+    // Clear file input when dropdown is used
+    const fileInput = document.getElementById('slide_file');
+    if (fileInput) {
+        fileInput.value = '';
+        popupFile = null;
+        
+        // Reset file upload UI
+        const uploadText = document.getElementById("upload-text");
+        if (uploadText) {
+            uploadText.textContent = "Choose File";
+        }
+        
+        const clearFileBtn = document.getElementById("clear-file");
+        if (clearFileBtn) {
+            clearFileBtn.style.display = "none";
+        }
+    }
+    
+    // Show/hide video clips based on the selected folder
+    const videoSelect = document.getElementById('videoSelect');
+    if (!videoSelect) return;
 
+    // Clear all options except the default one
+    videoSelect.innerHTML = '<option value="" disabled selected>Select A Video Clip</option>';
+    
+    if (selectedTopic && window.assetFolders && window.assetFolders[selectedTopic]) {
+        const videos = window.assetFolders[selectedTopic];
+        console.log(`Found ${videos.length} videos for folder: ${selectedTopic}`);
+        
+        if (videos.length > 0) {
+            // Add options directly without optgroup
+            videos.forEach(video => {
+                const option = document.createElement('option');
+                option.value = video.key;
+                option.textContent = video.filename;
+                option.setAttribute('data-url', video.url);
+                videoSelect.appendChild(option);
+            });
+        }
+    }
+    
+    // Reset selected video
+    popupVideoClip = "";
+    
+    // Update submit button state
+    const submitButton = document.getElementById('submit-clip');
+    if (submitButton) {
+        submitButton.disabled = true;
+    }
+}
+function handleVideoClipChange(event) {
+    const selectedVideo = event.target.value;
+    console.log("Video selected:", selectedVideo);
+    popupVideoClip = selectedVideo;
+    
+    const fileInput = document.getElementById('slide_file');
+    if (fileInput) {
+        fileInput.value = '';
+        popupFile = null;
+
+        const uploadText = document.getElementById("upload-text");
+        if (uploadText) {
+            uploadText.textContent = "Choose File";
+        }
+
+        const clearFileBtn = document.getElementById("clear-file");
+        if (clearFileBtn) {
+            clearFileBtn.style.display = "none";
+        }
+    }
+
+    const submitButton = document.getElementById('submit-clip');
+    if (submitButton) {
+        submitButton.disabled = false;
+    }
+
+    renderPopup();
+}
+
+function handlePopupFileChange(e) {
+    console.log("File change event triggered");
+    const fileInput = document.getElementById('slide_file');
+
+    if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        popupFile = fileInput.files[0];
+        console.log("Selected file:", popupFile.name);
+
+        // Clear asset selection
+        const topicSelect = document.getElementById('selected_topic');
+        const videoSelect = document.getElementById('videoSelect');
+        if (topicSelect) {
+            topicSelect.value = "";
+            popupTopic = "";
+        }
+        if (videoSelect) {
+            videoSelect.value = "";
+            popupVideoClip = "";
+        }
+
+        // Update UI
+        const uploadText = document.getElementById("upload-text");
+        if (uploadText) {
+            const fileName = popupFile.name;
+            const lastDotIndex = fileName.lastIndexOf('.');
+            const nameWithoutExt = lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : '';
+            const extension = lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : '';
+            const truncatedName = nameWithoutExt.length > 7 ? nameWithoutExt.substring(0, 7) : nameWithoutExt;
+            uploadText.textContent = truncatedName + extension;
+        }
+
+        // Show clear file button
+        const clearFileBtn = document.getElementById("clear-file");
+        if (clearFileBtn) {
+            clearFileBtn.style.display = "inline";
+        }
+
+        // Enable submit button
+        const submitButton = document.getElementById("submit-clip");
+        if (submitButton) {
+            submitButton.disabled = false;
+        }
+
+        renderPopup();
+    } else {
+        console.log("No file selected or file input not found");
+        popupFile = null;
+
+        // Reset UI
+        const uploadText = document.getElementById("upload-text");
+        if (uploadText) {
+            uploadText.textContent = "Choose File";
+        }
+
+        // Hide clear file button
+        const clearFileBtn = document.getElementById("clear-file");
+        if (clearFileBtn) {
+            clearFileBtn.style.display = "none";
+        }
+
+        // Disable submit button if no video clip selected
+        const submitButton = document.getElementById("submit-clip");
+        if (submitButton) {
+            submitButton.disabled = !popupVideoClip;
+        }
+
+        renderPopup();
+    }
+}
 
 function handleResolutionChange(newResolution) {
     document.querySelector(`input[name="resolution"][value="${newResolution}"]`).checked = true;

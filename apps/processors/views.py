@@ -29,7 +29,8 @@ from django.core.files import File
 import time
 from .handler.openai import OpenAIHandler
 import logging
-
+from django.db.models.signals import pre_save, post_save
+from .signals import configure_subclip
 logger = logging.getLogger(__name__)
 
 class BackgroundMusicViewSet(viewsets.ModelViewSet):
@@ -881,21 +882,30 @@ def background_music_view(request, video_id):
                         bg_level_key = f'{base_name}_bg_level'
                         if bg_level_key in request.POST:
                             bg_music.volumn = float(request.POST[bg_level_key])/100
-                        
-                        # Check if a new file was uploaded for this existing music
+                          # Check if a new file was uploaded for this existing music                      
                         file_key = f'{base_name}_file'
                         if file_key in request.FILES:
+                            print(f"Updating file for existing music {music_id} with new file {request.FILES[file_key].name}")
+                            # Delete the old file first if it exists
+                            if bg_music.audio_file:
+                                try:
+                                    storage = bg_music.audio_file.storage
+                                    if storage.exists(bg_music.audio_file.name):
+                                        storage.delete(bg_music.audio_file.name)
+                                except Exception as e:
+                                    print(f"Error deleting old file: {e}")
+                            
+                            # Now assign the new file
                             bg_music.audio_file = request.FILES[file_key]
                         
                         # Save the updated music
                         bg_music.save()
                         
-                        # Re-apply the background music - UNCOMMENTED
+                        # # Re-apply the background music
                         # video_processor = VideoProcessorService(video)
                         # result = video_processor.apply_background_music(bg_music)
                         # result = video_processor.apply_background_music_watermark(bg_music)
                         print(f"Updated background music: {bg_music}")
-                        
                     except (BackgroundMusic.DoesNotExist, ValueError) as e:
                         print(f"Error updating background music: {e}")
             
@@ -908,18 +918,18 @@ def background_music_view(request, video_id):
             # Process new music tracks
             i = 1
             # Check for new form fields with patterns like bg_music_1, bg_music_2, etc.
-            while i <= 10:  # Assuming a maximum of 10 new music tracks
-                # Only process if an audio file is provided or if we have a valid bg_music value to use
-                if f'bg_music_{i}' in request.FILES or (f'bg_music_{i}' in request.POST and request.POST[f'bg_music_{i}'].strip()):
-                    # Get time values in format like "00:00"
-                    from_when_str = request.POST.get(f'from_when_{i}', '00:00')
-                    to_when_str = request.POST.get(f'to_when_{i}', '')
-                    
-                    # Convert time strings to seconds
-                    start_seconds = 0
-                    if from_when_str:
-                        # If there's a _seconds field, use that
-                        seconds_key = f"from_when_{i}_seconds"
+            while i <= 10:  # Assuming a maximum of 10 new music tracks                    # For new track creation - only process if there's no existing track reference
+                    existing_id_key = f'existing_music_{i}_id'
+                    if not request.POST.get(existing_id_key) and (f'bg_music_{i}' in request.FILES or (f'bg_music_{i}' in request.POST and request.POST[f'bg_music_{i}'].strip())):
+                        # Get time values in format like "00:00" 
+                        from_when_str = request.POST.get(f'from_when_{i}', '00:00')
+                        to_when_str = request.POST.get(f'to_when_{i}', '')
+                        
+                        # Convert time strings to seconds
+                        start_seconds = 0
+                        if from_when_str:
+                            # If there's a _seconds field, use that
+                            seconds_key = f"from_when_{i}_seconds"
                         if seconds_key in request.POST and request.POST[seconds_key]:
                             start_seconds = int(request.POST[seconds_key])
                         else:
@@ -973,7 +983,7 @@ def background_music_view(request, video_id):
                         # result = video_processor.apply_background_music_watermark(bg_music)
                         
                         print(f"Added new background music: {bg_music}")
-                i += 1
+                    i += 1
 
             return redirect('download_video', video_id=video.id)
     
@@ -1209,6 +1219,7 @@ def handle_clip_assignment(request):
                     # Create or update the subclip
                     clip.is_changed = True
                     clip.save()
+                    pre_save.disconnect(configure_subclip, sender=Subclip)
                     subclip, created = Subclip.objects.get_or_create(
                         clip=clip, 
                         text=selected_text,
@@ -1217,9 +1228,9 @@ def handle_clip_assignment(request):
                             'end_time': 5.0
                         }
                     )
-                    
                     # Save the file directly to the FileField - this handles storage automatically
                     subclip.video_file.save(filename, video_file, save=True)
+                    pre_save.connect(configure_subclip, sender=Subclip)
     
                     return JsonResponse({
                         'success': True,
@@ -1764,7 +1775,7 @@ def _process_video_background(video:Video, user_id, status_obj):
         from apps.processors.services.runpod_videoprocessor import RunPodVideoProcessor
         processor = RunPodVideoProcessor(video.id)
 
-        for subclip in Subclip.objects.filter(clip__video=video):
+        for subclip in Subclip.objects.filter(clip__video=video).order_by('clip__sequence', 'start_time'):
             subclip.save()
         # Submit job to RunPod
         if is_text_changed is False:

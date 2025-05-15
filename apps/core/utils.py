@@ -3,7 +3,19 @@ from typing import Dict, List, Optional, Set, Any, Union
 from pathlib import Path
 from .services.s3_service import StorageFactory, S3Config
 import os
-
+import subprocess
+import os
+from pathlib import Path
+import tempfile
+import logging
+import time
+from apps.processors.models import Video, Clips, Subclip, BackgroundMusic
+import concurrent.futures
+from functools import partial
+from django.core.files import File
+from django.core.files.storage import default_storage
+from django.conf import settings
+# Set up logging
 logger = logging.getLogger(__name__)
 
 def get_user_asset_tree(user_id: str, 
@@ -400,3 +412,176 @@ def cleanup_old_assets(days: int = 1, storage=None) -> Dict[str, Any]:
         "deleted_files": deleted_files,
         "errors": errors
     }
+
+
+
+
+
+def get_media_info(file_path):
+    """Get duration and audio presence information from media file."""
+    try:
+        # Get duration
+        duration_cmd = [
+            "ffprobe", "-v", "error",
+            "-show_entries", "format=duration",
+            "-of", "default=noprint_wrappers=1:nokey=1",
+            file_path
+        ]
+        duration = float(subprocess.check_output(duration_cmd).decode().strip())
+        
+        # Check for audio stream
+        audio_cmd = [
+            "ffprobe", "-v", "error",
+            "-select_streams", "a",
+            "-show_entries", "stream=codec_type",
+            "-of", "default=noprint_wrappers=1:nokey=1",
+            file_path
+        ]
+        audio_result = subprocess.run(audio_cmd, capture_output=True, text=True)
+        has_audio = audio_result.stdout.strip() == "audio"
+        
+        return {
+            'duration': duration,
+            'has_audio': has_audio
+        }
+    except Exception as e:
+        logger.error(f"Error getting media info: {e}")
+        return {'duration': 0, 'has_audio': False}
+
+
+def process_background_track(audio_path, video_duration, start_time, end_time, volume, track_index):
+    """Process a single background music track with timing and volume adjustments."""
+    try:
+        # Get audio duration
+        audio_info = get_media_info(audio_path)
+        audio_duration = audio_info['duration']
+        
+        # Calculate proper timing
+        start_time = max(0, min(start_time, video_duration))
+        
+        if end_time <= start_time or end_time > video_duration:
+            end_time = min(video_duration, start_time + audio_duration)
+        else:
+            end_time = min(end_time, video_duration)
+        
+        duration = end_time - start_time
+        
+        if duration <= 0:
+            logger.warning(f"Invalid duration for track {track_index}")
+            return None
+        
+        # Ensure volume is in valid range
+        volume = max(0.0, min(1.0, volume))
+        
+        # Create processed audio file
+        output_path = tempfile.mktemp(suffix='.mp3')
+        
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", audio_path,
+            "-ss", "0",  # Start from beginning of audio file
+            "-t", str(duration),  # Duration to extract
+            "-af", f"volume={volume},aformat=channel_layouts=stereo:sample_rates=44100",
+            "-c:a", "mp3",
+            "-b:a", "192k",
+            output_path
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True)
+        
+        if result.returncode != 0:
+            logger.error(f"Failed to process track {track_index}: {result.stderr}")
+            return None
+        
+        return {
+            'processed_path': output_path,
+            'start_time': start_time,
+            'end_time': end_time,
+            'duration': duration,
+            'volume': volume,
+            'index': track_index
+        }
+    
+    except Exception as e:
+        logger.error(f"Error processing track {track_index}: {e}")
+        return None
+
+
+def create_final_mix(video_path, processed_tracks, output_path, has_original_audio):
+    """Create the final video with mixed audio tracks."""
+    try:
+        # Build FFmpeg command
+        cmd = ["ffmpeg", "-y", "-i", video_path]
+        
+        # Add all processed audio tracks as inputs
+        for track in processed_tracks:
+            cmd.extend(["-i", track['processed_path']])
+        
+        # Build filter complex
+        filter_parts = []
+        
+        if has_original_audio:
+            # Convert original audio to stereo for consistent mixing
+            filter_parts.append("[0:a]volume=2,aformat=channel_layouts=stereo:sample_rates=44100[orig]")
+            
+            # Add delay filters for each background track
+            for i, track in enumerate(processed_tracks):
+                delay_ms = int(track['start_time'] * 1000)
+                filter_parts.append(f"[{i+1}:a]adelay={delay_ms}|{delay_ms}[bg{i}]")
+            
+            # Mix all audio streams
+            if len(processed_tracks) == 1:
+                # Single background track
+                filter_parts.append("[orig][bg0]amix=inputs=2:duration=first:weights=2 2[final]")
+            else:
+                # Multiple background tracks
+                bg_inputs = ''.join([f"[bg{i}]" for i in range(len(processed_tracks))])
+                filter_parts.append(f"{bg_inputs}amix=inputs={len(processed_tracks)}:duration=longest[bgmix]")
+                filter_parts.append("[orig][bgmix]amix=inputs=2:duration=first:weights=2 2[final]")
+        else:
+            # No original audio - just mix background tracks
+            for i, track in enumerate(processed_tracks):
+                delay_ms = int(track['start_time'] * 1000)
+                filter_parts.append(f"[{i}:a]adelay={delay_ms}|{delay_ms}[bg{i}]")
+            
+            if len(processed_tracks) == 1:
+                filter_parts.append("[bg0]anull[final]")
+            else:
+                bg_inputs = ''.join([f"[bg{i}]" for i in range(len(processed_tracks))])
+                filter_parts.append(f"{bg_inputs}amix=inputs={len(processed_tracks)}:duration=longest[final]")
+        
+        # Combine filter parts
+        filter_complex = ';'.join(filter_parts)
+        
+        # Complete the command
+        cmd.extend([
+            "-filter_complex", filter_complex,
+            "-map", "0:v",  # Video from original
+            "-map", "[final]",  # Mixed audio
+            "-c:v", "copy",  # Copy video stream
+            "-c:a", "aac",  # Encode audio as AAC
+            "-b:a", "256k",  # Audio bitrate
+            "-ar", "44100",  # Sample rate
+            "-ac", "2",  # Stereo
+            output_path
+        ])
+        
+        print(f"\nCreating final mix with {len(processed_tracks)} background tracks")
+        print(f"Filter: {filter_complex}")
+        
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            logger.error(f"FFmpeg error: {result.stderr}")
+            return False
+        
+        # Verify output
+        output_info = get_media_info(output_path)
+        print(f"Output: Duration={output_info['duration']:.2f}s, Has audio={output_info['has_audio']}")
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error creating final mix: {e}")
+        return False
+
