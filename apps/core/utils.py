@@ -585,3 +585,142 @@ def create_final_mix(video_path, processed_tracks, output_path, has_original_aud
         logger.error(f"Error creating final mix: {e}")
         return False
 
+
+
+def process_video_speed(video_file, speed):
+    temp_file_path = None
+    processed_video_path = None
+    
+    try:
+        # Save uploaded file to a temporary location
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
+            for chunk in video_file.chunks():
+                temp_file.write(chunk)
+            temp_file_path = temp_file.name
+
+        # Create temp output file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as output_file:
+            processed_video_path = output_file.name
+
+        # First check if the video has audio streams
+        check_audio_cmd = [
+            "ffprobe", "-v", "error", "-select_streams", "a:0", 
+            "-show_entries", "stream=codec_type", "-of", "csv=p=0", temp_file_path
+        ]
+        
+        has_audio = False
+        try:
+            result = subprocess.run(
+                check_audio_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            has_audio = "audio" in result.stdout
+            print(f"Audio stream detected: {has_audio}")
+        except Exception as e:
+            print(f"Error checking audio stream: {str(e)}")
+            has_audio = False
+
+        # FFmpeg command based on whether audio is present
+        if has_audio:
+            print(f"Processing video with audio at speed {speed}x")
+            ffmpeg_cmd = [
+                "ffmpeg", "-y", "-i", temp_file_path,
+                "-filter_complex",
+                f"[0:v]setpts={1/speed}*PTS[v];[0:a]atempo={min(speed, 2.0)}[a]",
+                "-map", "[v]", "-map", "[a]",
+                "-c:v", "libx264", "-preset", "fast", "-c:a", "aac", "-b:a", "192k",
+                processed_video_path
+            ]
+        else:
+            print(f"Processing video without audio at speed {speed}x")
+            ffmpeg_cmd = [
+                "ffmpeg", "-y", "-i", temp_file_path,
+                "-filter:v", f"setpts={1/speed}*PTS",
+                "-c:v", "libx264", "-preset", "fast",
+                processed_video_path
+            ]
+
+        # Run FFmpeg
+        print(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
+        result = subprocess.run(
+            ffmpeg_cmd, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE
+        )
+        
+        if result.returncode != 0:
+            error_output = result.stderr.decode()
+            print(f"FFmpeg error: {error_output}")
+            return None
+
+        # Clean up input temp file
+        if temp_file_path and os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+            
+        return processed_video_path
+
+    except Exception as e:
+        print(f"Error processing video: {str(e)}")
+        
+        # Clean up in case of exceptions
+        if temp_file_path and os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+        if processed_video_path and os.path.exists(processed_video_path):
+            os.remove(processed_video_path)
+            
+        return None
+    temp_file_path = None
+    processed_video_path = None
+    
+    try:
+        # Save uploaded file to a temporary location
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
+            for chunk in video_file.chunks():
+                temp_file.write(chunk)
+            temp_file_path = temp_file.name
+
+        # Create temp output file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as output_file:
+            processed_video_path = output_file.name
+
+        # FFmpeg command
+        ffmpeg_cmd = [
+            "ffmpeg", "-y", "-i", temp_file_path,
+            "-filter_complex",
+            f"[0:v]setpts={1/speed}*PTS[v];[0:a]atempo={min(speed, 2.0)}[a]",
+            "-map", "[v]", "-map", "[a]",
+            "-c:v", "libx264", "-preset", "fast", "-c:a", "aac", "-b:a", "192k",
+            processed_video_path
+        ]
+
+        # Run FFmpeg
+        print(f"Processing video with speed {speed}x")
+        print(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
+        result = subprocess.run(
+            ffmpeg_cmd, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE
+        )
+        
+        if result.returncode != 0:
+            print(f"FFmpeg error: {result.stderr.decode()}")
+            return None
+
+        # Clean up input temp file
+        if temp_file_path and os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+        print(f"Processed video saved to {processed_video_path}")
+        return processed_video_path
+
+    except Exception as e:
+        print(f"Error processing video: {str(e)}")
+        
+        # Clean up in case of exceptions
+        if temp_file_path and os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+        if processed_video_path and os.path.exists(processed_video_path):
+            os.remove(processed_video_path)
+            
+        return None

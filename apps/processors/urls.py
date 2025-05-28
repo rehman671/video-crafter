@@ -14,7 +14,10 @@ from .views import (
     start_video_processing,  # Add this import
     get_processing_status,  # Add this import
     delete_background_music,  # Add this import
-    generate_scene_suggestions
+    generate_scene_suggestions,
+    save_draft,
+    update_video_credentials,
+get_processing_status_with_credentials
 )
 
 # router = DefaultRouter()
@@ -35,4 +38,7 @@ urlpatterns = [
     path('videos/<int:video_id>/processing-status/', get_processing_status, name='get_processing_status'),  # Add this URL pattern
     path('delete-background-music/', delete_background_music, name='delete_background_music'),  # Add this URL pattern
     path('generate-scene-suggestions/', generate_scene_suggestions, name='generate_scene_suggestions'),  # Add this URL pattern
+    path('save-draft/', save_draft, name='save_draft'),  # Add this URL pattern
+        path('videos/<int:video_id>/update-credentials/', update_video_credentials, name='update_video_credentials'),
+    path('videos/<int:video_id>/processing-status/', get_processing_status_with_credentials, name='get_processing_status_with_credentials'),
 ]

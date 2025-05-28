@@ -60,11 +60,11 @@ function handleDeleteMp3(id) {
     }
     
     // For new tracks, just remove locally
-    if (mp3Templates.length > 1) {
+    // if (mp3Templates.length > 1) {
         removeTemplateFromList(id);
-    } else {
-        alert("You must have at least one MP3 track.");
-    }
+    // } else {
+    //     alert("You must have at least one MP3 track.");
+    // }
 }
 
 function removeTemplateFromList(id) {

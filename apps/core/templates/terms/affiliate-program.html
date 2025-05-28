@@ -2,14 +2,15 @@
 <html lang="en">
 
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/styles/terms.css">
-    <link rel="stylesheet" href="/styles/landing-bck.css">
-    <link rel="stylesheet" href="/styles/landing.css">
-    <link rel="stylesheet" href="/styles/landing_style-bck.css">
-    <link rel="stylesheet" href="/styles/landing_style.css">
-    <link rel="icon" href="/images/iconlogo.svg">
+    <link rel="stylesheet" href="{% static 'styles/terms.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/landing-bck.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/landing_style-bck.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/landing_style.css' %}">
+    <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
   <title>VideoCrafter.io</title>
   <style>
     .hamburger {
@@ -54,20 +55,20 @@
 </head>
 <body>
 <div class="background">
-    <img src="/images/lines.svg" class="lines" alt="" />
+    <img src="{% static 'images/lines.svg' %}" class="lines" alt="" />
     <!-- Ellipse Image 1 -->
-    <img src="/images/elipse.svg" alt="" class="ellipse2" />
+    <img src="{% static 'images/elipse.svg' %}" alt="" class="ellipse2" />
     <!-- Ellipse Image 2 -->
-    <img src="/images/elipse.svg" alt="" class="ellipse2" />
+    <img src="{% static 'images/elipse.svg' %}" alt="" class="ellipse2" />
 </div>
 <header class="header">
     <div class="container">
         <a href="/" class="logo" style="padding: 20px;">
-            <img src="/images/logo-small.svg" alt="Logo" />
+            <img src="{% static 'images/logo-small.svg' %}" alt="Logo" />
         </a>
 
         <a href="/" class="logo-small">
-            <img src="/images/logo.svg" alt="Logo" />
+            <img src="{% static 'images/logo.svg' %}" alt="Logo" />
         </a>
 
         <!-- Desktop Links -->
@@ -81,7 +82,7 @@
 
     <!-- Hamburger Icon -->
     <label id="hamburger">
-        <img src="/images/hamburger.svg" alt="menu" class="hamburger" />
+        <img src="{% static 'images/hamburger.svg' %}" alt="menu" class="hamburger" />
     </label>
 
     <!-- Mobile Menu -->
@@ -134,7 +135,7 @@
             <div class="footer-content">
                 <div class="footer-branding">
                     <a href="/" class="logo" id="footer-logo">
-                        <img src="/images/footer-logo.svg" alt="" />
+                        <img src="{% static 'images/footer-logo.svg' %}" alt="" />
                     </a>
                     <p class="tagline">
                         Revolutionary software that lets you create professional-grade Videos in just minutes, with no
@@ -154,10 +155,10 @@
                     <div class="footer-column">
                         <h3>HELP</h3>
                         <ul>
-                            <li><a href="/terms/terms-and-conditions.html">Terms & Conditions</a></li>
-                            <li><a href="/terms/privacy.html">Privacy Policy</a></li>
-                            <li><a href="/terms/refund.html">Refund Policy</a></li>
-                            <li><a href="/terms/affiliate-program.html">Affiliate Program Terms</a></li>
+                            <li><a href="{% url 'terms_and_condition' %}">Terms & Conditions</a></li>
+                            <li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
+                            <li><a href="{% url 'refund' %}">Refund Policy</a></li>
+                            <li><a href="{% url 'affiliate_program' %}">Affiliate Program Terms</a></li>
                         </ul>
                     </div>
                 </div>
@@ -167,7 +168,19 @@
             </div>
         </footer>
     </div>
-    <script src="/js/before-login-header-toggle.js"></script>
+    <script src="{% static 'js/before-login-header-toggle.js' %}"></script>
 </body>
-
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/67bde19ce1b723191240f344/1ikurij78';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </html>

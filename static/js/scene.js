@@ -34,6 +34,18 @@ window.MAX_SUBTITLE_LENGTH = MAX_SUBTITLE_LENGTH;
 console.log("MAX_SUBTITLE_LENGTH:", MAX_SUBTITLE_LENGTH);
 console.log("Video Type:", window.VIDEOTYPE);
 // Initialize on page load
+function getCleanTextContent(htmlText) {
+    if (!htmlText) return "";
+    
+    // Create a temporary div to parse HTML and extract clean text
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlText;
+    
+    // Get clean text content without any HTML tags
+    const cleanText = tempDiv.textContent || tempDiv.innerText || "";
+    
+    return cleanText.trim();
+}
 
 
 // Helper function to check if a file is a video file
@@ -42,12 +54,12 @@ function isVideoFile(file) {
     const fileName = file.name.toLowerCase();
     const extension = fileName.substring(fileName.lastIndexOf('.'));
     const isVideo = videoExtensions.includes(extension);
-    
+
     // Log the check result for debugging
     if (!isVideo) {
         console.log(`🔍 Not a video file: ${file.name} (extension: ${extension})`);
     }
-    
+
     return isVideo;
 }
 
@@ -128,20 +140,34 @@ function showProgress(percent, message) {
 async function createZipFromFolder(files) {
     // Define video extensions to accept
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.m4v', '.mpg', '.mpeg', '.3gp', '.3g2'];
-    
+
     // Filter to include only video files and log what's being excluded
     const allFiles = Array.from(files);
     const videoFiles = [];
     const excludedFiles = [];
-    
+    // Add this after filtering video files but before creating the zip
+    // Check if total video file size exceeds limit
+    let totalSize = 0;
+    for (const file of videoFiles) {
+        totalSize += file.size;
+    }
+
+    if (totalSize > MAX_UPLOAD_SIZE) {
+        console.error(`⚠️ Total video size (${formatFileSize(totalSize)}) exceeds the 10 GB limit!`);
+        alert(`Total video size (${formatFileSize(totalSize)}) exceeds the 10 GB limit. Please select a smaller folder or fewer video files.`);
+        return null;
+    }
+
+    // Also add this to the logs
+    console.log(`Total video size: ${formatFileSize(totalSize)}`);
     console.log(`\n🎬 PROCESSING FOLDER FOR VIDEO FILES`);
     console.log(`Total files to process: ${allFiles.length}`);
-    
+
     for (const file of allFiles) {
         const fileName = file.name.toLowerCase();
         const extension = fileName.substring(fileName.lastIndexOf('.'));
         const isVideo = videoExtensions.includes(extension);
-        
+
         if (isVideo) {
             videoFiles.push(file);
             console.log(`✅ INCLUDING VIDEO: ${file.webkitRelativePath} (${extension})`);
@@ -150,20 +176,20 @@ async function createZipFromFolder(files) {
             console.log(`❌ EXCLUDING NON-VIDEO: ${file.webkitRelativePath} (${extension || 'no extension'})`);
         }
     }
-    
+
     // Log summary
     console.log(`\n📊 FILE FILTERING SUMMARY:`);
     console.log(`Total files found: ${allFiles.length}`);
     console.log(`Video files to include: ${videoFiles.length}`);
     console.log(`Non-video files excluded: ${excludedFiles.length}`);
-    
+
     // Log excluded file types breakdown
     const excludedTypes = {};
     excludedFiles.forEach(file => {
         const ext = file.name.split('.').pop() || 'no-extension';
         excludedTypes[ext] = (excludedTypes[ext] || 0) + 1;
     });
-    
+
     if (Object.keys(excludedTypes).length > 0) {
         console.log(`\n🚫 EXCLUDED FILE TYPES:`);
         Object.entries(excludedTypes).forEach(([ext, count]) => {
@@ -784,6 +810,9 @@ function deleteSlide(id) {
     deleteClipFromServer(id);
     activeSlideIds.delete(id);
     renderSlides();
+    if(isFreePlan){
+        checkSubtitleLimit()
+    }
 }
 
 function toggleEdit(slideId) {
@@ -981,31 +1010,70 @@ function handleUndo(slideId) {
     if (confirm("Are You Sure You Want To Reset This Sentence?")) {
         slides = slides.map(slide => {
             if (slide.id === slideId) {
+                let cleanText = "";
+                
                 if (!slide.originalText || slide.originalText.trim() === "") {
-                    const cleanedText = slide.markedText.replace(
-                        /<mark class="handlePopupSubmit">([^<]+)<\/mark>/gi,
-                        "$1"
-                    );
-                    return {
-                        ...slide,
-                        text: cleanedText,
-                        markedText: cleanedText,
-                        isEditing: false
-                    };
+                    // If no original text, extract clean text from markedText
+                    cleanText = getCleanTextContent(slide.markedText || slide.text || "");
+                    console.log("Undo: No original text, cleaning marked text:", {
+                        markedText: slide.markedText,
+                        cleanedText: cleanText,
+                        cleanedLength: cleanText.length
+                    });
+                } else {
+                    // Use original text, but make sure it's clean too
+                    cleanText = getCleanTextContent(slide.originalText);
+                    console.log("Undo: Using original text:", {
+                        originalText: slide.originalText,
+                        cleanedText: cleanText,
+                        cleanedLength: cleanText.length
+                    });
                 }
+                
                 return {
                     ...slide,
-                    text: slide.originalText,
-                    markedText: slide.originalText,
+                    text: cleanText,
+                    markedText: cleanText, // Reset marked text to clean text
                     isEditing: false
                 };
             }
             return slide;
         });
+        
         activeSlideIds.delete(slideId);
         renderSlides();
     }
 }
+
+// function handleUndo(slideId) {
+//     if (confirm("Are You Sure You Want To Reset This Sentence?")) {
+//         slides = slides.map(slide => {
+//             if (slide.id === slideId) {
+//                 if (!slide.originalText || slide.originalText.trim() === "") {
+//                     const cleanedText = slide.markedText.replace(
+//                         /<mark class="handlePopupSubmit">([^<]+)<\/mark>/gi,
+//                         "$1"
+//                     );
+//                     return {
+//                         ...slide,
+//                         text: cleanedText,
+//                         markedText: cleanedText,
+//                         isEditing: false
+//                     };
+//                 }
+//                 return {
+//                     ...slide,
+//                     text: slide.originalText,
+//                     markedText: slide.originalText,
+//                     isEditing: false
+//                 };
+//             }
+//             return slide;
+//         });
+//         activeSlideIds.delete(slideId);
+//         renderSlides();
+//     }
+// }
 
 // function handleTextSelection(slideId) {
 //     const slide = slides.find(s => s.id === slideId);
@@ -1688,29 +1756,100 @@ function validateSubtitleLength(text) {
 }
 
 function handlePopupFileChange(e) {
-    const selectedFile = e.target.files[0];
-    popupFile = selectedFile;
-    popupTopic = ""; // Clear topic to enforce single selection
-    popupVideoClip = ""; // Clear video clip
-    popupErrorMessage = "";
-    const uploadText = document.getElementById("upload-text");
-    const submitButton = document.getElementById("submit-clip");
-    if (selectedFile) {
-        const fileName = selectedFile.name;
-        const lastDotIndex = fileName.lastIndexOf('.');
-        const nameWithoutExt = lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : '';
-        const extension = lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : '';
-        const truncatedName = nameWithoutExt.length > 7 ? nameWithoutExt.substring(0, 7) : nameWithoutExt;
-        uploadText.textContent = truncatedName + extension;
-        document.getElementById("clear-file").style.display = "inline";
-        submitButton.disabled = false; // Enable submit
+    console.log("File change event triggered");
+    const fileInput = document.getElementById('slide_file');
+    
+    if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        popupFile = fileInput.files[0];
+        const fileName = popupFile.name;
+        const fileSizeMB = popupFile.size / (1024 * 1024); // convert bytes to MB
+
+        // 500 MB size limit
+        if (fileSizeMB > 500) {
+            alert("File size exceeds 500MB. Please choose a smaller file.");
+            fileInput.value = ''; // Reset the file input
+            popupFile = null;
+
+            // Reset UI
+            const uploadText = document.getElementById("upload-text");
+            if (uploadText) {
+                uploadText.textContent = "Choose File";
+            }
+
+            const clearFileBtn = document.getElementById("clear-file");
+            if (clearFileBtn) {
+                clearFileBtn.style.display = "none";
+            }
+
+            const submitButton = document.getElementById("submit-clip");
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+
+            return;
+        }
+
+        console.log("File selected:", fileName);
+        
+        // Clear dropdown selections when file is chosen
+        const topicSelect = document.getElementById('selected_topic');
+        const videoSelect = document.getElementById('videoSelect');
+        
+        if (topicSelect) {
+            topicSelect.value = "";
+            popupTopic = "";
+        }
+        
+        if (videoSelect) {
+            videoSelect.value = "";
+            popupVideoClip = "";
+        }
+        
+        // Update upload text UI
+        const uploadText = document.getElementById("upload-text");
+        if (uploadText) {
+            const lastDotIndex = fileName.lastIndexOf('.');
+            const nameWithoutExt = lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : '';
+            const extension = lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : '';
+            const truncatedName = nameWithoutExt.length > 7 ? nameWithoutExt.substring(0, 7) : nameWithoutExt;
+            uploadText.textContent = truncatedName + extension;
+        }
+        
+        // Show clear file button
+        const clearFileBtn = document.getElementById("clear-file");
+        if (clearFileBtn) {
+            clearFileBtn.style.display = "inline";
+        }
+        
+        // Enable submit button
+        const submitButton = document.getElementById("submit-clip");
+        if (submitButton) {
+            submitButton.disabled = false;
+        }
     } else {
-        uploadText.textContent = "Choose File";
-        document.getElementById("clear-file").style.display = "none";
-        submitButton.disabled = !popupVideoClip;
+        console.log("No file selected or file input not found");
+        popupFile = null;
+        
+        // Reset UI
+        const uploadText = document.getElementById("upload-text");
+        if (uploadText) {
+            uploadText.textContent = "Choose File";
+        }
+        
+        // Hide clear file button
+        const clearFileBtn = document.getElementById("clear-file");
+        if (clearFileBtn) {
+            clearFileBtn.style.display = "none";
+        }
+        
+        // Disable submit button if no video clip selected
+        const submitButton = document.getElementById("submit-clip");
+        if (submitButton) {
+            submitButton.disabled = !popupVideoClip;
+        }
     }
-    renderPopup();
 }
+
 
 function clearPopupFile() {
     popupFile = null;
@@ -1726,41 +1865,41 @@ function handleTopicChange(event) {
     const selectedTopic = event.target.value;
     console.log("Topic selected:", selectedTopic);
     popupTopic = selectedTopic;
-    
+
     // Clear file input when dropdown is used
     const fileInput = document.getElementById('slide_file');
     if (fileInput) {
         fileInput.value = '';
         popupFile = null;
-        
+
         // Reset file upload UI
         const uploadText = document.getElementById("upload-text");
         if (uploadText) {
             uploadText.textContent = "Choose File";
         }
-        
+
         const clearFileBtn = document.getElementById("clear-file");
         if (clearFileBtn) {
             clearFileBtn.style.display = "none";
         }
     }
-    
+
     // Rebuild video select dropdown with only the selected folder's videos
     const videoSelect = document.getElementById('videoSelect');
     if (!videoSelect) return;
 
     // Clear all options except the default one
     videoSelect.innerHTML = '<option value="" disabled selected>Select A Video Clip</option>';
-    
+
     if (selectedTopic && window.assetFolders && window.assetFolders[selectedTopic]) {
         const videos = window.assetFolders[selectedTopic];
-        
+
         if (videos.length > 0) {
             // Create optgroup for the selected folder only
             const optgroup = document.createElement('optgroup');
             optgroup.label = selectedTopic;
             optgroup.setAttribute('data-folder', selectedTopic);
-            
+
             // Add options for each video
             videos.forEach(video => {
                 const option = document.createElement('option');
@@ -1769,14 +1908,14 @@ function handleTopicChange(event) {
                 option.setAttribute('data-url', video.url);
                 optgroup.appendChild(option);
             });
-            
+
             videoSelect.appendChild(optgroup);
         }
     }
-    
+
     // Reset selected video
     popupVideoClip = "";
-    
+
     // Update submit button state
     const submitButton = document.getElementById('submit-clip');
     if (submitButton) {
@@ -2142,7 +2281,7 @@ function renderSlides(send_update = true) {
             updateClipOnServer(slide.id, slide.text);
         }
 
-        const charCount = slide.text ? slide.text.length : 0;
+        const charCount = slide.text ? getCleanTextContent(slide.text).length : 0;
         const charCountClass = charCount > MAX_SUBTITLE_LENGTH ? 'char-count-exceeded' : 'char-count';
 
         tr.innerHTML = `
@@ -2162,7 +2301,7 @@ function renderSlides(send_update = true) {
                             placeholder="Type Your Script Here (max ${MAX_SUBTITLE_LENGTH} characters)"
                             onkeydown="handleKeyPress(event, ${slide.id})"
                             ${charCount > MAX_SUBTITLE_LENGTH ? 'style="border: 1px solid red;"' : ''}
-                        >${slide.text}</textarea>
+                        >${getCleanTextContent(slide.text)}</textarea>
                         <div class="${charCountClass}">${charCount}/${MAX_SUBTITLE_LENGTH}</div>
                     ` : `
                         <span>${slide.markedText || slide.text || ""}</span>
@@ -2619,6 +2758,20 @@ function renderModals() {
 
 // Modified handleFolderUpload function to process each subfolder individually
 async function handleFolderUpload() {
+
+    // Add this code after the first few checks in handleFolderUpload
+    // Double-check the folder size before proceeding
+    let totalSize = 0;
+    for (const file of folderFiles) {
+        totalSize += file.size;
+    }
+
+    if (totalSize > MAX_UPLOAD_SIZE) {
+        alert(`Folder size (${formatFileSize(totalSize)}) exceeds the 10 GB limit. Please select a smaller folder.`);
+        return;
+    }
+
+    // Continue with the rest of the function...
     // Check if user is on a free plan and show overlay if needed
     if (typeof isFreePlan !== 'undefined' && isFreePlan) {
         document.getElementById('freeUserOverlay').style.display = 'flex';
@@ -2741,7 +2894,7 @@ async function handleFolderUpload() {
 
                 // Update status
                 const folderIndex = completedSubfolders + 1;
-                document.getElementById('uploadStatus').textContent = 
+                document.getElementById('uploadStatus').textContent =
                     `Processing subfolder: ${subfolderName} (${folderIndex}/${totalSubfolders}) - ${videoFiles.length} video files`;
 
                 console.log(`Creating ZIP for subfolder: ${subfolderName} with ${videoFiles.length} video files`);
@@ -2770,7 +2923,7 @@ async function handleFolderUpload() {
                 const progressPercent = Math.round((completedSubfolders / totalSubfolders) * 100);
                 document.getElementById('progressBar').style.width = `${progressPercent}%`;
                 document.getElementById('progressPercent').textContent = `${progressPercent}%`;
-                document.getElementById('uploadStatus').textContent = 
+                document.getElementById('uploadStatus').textContent =
                     `Processed ${completedSubfolders}/${totalSubfolders} subfolders (${successCount} successful)`;
 
             } catch (error) {
@@ -2781,7 +2934,7 @@ async function handleFolderUpload() {
                 const progressPercent = Math.round((completedSubfolders / totalSubfolders) * 100);
                 document.getElementById('progressBar').style.width = `${progressPercent}%`;
                 document.getElementById('progressPercent').textContent = `${progressPercent}%`;
-                document.getElementById('uploadStatus').textContent = 
+                document.getElementById('uploadStatus').textContent =
                     `Error on subfolder ${subfolderName}: ${error.message}`;
             }
         }
@@ -2798,7 +2951,7 @@ async function handleFolderUpload() {
             }, 2000);
         } else if (successCount > 0) {
             // Some uploads successful
-            document.getElementById('uploadStatus').textContent = 
+            document.getElementById('uploadStatus').textContent =
                 `Completed with ${successCount}/${totalSubfolders} subfolders uploaded successfully.`;
 
             // Reload page after a brief delay
@@ -2807,7 +2960,7 @@ async function handleFolderUpload() {
             }, 3000);
         } else {
             // All uploads failed
-            document.getElementById('uploadStatus').textContent = 
+            document.getElementById('uploadStatus').textContent =
                 `Failed to upload any subfolders. Please try again.`;
 
             // Reset button to allow retry
@@ -2831,21 +2984,21 @@ async function handleFolderUpload() {
 async function createZipFromSubfolder(files, subfolderName) {
     // Define video extensions to accept
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.m4v', '.mpg', '.mpeg', '.3gp', '.3g2'];
-    
+
     console.log(`\n🗂️ Processing subfolder: ${subfolderName}`);
     console.log(`Files passed to function: ${files.length}`);
-    
+
     // Since files passed are already filtered, we should only have video files
     // but let's double-check and log what we find
     const allFiles = Array.from(files);
     const videoFiles = [];
     const unexpectedFiles = [];
-    
+
     for (const file of allFiles) {
         const fileName = file.name.toLowerCase();
         const extension = fileName.substring(fileName.lastIndexOf('.'));
         const isVideo = videoExtensions.includes(extension);
-        
+
         if (isVideo) {
             videoFiles.push(file);
             console.log(`✅ VIDEO in subfolder: ${file.webkitRelativePath}`);
@@ -2854,7 +3007,7 @@ async function createZipFromSubfolder(files, subfolderName) {
             console.log(`⚠️ UNEXPECTED NON-VIDEO in subfolder: ${file.webkitRelativePath}`);
         }
     }
-    
+
     if (unexpectedFiles.length > 0) {
         console.warn(`⚠️ Found ${unexpectedFiles.length} unexpected non-video files in pre-filtered list`);
     }
@@ -2882,7 +3035,7 @@ async function createZipFromSubfolder(files, subfolderName) {
             // Get the relative path starting from the subfolder
             const pathParts = file.webkitRelativePath.split('/');
             const relativePath = pathParts.slice(1).join('/'); // Remove the main folder name
-            
+
             console.log(`📦 Adding to subfolder ZIP: ${relativePath}`);
 
             // Create a promise to read the file
@@ -2893,7 +3046,7 @@ async function createZipFromSubfolder(files, subfolderName) {
 
             // Update progress
             processedCount++;
-            document.getElementById('uploadStatus').textContent = 
+            document.getElementById('uploadStatus').textContent =
                 `${progressText} - Adding video file ${processedCount} of ${totalFiles}`;
         }
 
@@ -2904,7 +3057,7 @@ async function createZipFromSubfolder(files, subfolderName) {
             compression: "DEFLATE",
             compressionOptions: { level: 6 }
         }, (metadata) => {
-            document.getElementById('uploadStatus').textContent = 
+            document.getElementById('uploadStatus').textContent =
                 `${progressText} - Compressing: ${metadata.percent.toFixed(1)}%`;
         });
 
@@ -2916,7 +3069,7 @@ async function createZipFromSubfolder(files, subfolderName) {
         return zipFile;
     } catch (error) {
         console.error(`❌ Error creating ZIP for subfolder ${subfolderName}:`, error);
-        document.getElementById('uploadStatus').textContent = 
+        document.getElementById('uploadStatus').textContent =
             `Error creating ZIP for subfolder ${subfolderName}: ${error.message}`;
         return null;
     }
@@ -3199,73 +3352,240 @@ function handleFolderFileChange(event) {
     document.getElementById('fileName2').textContent = folderFileName;
     document.getElementById('fileName2').style.color = '#00000080';
 
-    // Count subfolders and video files for better UI feedback
+    // Calculate total folder size
+    let totalSize = 0;
     if (folderFiles && folderFiles.length > 0) {
         console.log(`\n📁 FOLDER SELECTED: ${folderName}`);
         console.log(`Total files in folder: ${folderFiles.length}`);
-        
-        // Filter to get only video files and log what we find
+
+        // Calculate total size and filter video files
         const allFiles = Array.from(folderFiles);
         const videoFiles = [];
         const nonVideoFiles = [];
-        
+
         for (const file of allFiles) {
+            totalSize += file.size;
+
             if (isVideoFile(file)) {
                 videoFiles.push(file);
             } else {
                 nonVideoFiles.push(file);
             }
         }
-        
+
+        // Log size information
+        console.log(`Total folder size: ${formatFileSize(totalSize)}`);
         console.log(`Video files found: ${videoFiles.length}`);
         console.log(`Non-video files found: ${nonVideoFiles.length}`);
-        
-        // Log file type breakdown
-        const fileTypes = {};
-        allFiles.forEach(file => {
-            const ext = file.name.split('.').pop() || 'no-extension';
-            fileTypes[ext] = (fileTypes[ext] || 0) + 1;
-        });
-        
-        console.log(`\n📄 FILE TYPE BREAKDOWN:`);
-        Object.entries(fileTypes).forEach(([ext, count]) => {
-            console.log(`  .${ext}: ${count} file(s)`);
-        });
 
-        // Get unique subfolders containing video files
-        const subfolders = new Set();
-        let totalVideoCount = 0;
+        // Check if folder exceeds the size limit
+        const isSizeExceeded = updateFolderSizeIndicator(totalSize);
 
-        for (const file of videoFiles) {
-            const pathParts = file.webkitRelativePath.split('/');
-            if (pathParts.length > 2) { // Main folder / subfolder / file
-                subfolders.add(pathParts[1]);
-            }
-            totalVideoCount++;
-        }
+        if (isSizeExceeded) {
+            // Create or update error message
+            let sizeErrorElement = document.getElementById('folder-size-error');
+            if (!sizeErrorElement) {
+                sizeErrorElement = document.createElement('div');
+                sizeErrorElement.id = 'folder-size-error';
+                sizeErrorElement.className = 'folder-size-error';
 
-        if (subfolders.size > 0 || totalVideoCount > 0) {
-            const subfoldersText = document.createElement('div');
-            subfoldersText.className = 'subfolders-info';
-            subfoldersText.innerHTML = `
-                <div>Contains ${subfolders.size} subfolder${subfolders.size > 1 ? 's' : ''}</div>
-                <div>Total video files: ${totalVideoCount}</div>
-                <div style="color: #888;">Non-video files: ${nonVideoFiles.length} (will be excluded)</div>
-            `;
-            subfoldersText.style.fontSize = '12px';
-            subfoldersText.style.color = '#666';
-            subfoldersText.style.marginTop = '5px';
-
-            // Add or update subfolder info
-            const existingInfo = document.querySelector('.subfolders-info');
-            if (existingInfo) {
-                existingInfo.replaceWith(subfoldersText);
-            } else {
                 const filenameElement = document.getElementById('fileName2');
                 if (filenameElement && filenameElement.parentNode) {
-                    filenameElement.parentNode.appendChild(subfoldersText);
+                    filenameElement.parentNode.appendChild(sizeErrorElement);
+                }
+            }
+
+            sizeErrorElement.textContent = `Folder size (${formatFileSize(totalSize)}) exceeds the 10 GB limit`;
+            sizeErrorElement.classList.add('shake-animation');
+            setTimeout(() => {
+                sizeErrorElement.classList.remove('shake-animation');
+            }, 500);
+
+            // Disable upload button
+            const uploadButton = document.getElementById('videoUploadButton');
+            if (uploadButton) {
+                uploadButton.disabled = true;
+                uploadButton.style.opacity = '0.5';
+                uploadButton.title = "Folder exceeds 10 GB size limit";
+            }
+        } else {
+            // Remove error message if it exists
+            const sizeErrorElement = document.getElementById('folder-size-error');
+            if (sizeErrorElement) {
+                sizeErrorElement.remove();
+            }
+
+            // Enable upload button
+            const uploadButton = document.getElementById('videoUploadButton');
+            if (uploadButton) {
+                uploadButton.disabled = false;
+                uploadButton.style.opacity = '1';
+                uploadButton.title = "";
+            }
+
+            // Display folder info
+            const fileTypes = {};
+            allFiles.forEach(file => {
+                const ext = file.name.split('.').pop() || 'no-extension';
+                fileTypes[ext] = (fileTypes[ext] || 0) + 1;
+            });
+
+            console.log(`\n📄 FILE TYPE BREAKDOWN:`);
+            Object.entries(fileTypes).forEach(([ext, count]) => {
+                console.log(`  .${ext}: ${count} file(s)`);
+            });
+
+            // Get unique subfolders containing video files
+            const subfolders = new Set();
+            let totalVideoCount = 0;
+
+            for (const file of videoFiles) {
+                const pathParts = file.webkitRelativePath.split('/');
+                if (pathParts.length > 2) { // Main folder / subfolder / file
+                    subfolders.add(pathParts[1]);
+                }
+                totalVideoCount++;
+            }
+
+            if (subfolders.size > 0 || totalVideoCount > 0) {
+                const subfoldersText = document.createElement('div');
+                subfoldersText.className = 'subfolders-info';
+                subfoldersText.innerHTML = `
+                    <div>Contains ${subfolders.size} subfolder${subfolders.size > 1 ? 's' : ''}</div>
+                    <div>Total video files: ${totalVideoCount}</div>
+                `;
+                subfoldersText.style.fontSize = '12px';
+                subfoldersText.style.color = '#666';
+                subfoldersText.style.marginTop = '5px';
+
+                // Add or update subfolder info
+                const existingInfo = document.querySelector('.subfolders-info');
+                if (existingInfo) {
+                    existingInfo.replaceWith(subfoldersText);
+                } else {
+                    const filenameElement = document.getElementById('fileName2');
+                    if (filenameElement && filenameElement.parentNode) {
+                        filenameElement.parentNode.appendChild(subfoldersText);
+                    }
                 }
             }
         }
     }
 }
+
+// Define the maximum file size constant in bytes
+const MAX_UPLOAD_SIZE = 10 * 1024 * 1024 * 1024; // 10 GB in bytes
+
+// Helper function to format file size in human-readable format
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+    else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    else return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+}
+
+// Function to create and update the folder size indicator
+function updateFolderSizeIndicator(totalSize) {
+    const maxSize = MAX_UPLOAD_SIZE;
+    const percentage = Math.min((totalSize / maxSize) * 100, 100);
+
+    // Create container if it doesn't exist
+    let sizeIndicatorContainer = document.getElementById('size-indicator-container');
+    if (!sizeIndicatorContainer) {
+        sizeIndicatorContainer = document.createElement('div');
+        sizeIndicatorContainer.id = 'size-indicator-container';
+        sizeIndicatorContainer.style.marginTop = '8px';
+
+        const filenameElement = document.getElementById('fileName2');
+        if (filenameElement && filenameElement.parentNode) {
+            filenameElement.parentNode.appendChild(sizeIndicatorContainer);
+        }
+    }
+
+    // Determine color based on percentage
+    let statusClass = 'size-ok';
+    let statusIcon = 'ri-check-line';
+
+    if (percentage > 90) {
+        statusClass = 'size-danger';
+        statusIcon = 'ri-error-warning-line';
+    } else if (percentage > 70) {
+        statusClass = 'size-warning';
+        statusIcon = 'ri-alert-line';
+    }
+
+    // Create HTML for the indicator
+
+
+    return percentage >= 100; // Return true if size exceeds limit
+}
+
+
+// Add CSS styles for size indicator
+document.addEventListener('DOMContentLoaded', function () {
+    const style = document.createElement('style');
+    style.textContent = `
+        .folder-size-error {
+            color: #FF5050;
+            margin-top: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .shake-animation {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .size-warning {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        
+        .size-warning i {
+            color: #FF5050;
+            margin-right: 5px;
+        }
+        
+        .size-warning.size-ok i {
+            color: #4CAF50;
+        }
+        
+        .size-progress-container {
+            margin-top: 5px;
+            width: 100%;
+            height: 6px;
+            background-color: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .size-progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .size-progress-bar.size-ok {
+            background-color: #4CAF50;
+        }
+        
+        .size-progress-bar.size-warning {
+            background-color: #FFC107;
+        }
+        
+        .size-progress-bar.size-danger {
+            background-color: #FF5050;
+        }
+    `;
+    document.head.appendChild(style);
+});
+
+

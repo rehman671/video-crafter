@@ -234,7 +234,11 @@ CSRF_TRUSTED_ORIGINS = [
     'https://2080-203-101-188-13.ngrok-free.app',
     'https://7dd7-203-101-188-13.ngrok-free.app',
     'https://18.171.136.117/',
-    'http://18.171.136.117/'
+    'http://18.171.136.117/',
+    'http://videocrafter.io',
+    'http://www.videocrafter.io',
+    'https://videocrafter.io',
+    'https://www.videocrafter.io'
 ]
 
 # Session security

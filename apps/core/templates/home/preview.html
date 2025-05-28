@@ -81,6 +81,9 @@
                         <span class="dropdownText">
                             <a href="{% url 'manage_subscription' %}">Manage Subscription</a>
                         </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'speed_up_video' %}">Video Speed Up</a>
+                        </span>
                     </div>
                     <div class="profile-last-div">
                         <span class="dropdownText"><a href="{% url 'logout' %}">Log Out</a></span>
@@ -214,7 +217,12 @@
                         name="font_select">
                         <option class="text3" value="" disabled="" selected="">Select A Font</option>
                         {% for font in fonts %}
-                        <option class="text3" style="font-family:{{ font.css_name }}" value="{{ font.css_name }}"> {{ font.name }} </option>
+                        <option class="text3" style="font-family:{{ font.css_name }}" value="{{ font.css_name }}">
+                            {% if font.name == 'Tiktokfont' %}
+                            Proxima Nova Semibold ( TikTok Recommended Font )
+                            {% else %}
+                            {{ font.name }}
+                            {% endif %}</option>
                         {% endfor %}
 
                     </select></div>
@@ -252,7 +260,7 @@
                         <span id="subtitleBorderRadiusValue">26</span>
                     </div>
                     <input type="range" id="subtitleBorderRadiusSlider" class="subtitle-border-radius-slider" min="0"
-                        max="50" name="box_radius" value="26">
+                        max="26" name="box_radius" value="26">
                 </div>
             </div>
             <div class="Preview" id="Preview" style="margin-top: 0px;">
@@ -352,7 +360,7 @@
                 document.getElementById('subtitleBorderRadiusSlider').value = boxRadiusVal;
                 document.getElementById('subtitleBorderRadiusValue').textContent = boxRadiusVal;
                 document.getElementById('previewBackground').style.borderRadius = `${boxRadiusVal}px`;
-                updateSliderBackground('subtitleBorderRadiusSlider', boxRadiusVal, 0, 50);
+                updateSliderBackground('subtitleBorderRadiusSlider', boxRadiusVal, 0, 26);
             }
         {% endif %}
     });
@@ -525,7 +533,7 @@
     if (previewBackground) {
         previewBackground.style.borderRadius = `${borderRadius}px`;
     }
-    updateSliderBackground('subtitleBorderRadiusSlider', borderRadius, 0, 50);
+    updateSliderBackground('subtitleBorderRadiusSlider', borderRadius, 0, 26);
 
     const fontColor = dimensionStyles[selectedResolution].fontColor;
     const bgColor = dimensionStyles[selectedResolution].bgColor;
@@ -562,5 +570,17 @@
 
     </script>
 </body>
-
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/67bde19ce1b723191240f344/1ikurij78';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </html>

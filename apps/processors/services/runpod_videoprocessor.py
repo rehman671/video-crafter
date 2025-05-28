@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files import File
 
-from apps.processors.utils import generate_signed_url
+from apps.processors.utils import generate_signed_url, generate_signed_url_for_upload
 from apps.processors.models import Video, Clips, Subclip, BackgroundMusic
 
 class RunPodVideoProcessor:
@@ -41,7 +41,7 @@ class RunPodVideoProcessor:
                     urls[key] = path
                 else:
                     # Generate a pre-signed URL with an expiration time
-                    url = generate_signed_url(path, expires_in=3600)  # 1 hour expiration
+                    url = generate_signed_url_for_upload(path, expires_in=3600)  # 1 hour expiration
                     urls[key] = url
         return urls
         
@@ -337,37 +337,66 @@ class RunPodVideoProcessor:
                 "error": str(e)
             }
             
+    # def save_results(self, video:Video, result_data):
+    #     """Save the results from RunPod back to the video model"""
+    #     try:
+    #         import base64
+    #         import tempfile
+    #         from django.core.files.base import ContentFile
+
+    #         success = False
+    #         # Handle case where RunPod returns base64-encoded video
+    #         if "output" in result_data and result_data.get("success", False):
+    #             try:
+    #                 # Decode the base64 data
+    #                 output_base64 = result_data["output"]
+    #                 video_data = base64.b64decode(output_base64)
+    #                 video.output.save(f"output_{video.id}.mp4", ContentFile(video_data), save=False)
+
+    #                 output_base64_watermarked = result_data["output_watermarked"]
+    #                 video_data = base64.b64decode(output_base64_watermarked)
+    #                 video.output_with_watermark.save(f"output_watermarked_{video.id}.mp4", ContentFile(video_data), save=False)
+                    
+    #                 print(f"Saved output video to: {video.output.name}")
+    #                 success = True
+    #             except Exception as e:
+    #                 print(f"Error processing base64 output: {str(e)}")
+            
+    #         video.save()
+    #         return success
+    #     except Exception as e:
+    #         print(f"Error saving results: {str(e)}")
+    #         return False
+        
     def save_results(self, video:Video, result_data):
         """Save the results from RunPod back to the video model"""
         try:
-            import base64
-            import tempfile
-            from django.core.files.base import ContentFile
-
             success = False
-            # Handle case where RunPod returns base64-encoded video
-            if "output" in result_data and result_data.get("success", False):
-                try:
-                    # Decode the base64 data
-                    output_base64 = result_data["output"]
-                    video_data = base64.b64decode(output_base64)
-                    video.output.save(f"output_{video.id}.mp4", ContentFile(video_data), save=False)
-
-                    output_base64_watermarked = result_data["output_watermarked"]
-                    video_data = base64.b64decode(output_base64_watermarked)
-                    video.output_with_watermark.save(f"output_watermarked_{video.id}.mp4", ContentFile(video_data), save=False)
-                    
-                    print(f"Saved output video to: {video.output.name}")
+            # Handle case where RunPod returns S3 paths instead of base64 data
+            if result_data.get("success", False):
+                # Main output video
+                if "output_key" in result_data and result_data["output_key"]:
+                    output_key = result_data["output_key"]
+                    # Save the S3 key to the video model
+                    video.output.name = output_key
+                    print(f"Saved output video reference to: {output_key}")
                     success = True
-                except Exception as e:
-                    print(f"Error processing base64 output: {str(e)}")
+                
+                # Watermarked output video
+                if "output_watermarked_key" in result_data and result_data["output_watermarked_key"]:
+                    output_watermarked_key = result_data["output_watermarked_key"]
+                    # Save the S3 key to the video model
+                    video.output_with_watermark.name = output_watermarked_key
+                    print(f"Saved watermarked output video reference to: {output_watermarked_key}")
             
             video.save()
             return success
+            
         except Exception as e:
             print(f"Error saving results: {str(e)}")
             return False
-        
+
+
     def poll_until_complete(self, job_id, max_attempts=1000, delay=10):
         """Poll the job status until it completes or fails
         
@@ -381,7 +410,7 @@ class RunPodVideoProcessor:
         """
         attempt = 0
         
-        while attempt < max_attempts:
+        while True:
             attempt += 1
             
             # Get the job status

@@ -8,7 +8,7 @@ import json
 class SubclipInline(admin.TabularInline):
     model = Subclip
     extra = 0
-    fields = ['start_time', 'end_time', 'text', 'video_file',]
+    fields = ['start_time', 'end_time','text', 'video_file',]
 
 class ClipsForm(forms.ModelForm):
     class Meta:
@@ -109,16 +109,18 @@ class ClipsAdmin(admin.ModelAdmin):
     list_filter = ['video', 'created_at']
     search_fields = ['text']
     inlines = [SubclipInline]
-    @admin.register(Subclip)
-    class SubclipAdmin(admin.ModelAdmin):
-        list_display = ['id', 'clip', 'video_id', 'start_time', 'end_time', 'text', 'created_at']
-        list_filter = ['clip', 'clip__video', 'created_at']
-        search_fields = ['text']
-        
-        def video_id(self, obj):
-            return obj.clip.video.id if obj.clip and obj.clip.video else None
-        
-        video_id.short_description = 'Video ID'
+    
+    
+@admin.register(Subclip)
+class SubclipAdmin(admin.ModelAdmin):
+    list_display = ['id', 'clip', 'video_id', 'start_time', 'end_time', 'text', 'created_at']
+    list_filter = ['clip', 'clip__video', 'created_at']
+    search_fields = ['text']
+    
+    def video_id(self, obj):
+        return obj.clip.video.id if obj.clip and obj.clip.video else None
+    
+    video_id.short_description = 'Video ID'
 
 @admin.register(BackgroundMusic)
 class BackgroundMusicAdmin(admin.ModelAdmin):

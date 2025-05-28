@@ -254,7 +254,7 @@ function updateResolutionSettings(selectedResolution) {
     if (previewBackground) {
         previewBackground.style.borderRadius = `${borderRadius}px`;
     }
-    updateSliderBackground('subtitleBorderRadiusSlider', borderRadius, 0, 50);
+    updateSliderBackground('subtitleBorderRadiusSlider', borderRadius, 0, 26);
 
     const fontColor = dimensionStyles[selectedResolution].fontColor;
     const bgColor = dimensionStyles[selectedResolution].bgColor;
@@ -312,7 +312,7 @@ function handleBorderRadiusChange(event) {
 
     // Apply to all relevant preview elements
     document.getElementById('previewBackground').style.borderRadius = `${value}px`;
-    updateSliderBackground('subtitleBorderRadiusSlider', value, 0, 50);
+    updateSliderBackground('subtitleBorderRadiusSlider', value, 0, 26);
 }
 
 // Attach listeners
@@ -486,7 +486,7 @@ function handleResolutionChange(newResolution) {
 document.addEventListener('DOMContentLoaded', () => {
     updateResolutionSettings('1:1');
     updateSliderBackground('mySlider', fontSize, 0, 25);
-    updateSliderBackground('subtitleBorderRadiusSlider', borderRadius, 0, 50);
+    updateSliderBackground('subtitleBorderRadiusSlider', borderRadius, 0, 26);
     document.getElementById('previewText').style.fontSize = `${fontSize * 0.8}px`;
     document.getElementById('previewBackground').style.borderRadius = `${borderRadius}px`;
     document.getElementById('font_size').value = fontSizeDerived;

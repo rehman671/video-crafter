@@ -68,6 +68,9 @@
                         <span class="dropdownText">
                             <a href="{% url 'manage_subscription' %}">Manage Subscription</a>
                         </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'speed_up_video' %}">Video Speed Up</a>
+                        </span>
                     </div>
                     <div class="profile-last-div">
                         <span class="dropdownText"><a href="{% url 'logout' %}">Log Out</a></span>
@@ -79,6 +82,75 @@
     <div>
         <main>
             <div class="content">
+                {% if 'Free' in user_subscription.plan.name %}
+                <style>
+                    .premium-popup {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background-color: white;
+                        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                        border-radius: 8px;
+                        padding: 30px;
+                        max-width: 450px;
+                        width: 90%;
+                        z-index: 1000;
+                        text-align: center;
+                    }
+                    .premium-overlay {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-color: rgba(0, 0, 0, 0.5);
+                        z-index: 999;
+                    }
+                    .premium-title {
+                        font-size: 22px;
+                        font-weight: 600;
+                        margin-bottom: 15px;
+                        color: #191919;
+                    }
+                    .premium-text {
+                        font-size: 15px;
+                        line-height: 1.5;
+                        color: #555;
+                        margin-bottom: 25px;
+                    }
+                    .premium-button {
+                        display: inline-block;
+                        background-color:#864AF9;
+                        color: white;
+                        padding: 12px 28px;
+                        border-radius: 4px;
+                        text-decoration: none;
+                        font-weight: 500;
+                        transition: background-color 0.2s;
+                    }
+                    .premium-button:hover {
+                        background-color: #000;
+                    }
+                    .premium-icon {
+                        font-size: 48px;
+                        margin-bottom: 15px;
+                    }
+                </style>
+                
+                <div class="premium-overlay"></div>
+                <div class="premium-popup">
+                    <h2 class="premium-title">Premium Feature</h2>
+                    <p class="premium-text">
+                        Access to video management is available exclusively for premium subscribers. Upgrade your plan to unlock this feature and more.
+                    </p>
+                    <a href="{% url 'manage_subscription' %}" class="premium-button">
+                        Upgrade Now
+                    </a>
+                </div>
+                
+                <div class="box" style="filter: blur(5px); pointer-events: none;">
+                {% else %}
                 <div class="box">
                     <div>
                         <div class="folderpath">
@@ -105,7 +177,7 @@
                         <div class="log-item" data-file-id="{{ video.id }}" onclick="handleRowClick(event, '{% url 'download_video' video.id %}')">
                             <div>
                                 <input type="checkbox" name="selectall" id="selectall" style="opacity: 0;">
-                                <div>Id: {{ video.id }} - {{ video.title }}</div>
+                                <div>Id: {{ video.id }} - {% if video.name is None %}       Video # {{ video.id }} {% else %}{{ video.name }} {% endif %}</div>
                             </div>
                             <div>{{ video.clips_count }}</div>
                             <div>{{ video.created_at|date:"F j, Y, g:i a" }}</div>
@@ -124,6 +196,7 @@
                         {% endfor %}
                     </div>
                 </div>
+                {% endif %}
             </div>
         </main>
     </div>
@@ -144,5 +217,17 @@
         }
     </script>
 </body>
-
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/67bde19ce1b723191240f344/1ikurij78';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </html>

@@ -214,14 +214,7 @@ def update_processing_status(video_id, progress, step=None, error=None):
 
 def generate_audio_file(video, user_id):
     """
-    Generate audio file from text using ElevenLabs
-
-    Args:
-        video: Video object
-        user_id: User ID
-
-    Returns:
-        True if successful, False otherwise
+    Generate audio file from text using ElevenLabs with better error handling
     """
     try:
         # Check for required fields
@@ -250,7 +243,6 @@ def generate_audio_file(video, user_id):
         else:
             text_content = ""
             for clip in clips.order_by("sequence"):
-                # text_content += clip.text + '. '
                 text_content += clip.text + '. '
 
         # Generate a temp file for ElevenLabs
@@ -267,20 +259,99 @@ def generate_audio_file(video, user_id):
         handler = ElevenLabsHandler(
             api_key=video.elevenlabs_api_key, voice_id=video.voice_id
         )
+        
+        # Check credits before attempting generation
+        if not handler.has_sufficient_credits(len(text_content)):
+            # Clean up temp file before raising exception
+            os.unlink(temp_audio_path)
+            raise Exception("Insufficient credits to generate voiceover")
+        
         handler.generate_voiceover(text=text_content, output_path=temp_audio_path)
         
         # Save audio file to the video model using Django's File API
         with open(temp_audio_path, "rb") as f:
-            # This will work with both local and S3 storage
             video.audio_file.save(f"video_{video.id}_audio.mp3", File(f), save=True)
         
         # Clean up temp file
         os.unlink(temp_audio_path)
         
         return True
+        
     except Exception as e:
         print(f"Error generating audio file: {str(e)}")
-        return False
+        # Re-raise the exception to be caught by the background processor
+        raise e
+
+
+# def generate_audio_file(video, user_id):
+#     """
+#     Generate audio file from text using ElevenLabs
+
+#     Args:
+#         video: Video object
+#         user_id: User ID
+
+#     Returns:
+#         True if successful, False otherwise
+#     """
+#     try:
+#         # Check for required fields
+#         if not video.elevenlabs_api_key or not video.voice_id:
+#             raise ValueError("ElevenLabs API key and voice ID are required")
+        
+#         clips = Clips.objects.filter(video=video)
+#         if not clips.exists():
+#             # Check if text file exists
+#             if not video.text_file:
+#                 raise ValueError("Text file not available")
+
+#             # Read text using storage API instead of direct file access
+#             from django.core.files.storage import default_storage
+#             import chardet
+            
+#             # Read the file using Django's storage API
+#             with default_storage.open(video.text_file.name, 'rb') as file:
+#                 raw_data = file.read()
+#                 # Detect encoding
+#                 encoding_result = chardet.detect(raw_data)
+#                 encoding = encoding_result["encoding"]
+                
+#                 # Decode text using detected encoding
+#                 text_content = raw_data.decode(encoding)
+#         else:
+#             text_content = ""
+#             for clip in clips.order_by("sequence"):
+#                 # text_content += clip.text + '. '
+#                 text_content += clip.text + '. '
+
+#         # Generate a temp file for ElevenLabs
+#         import tempfile
+#         import os
+#         from django.core.files import File
+        
+#         # Create temporary output file
+#         temp_audio_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+#         temp_audio_file.close()
+#         temp_audio_path = temp_audio_file.name
+        
+#         # Generate voiceover using ElevenLabs
+#         handler = ElevenLabsHandler(
+#             api_key=video.elevenlabs_api_key, voice_id=video.voice_id
+#         )
+#         handler.generate_voiceover(text=text_content, output_path=temp_audio_path)
+        
+#         # Save audio file to the video model using Django's File API
+#         with open(temp_audio_path, "rb") as f:
+#             # This will work with both local and S3 storage
+#             video.audio_file.save(f"video_{video.id}_audio.mp3", File(f), save=True)
+        
+#         # Clean up temp file
+#         os.unlink(temp_audio_path)
+        
+#         return True
+#     except Exception as e:
+#         print(f"Error generating audio file: {str(e)}")
+#         return False
     
 def generate_srt_file(video, user_id):
     """Generate SRT file from text and audio"""
@@ -592,15 +663,114 @@ def generate_clips_from_text_file(video: Video):
     return clips_created
 
 
-def generate_clips_from_srt(video):
-    """Update existing clips with timing information from SRT file"""
-    try:
-        # Import necessary modules
-        import tempfile
-        import os
-        import json
-        from django.core.files.storage import default_storage
+# def generate_clips_from_srt(video):
+#     """Update existing clips with timing information from SRT file"""
+#     try:
+#         # Import necessary modules
+#         import tempfile
+#         import os
+#         import json
+#         from django.core.files.storage import default_storage
         
+#         if not video.srt_file:
+#             raise ValueError(f"Video #{video.id} doesn't have an SRT file.")
+
+#         # Get all existing clips
+#         clips = list(Clips.objects.filter(video=video).order_by("sequence"))
+#         if not clips:
+#             raise ValueError(f"No clips found for video #{video.id}.")
+
+#         # Download SRT file to temporary location
+#         with tempfile.NamedTemporaryFile(delete=False, suffix=".srt") as temp_srt:
+#             # Download the SRT file
+#             with default_storage.open(video.srt_file.name, 'rb') as s3_file:
+#                 temp_srt.write(s3_file.read())
+#             srt_file_path = temp_srt.name
+
+#         # Read SRT file as JSON
+#         with open(srt_file_path, "r", encoding="utf-8") as file:
+#             srt_data = json.load(file)
+
+#         # Clean up temp file
+#         os.unlink(srt_file_path)
+
+#         # Extract all words from SRT fragments
+#         all_words = []
+#         for fragment in srt_data.get("fragments", []):
+#             begin_time = float(fragment.get("begin", "0"))
+#             end_time = float(fragment.get("end", "0"))
+#             word = " ".join(fragment.get("lines", []))
+#             if word:
+#                 all_words.append({"word": word, "begin": begin_time, "end": end_time})
+
+#         # Update each clip
+#         word_index = 0  # Track our position in all_words
+
+#         for clip in clips:
+#             clip_text = clip.text
+#             clip_words = clip_text.split()
+#             clip_start_time = None
+#             clip_end_time = None
+#             words_matched = 0
+
+#             # Start from the current position in all_words
+#             temp_word_index = word_index
+#             while temp_word_index < len(all_words) and words_matched < len(clip_words):
+#                 word_data = all_words[temp_word_index]
+#                 srt_word = word_data["word"].lower()
+
+#                 if srt_word == clip_words[words_matched].lower():
+#                     if clip_start_time is None:
+#                         clip_start_time = word_data["begin"]
+
+#                     clip_end_time = word_data["end"]
+#                     words_matched += 1
+
+#                 temp_word_index += 1
+
+#             # If we've found all words in the clip
+#             if (
+#                 words_matched > 0
+#                 and clip_start_time is not None
+#                 and clip_end_time is not None
+#             ):
+#                 clip.start_time = clip_start_time
+#                 clip.end_time = clip_end_time
+#                 clip.save()
+#                 word_index = temp_word_index  # Update our position for the next clip
+
+#         # Adjust clip times: first clip starts at 0, each clip ends at the start of the next
+#         clips = list(Clips.objects.filter(video=video).order_by("start_time"))
+#         if clips:
+#             # Set first clip to start at 0
+#             first_clip = clips[0]
+#             first_clip.start_time = 0
+#             first_clip.save()
+
+#             # Adjust each clip to end at the start of the next clip
+#             for i in range(len(clips) - 1):
+#                 current_clip = clips[i]
+#                 next_clip = clips[i + 1]
+#                 current_clip.end_time = next_clip.start_time
+#                 current_clip.save()
+
+#         return len(clips)
+#     except Exception as e:
+#         print(f"Error in generate_clips_from_srt: {str(e)}")
+#         raise
+
+def generate_clips_from_srt(video):
+    """
+    Update existing clips with timing information from SRT file using the sophisticated
+    matching algorithm from configure_subclip. Handles repeated sentences by maintaining
+    proper sequence order in matching.
+    """
+    import json
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
         if not video.srt_file:
             raise ValueError(f"Video #{video.id} doesn't have an SRT file.")
 
@@ -609,83 +779,173 @@ def generate_clips_from_srt(video):
         if not clips:
             raise ValueError(f"No clips found for video #{video.id}.")
 
-        # Download SRT file to temporary location
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".srt") as temp_srt:
-            # Download the SRT file
-            with default_storage.open(video.srt_file.name, 'rb') as s3_file:
-                temp_srt.write(s3_file.read())
-            srt_file_path = temp_srt.name
-
-        # Read SRT file as JSON
-        with open(srt_file_path, "r", encoding="utf-8") as file:
-            srt_data = json.load(file)
-
-        # Clean up temp file
-        os.unlink(srt_file_path)
-
-        # Extract all words from SRT fragments
-        all_words = []
-        for fragment in srt_data.get("fragments", []):
-            begin_time = float(fragment.get("begin", "0"))
-            end_time = float(fragment.get("end", "0"))
-            word = " ".join(fragment.get("lines", []))
-            if word:
-                all_words.append({"word": word, "begin": begin_time, "end": end_time})
-
-        # Update each clip
-        word_index = 0  # Track our position in all_words
-
-        for clip in clips:
-            clip_text = clip.text
-            clip_words = clip_text.split()
-            clip_start_time = None
-            clip_end_time = None
-            words_matched = 0
-
-            # Start from the current position in all_words
-            temp_word_index = word_index
-            while temp_word_index < len(all_words) and words_matched < len(clip_words):
-                word_data = all_words[temp_word_index]
-                srt_word = word_data["word"].lower()
-
-                if srt_word == clip_words[words_matched].lower():
-                    if clip_start_time is None:
-                        clip_start_time = word_data["begin"]
-
-                    clip_end_time = word_data["end"]
-                    words_matched += 1
-
-                temp_word_index += 1
-
-            # If we've found all words in the clip
-            if (
-                words_matched > 0
-                and clip_start_time is not None
-                and clip_end_time is not None
-            ):
-                clip.start_time = clip_start_time
-                clip.end_time = clip_end_time
-                clip.save()
-                word_index = temp_word_index  # Update our position for the next clip
-
-        # Adjust clip times: first clip starts at 0, each clip ends at the start of the next
-        clips = list(Clips.objects.filter(video=video).order_by("start_time"))
+        # Load the SRT JSON content
+        try:
+            with video.srt_file.open('r') as srt_file:
+                srt_data = json.load(srt_file)
+        except (json.JSONDecodeError, IOError) as e:
+            logger.error(f"Error reading SRT file: {e}")
+            raise ValueError(f"Could not read SRT file for video #{video.id}: {e}")
+        
+        # Get all fragments sorted by begin time
+        all_fragments = sorted(
+            srt_data.get('fragments', []), 
+            key=lambda x: float(x.get('begin', 0))
+        )
+        
+        if not all_fragments:
+            raise ValueError(f"No fragments found in SRT file for video #{video.id}")
+        
+        logger.info(f"Total fragments in SRT: {len(all_fragments)}")
+        
+        # Concatenate all fragment texts to form a full transcript
+        full_transcript = ""
+        fragment_positions = []  # Track which fragment each position belongs to
+        
+        for j, fragment in enumerate(all_fragments):
+            fragment_text = ' '.join(fragment.get('lines', [])).lower()
+            fragment_positions.extend([j] * (len(fragment_text) + 1))  # +1 for the space
+            full_transcript += fragment_text + " "
+            
+        full_transcript = full_transcript.strip()
+        
+        # If transcript is longer than our positions mapping, trim the positions
+        if len(fragment_positions) > len(full_transcript):
+            fragment_positions = fragment_positions[:len(full_transcript)]
+        
+        # Keep track of where we last found a match to handle repeated sentences
+        last_matched_position = 0
+        
+        # First pass: Match clips to fragments using the sophisticated text matching algorithm
+        updated_clips = 0
+        
+        for i, clip in enumerate(clips):
+            # The first clip always starts at time 0
+            if i == 0:
+                clip.start_time = 0
+                updated_clips += 1
+            else:
+                # Process clip text matching
+                clip_text = clip.text.lower().strip()
+                
+                # For repeated sentences, search only from the last matched position
+                search_transcript = full_transcript[last_matched_position:]
+                
+                # Find the clip text in the remaining transcript - exact match
+                if clip_text in search_transcript:
+                    # Find the start and end positions relative to the search segment
+                    rel_start_pos = search_transcript.find(clip_text)
+                    rel_end_pos = rel_start_pos + len(clip_text) - 1
+                    
+                    # Convert to absolute positions in the full transcript
+                    start_pos = last_matched_position + rel_start_pos
+                    end_pos = last_matched_position + rel_end_pos
+                    
+                    # Get the corresponding fragments
+                    if 0 <= start_pos < len(fragment_positions) and 0 <= end_pos < len(fragment_positions):
+                        start_fragment_index = fragment_positions[start_pos]
+                        end_fragment_index = fragment_positions[end_pos]
+                        
+                        # Set the start time 
+                        start_fragment = all_fragments[start_fragment_index]
+                        clip.start_time = float(start_fragment.get('begin', 0))
+                        logger.debug(f"Clip #{clip.id}: matched text exactly, start time: {clip.start_time}")
+                        
+                        # Update the last matched position to the end of this match
+                        # This ensures we don't match the same text twice
+                        last_matched_position = end_pos + 1
+                        
+                        updated_clips += 1
+                    else:
+                        logger.warning(f"Clip #{clip.id}: Match found but position out of bounds")
+                else:
+                    # Fallback method - partial matching
+                    logger.debug(f"Clip #{clip.id}: exact match not found, trying partial matching...")
+                    
+                    # Only consider fragments that come after the last matched position
+                    last_fragment_index = -1
+                    if last_matched_position < len(fragment_positions):
+                        last_fragment_index = fragment_positions[last_matched_position]
+                    
+                    # Get fragments that appear after our last match
+                    candidate_fragments = []
+                    if last_fragment_index >= 0:
+                        candidate_fragments = all_fragments[last_fragment_index:]
+                    else:
+                        candidate_fragments = all_fragments
+                    
+                    matching_fragments = []
+                    
+                    for fragment in candidate_fragments:
+                        fragment_text = ' '.join(fragment.get('lines', [])).lower()
+                        
+                        # Check if the fragment text is in the clip or vice versa
+                        if fragment_text in clip_text or clip_text in fragment_text:
+                            matching_fragments.append(fragment)
+                    
+                    if matching_fragments:
+                        # Sort matching fragments by start time
+                        matching_fragments.sort(key=lambda x: float(x.get('begin', 0)))
+                        
+                        # Set start time to the first matching fragment
+                        clip.start_time = float(matching_fragments[0].get('begin', 0))
+                        logger.debug(f"Clip #{clip.id}: matched text partially, start time: {clip.start_time}")
+                        
+                        # Get the last matching fragment
+                        last_match = matching_fragments[-1]
+                        
+                        # Find this fragment's index in the original list
+                        for idx, fragment in enumerate(all_fragments):
+                            if fragment.get('id') == last_match.get('id'):
+                                # Update last_matched_position based on the index of this fragment
+                                # in the original transcript
+                                for pos, frag_idx in enumerate(fragment_positions):
+                                    if frag_idx > idx:
+                                        last_matched_position = pos
+                                        break
+                                break
+                        
+                        updated_clips += 1
+                    else:
+                        logger.warning(f"Clip #{clip.id}: No match found, start time might be incorrect")
+            
+            # Save the clip with its new start time
+            clip.save()
+        
+        # Second pass: Adjust end times so each clip ends at the start of the next clip
+        clips = list(Clips.objects.filter(video=video).order_by("sequence"))
+        
+        for i in range(len(clips) - 1):
+            current_clip = clips[i]
+            next_clip = clips[i + 1]
+            
+            # Set the current clip's end time to the next clip's start time
+            current_clip.end_time = next_clip.start_time
+            current_clip.save()
+            
+        # Set the last clip's end time to the end of its last matching fragment or the video duration
         if clips:
-            # Set first clip to start at 0
-            first_clip = clips[0]
-            first_clip.start_time = 0
-            first_clip.save()
+            last_clip = clips[-1]
+            # If we don't have an end time yet, try to determine it from SRT
+            if last_clip.end_time is None:
+                # Use the last fragment's end time as a fallback
+                last_fragment = all_fragments[-1]
+                last_clip.end_time = float(last_fragment.get('end', 0))
+                last_clip.save()
+            
+            # Set video_end_time for all clips
+            video_end_time = last_clip.end_time
+            for clip in clips:
+                clip.video_end_time = video_end_time
+                clip.save()
+        
 
-            # Adjust each clip to end at the start of the next clip
-            for i in range(len(clips) - 1):
-                current_clip = clips[i]
-                next_clip = clips[i + 1]
-                current_clip.end_time = next_clip.start_time
-                current_clip.save()
-
-        return len(clips)
+        for subclip in Subclip.objects.filter(clip__video=video):
+            subclip.save()
+        return updated_clips
+        
     except Exception as e:
-        print(f"Error in generate_clips_from_srt: {str(e)}")
+        logger.error(f"Error in generate_clips_from_srt: {str(e)}")
         raise
 
 def process_background_music(video):
@@ -1026,7 +1286,7 @@ def apply_background_music(video, video_path):
         logging.error(f"Error applying background music: {str(e)}")
         return video_path  # Return the original video path if there's an error
 
-def generate_signed_url(s3_key, expires_in=3600):
+def generate_signed_url_for_upload(s3_key, expires_in=3600):
     """
     Generate a signed URL for an S3 object, fallback if not exists.
     
@@ -1073,7 +1333,38 @@ def generate_signed_url(s3_key, expires_in=3600):
             logging.error(f"Error generating signed URL for {s3_key}: {str(e)}")
             return None
         
-
+def generate_signed_url(s3_key, expires_in=3600):
+    """
+    Generate a pre-signed URL for an S3 object
+    
+    Args:
+        s3_key (str): The S3 key of the object
+        expires_in (int): Expiration time in seconds, default is 1 hour
+        
+    Returns:
+        str: The pre-signed URL
+    """
+    try:
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION
+        )
+        
+        url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': settings.AWS_STORAGE_BUCKET_NAME,
+                'Key': s3_key
+            },
+            ExpiresIn=expires_in
+        )
+        
+        return url
+    except Exception as e:
+        print(f"Error generating signed URL for {s3_key}: {str(e)}")
+        return None
 
 def process_video_watermarks(video_id, bg_music=False):
     """
@@ -1111,3 +1402,33 @@ def process_video_watermarks(video_id, bg_music=False):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
+    try:
+        # Save uploaded file to a temporary location
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
+            for chunk in video_file.chunks():
+                temp_file.write(chunk)
+            temp_file_path = temp_file.name
+
+        # Create temp output file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as output_file:
+            processed_video_path = output_file.name
+
+        # FFmpeg command
+        ffmpeg_cmd = [
+            "ffmpeg", "-y", "-i", temp_file_path,
+            "-filter_complex",
+            f"[0:v]setpts={1/speed}*PTS[v];[0:a]atempo={speed}[a]",
+            "-map", "[v]", "-map", "[a]",
+            "-c:v", "libx264", "-preset", "fast", "-c:a", "aac", "-b:a", "192k",
+            processed_video_path
+        ]
+
+        # Run FFmpeg
+        subprocess.run(ffmpeg_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+
+        return processed_video_path
+
+    except subprocess.CalledProcessError as e:
+        print(f"FFmpeg error: {e.stderr.decode()}")
+        return None

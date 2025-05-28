@@ -63,11 +63,14 @@ class ElevenLabsHandler:
         subscription = user_info.get("subscription", {})
         character_count = subscription.get("character_count", 0)
         character_limit = subscription.get("character_limit", 0)
-        return character_count, character_limit
+        return  character_limit, character_count
     
     def has_sufficient_credits(self, text_length: int) -> bool:
         """Check if there are sufficient credits for the given text length"""
         remaining, _ = self.get_remaining_credits()
+        print(self.get_remaining_credits())
+        print(f"Remaining credits: {remaining}")
+        print(f"Text length: {text_length}")
         return remaining >= text_length
         
     def generate_voiceover(self, 
@@ -82,8 +85,8 @@ class ElevenLabsHandler:
         
         if voice_settings is None:
             voice_settings = {
-                "stability": 1.0,
-                "similarity_boost": 0.66,
+                "stability": 0.84,
+                "similarity_boost": 1,
                 "style": 0.0,
                 "use_speaker_boost": True,
                 "speed": 1.1,
@@ -110,8 +113,17 @@ class ElevenLabsHandler:
                 f.write(response.content)
             return output_path
         else:
-            raise Exception(f"Error generating voiceover: {response.text}")
-            
+            error_msg = response.text
+            # Check for specific ElevenLabs error types
+            if "payment_issue" in error_msg or "failed or incomplete payment" in error_msg:
+                raise Exception("ElevenLabs payment issue: Your subscription has a failed or incomplete payment. Complete the latest invoice to continue usage.")
+            elif response.status_code == 401:
+                raise Exception("Invalid ElevenLabs API key")
+            elif response.status_code == 404:
+                raise Exception("Invalid Voice ID")
+            else:
+                raise Exception(f"Error generating voiceover: {response.text}")
+                    
     def get_available_voices(self) -> Dict:
         """Get list of available voices from ElevenLabs"""
         headers = {

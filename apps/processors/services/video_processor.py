@@ -12,6 +12,9 @@ from django.core.files.storage import default_storage
 from django.conf import settings
 from apps.core.utils import get_media_info, process_background_track, create_final_mix
 # Set up logging
+import requests
+import shutil
+
 logger = logging.getLogger(__name__)
 
 class VideoProcessorService:
@@ -2074,6 +2077,8 @@ class VideoProcessorService:
             
          
     def apply_background_music_watermark(self, bg_music: BackgroundMusic):
+        from apps.processors.utils import generate_signed_url 
+
         """
         Applies background music to the video output.
         If music duration exceeds video duration, music is trimmed to match.
@@ -2104,9 +2109,11 @@ class VideoProcessorService:
             
             # Create temporary files for processing
             with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp_video:
-                # Download the video file to temp location
-                with default_storage.open(video.output_with_bg_watermark.name, 'rb') as s3_video:
-                    tmp_video.write(s3_video.read())
+                # Write the response content to the temporary file
+                response = requests.get(generate_signed_url(video.output_with_bg_watermark.name), stream=True)
+                response.raise_for_status() 
+                shutil.copyfileobj(response.raw, tmp_video)
+                print(f"Video downloaded to temporary file: {tmp_video.name}")
                 video_temp_path = tmp_video.name
                 
             with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp_audio:
@@ -2672,6 +2679,8 @@ class VideoProcessorService:
 
 
     def apply_background_music(self,  bg_music_queryset):
+        from apps.processors.utils import generate_signed_url 
+
         """
         Applies multiple background music tracks to a video while preserving the original audio.
         
@@ -2710,8 +2719,11 @@ class VideoProcessorService:
             
             # Step 1: Download video to temporary file
             with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp_video:
-                with default_storage.open(video.output.name, 'rb') as video_file:
-                    tmp_video.write(video_file.read())
+                # Write the response content to the temporary file
+                response = requests.get(generate_signed_url(video.output.name), stream=True)
+                response.raise_for_status() 
+                shutil.copyfileobj(response.raw, tmp_video)
+                print(f"Video downloaded to temporary file: {tmp_video.name}")
                 video_path = tmp_video.name
                 temp_files.append(video_path)
             
@@ -2799,6 +2811,7 @@ class VideoProcessorService:
 
 
     def apply_all_background_music_watermark(self,  bg_music_queryset):
+        from apps.processors.utils import generate_signed_url
         """
         Applies multiple background music tracks to a video while preserving the original audio.
         
@@ -2837,11 +2850,14 @@ class VideoProcessorService:
             
             # Step 1: Download video to temporary file
             with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp_video:
-                with default_storage.open(video.output_with_watermark.name, 'rb') as video_file:
-                    tmp_video.write(video_file.read())
+                # Write the response content to the temporary file
+                response = requests.get(generate_signed_url(video.output_with_watermark.name), stream=True)
+                response.raise_for_status() 
+                shutil.copyfileobj(response.raw, tmp_video)
+                print(f"Video downloaded to temporary file: {tmp_video.name}")
                 video_path = tmp_video.name
                 temp_files.append(video_path)
-            
+
             # Step 2: Get video properties
             video_info = get_media_info(video_path)
             video_duration = video_info['duration']

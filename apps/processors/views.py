@@ -19,6 +19,7 @@ from .serializers import BackgroundMusicSerializer
 from .utils import add_background_music, generate_audio_file, generate_srt_file, generate_clips_from_srt, generate_final_video, update_clip_timings, generate_signed_url
 from apps.processors.services.video_processor import VideoProcessorService
 from apps.core.models import Subscription
+from django.views.decorators.http import require_http_methods
 
 import traceback
 from apps.core.models import UserAsset
@@ -31,6 +32,8 @@ from .handler.openai import OpenAIHandler
 import logging
 from django.db.models.signals import pre_save, post_save
 from .signals import configure_subclip
+from django.db.models import Q
+
 logger = logging.getLogger(__name__)
 
 class BackgroundMusicViewSet(viewsets.ModelViewSet):
@@ -255,526 +258,6 @@ def update_clip(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-# @csrf_exempt
-# @login_required(login_url='login')
-# def background_music_view(request, video_id):
-#     """
-#     View to handle background music for a specific video
-#     """
-#     try:
-#         video = Video.objects.get(id=video_id, user=request.user)
-#         # Get all background music associated with this video
-#         video.output_with_bg = video.output
-#         video.output_with_bg_watermark = video.output_with_watermark
-#         video.save()
-#         background_music = BackgroundMusic.objects.filter(video=video)
-        
-#         # Process file names for each background music object
-#         for music in background_music:
-#             if music.audio_file:
-#                 # Extract the filename from the full path
-#                 music.file_name = os.path.basename(music.audio_file.name)
-#             else:
-#                 music.file_name = "No file"
-        
-#         # Generate a signed URL for direct access to the video in S3
-#         video_url = None
-#         if video.output and video.output.name:
-#             # Generate a signed URL that's valid for 2 hours
-#             video_url = generate_signed_url(video.output_with_watermark.name, expires_in=7200)
-            
-#             if video_url:
-#                 print(f"Successfully generated signed URL for video: {video_url}")
-#             else:
-#                 # Fall back to the regular URL if signed URL generation fails
-#                 video_url = video.output.url
-#                 print(f"Failed to generate signed URL, falling back to: {video_url}")
-#         else:
-#             print(f"Video has no output file. Video ID: {video.id}")
-        
-#     # Handle POST request for background music
-#         if request.method == 'POST':
-#             print("==== Background Music Form Data ====")
-#             print(f"Video ID: {video_id}")
-            
-#             # Get music form data
-#             music_tracks = []
-            
-#             # Loop through possible music tracks (dynamic number)
-#             i = 1
-#             while f'bg_music_{i}' in request.FILES:
-#                 # Get time values in format like "00:00"
-#                 from_when_str = request.POST.get(f'from_when_{i}', '00:00')
-#                 to_when_str = request.POST.get(f'to_when_{i}', '')
-                
-#                 # Convert time strings to seconds
-#                 start_seconds = 0
-#                 if from_when_str:
-#                     parts = from_when_str.split(':')
-#                     if len(parts) == 2:
-#                         start_seconds = int(parts[0]) * 60 + int(parts[1])
-                    
-#                 end_seconds = None
-#                 if to_when_str:
-#                     parts = to_when_str.split(':')
-#                     if len(parts) == 2:
-#                         end_seconds = int(parts[0]) * 60 + int(parts[1])
-                    
-#                 music_tracks.append({
-#                     'file': request.FILES[f'bg_music_{i}'],
-#                     'from_when': start_seconds,
-#                     'to_when': end_seconds,
-#                     'bg_level': request.POST.get(f'bg_level_{i}', '50')
-#                 })
-#                 print(f"Music Track {i}:")
-#                 print(f"  - File: {request.FILES[f'bg_music_{i}'].name}")
-#                 print(f"  - From: {from_when_str} ({start_seconds} seconds)")
-#                 print(f"  - To: {to_when_str} ({end_seconds} seconds)")
-#                 print(f"  - Level: {request.POST.get(f'bg_level_{i}', '50')}%")
-#                 i += 1
-                
-#             # Process each music track
-#             for track in music_tracks:
-#                 bg_music = BackgroundMusic.objects.create(
-#                     video=video,
-#                     audio_file=track['file'],
-#                     start_time=track['from_when'],
-#                     end_time=track['to_when'],
-#                     volumn=float(track['bg_level'])/100
-#                 )
-#                 video_processor = VideoProcessorService(video)
-#                 result = video_processor.apply_background_music(bg_music)
-#                 result = video_processor.apply_background_music_watermark(bg_music)
-#                 if bg_music:
-#                     print(f"Added background music: {bg_music}")
-#                 else:
-#                     print(f"Failed to add background music")
-
-#             return redirect('download_video', video_id=video.id)
-    
-#         return render(request, 'home/background-music.html', {
-#             'video': video,
-#             'background_music': background_music,
-#             "user_subscription": request.user.subscription,
-#             "video_url": video_url,
-#         })
-#     except Video.DoesNotExist:
-#         return JsonResponse({'success': False, 'error': 'Video not found'}, status=404)
-
-
-# 1. First, let's modify the Django view to handle updates to existing background music
-
-# @csrf_exempt
-# @login_required(login_url='login')
-# def background_music_view(request, video_id):
-#     """
-#     View to handle background music for a specific video
-#     """
-#     try:
-#         video = Video.objects.get(id=video_id, user=request.user)
-#         # Get all background music associated with this video
-#         # video.output_with_bg = video.output
-#         # video.output_with_bg_watermark = video.output_with_watermark
-#         # video.save()
-#         background_music = BackgroundMusic.objects.filter(video=video)
-        
-#         # Process file names for each background music object
-#         for music in background_music:
-#             if music.audio_file:
-#                 # Extract the filename from the full path
-#                 music.file_name = os.path.basename(music.audio_file.name)
-#             else:
-#                 music.file_name = "No file"
-        
-#         # Generate a signed URL for direct access to the video in S3
-#         video_url = None
-#         if video.output and video.output.name:
-#             # Generate a signed URL that's valid for 2 hours
-#             video_url = generate_signed_url(video.output_with_watermark.name, expires_in=7200)
-            
-#             if video_url:
-#                 print(f"Successfully generated signed URL for video: {video_url}")
-#             else:
-#                 # Fall back to the regular URL if signed URL generation fails
-#                 video_url = video.output.url
-#                 print(f"Failed to generate signed URL, falling back to: {video_url}")
-#         else:
-#             print(f"Video has no output file. Video ID: {video.id}")
-        
-#         # Handle POST request for background music
-#         if request.method == 'POST':
-#             print("==== Background Music Form Data ====")
-#             print(f"Video ID: {video_id}")
-            
-#             # Get music form data
-#             music_tracks = []
-#             existing_music_updates = {}
-            
-#             # Process form data
-#             for key in request.POST:
-#                 # Handle existing music updates
-#                 if key.startswith('existing_music_'):
-#                     parts = key.split('_')
-#                     if len(parts) >= 3:
-#                         music_id = parts[2]
-#                         field_name = '_'.join(parts[3:])
-                        
-#                         if music_id not in existing_music_updates:
-#                             existing_music_updates[music_id] = {}
-                        
-#                         existing_music_updates[music_id][field_name] = request.POST[key]
-            
-#             # Process updates to existing music tracks
-#             for music_id, update_data in existing_music_updates.items():
-#                 try:
-#                     bg_music = BackgroundMusic.objects.get(id=music_id, video=video)
-                    
-#                     # Update the fields
-#                     if 'from_when' in update_data:
-#                         # Convert time strings to seconds
-#                         from_when_str = update_data['from_when']
-#                         start_seconds = 0
-#                         if from_when_str:
-#                             if from_when_str.find(':') != -1:
-#                                 parts = from_when_str.split(':')
-#                                 if len(parts) == 2:
-#                                     start_seconds = int(parts[0]) * 60 + int(parts[1])
-#                             else:
-#                                 # Use the _seconds value if available
-#                                 seconds_key = f"existing_music_{music_id}_from_when_seconds"
-#                                 if seconds_key in request.POST:
-#                                     start_seconds = int(request.POST[seconds_key])
-#                                 else:
-#                                     start_seconds = int(from_when_str)
-                        
-#                         bg_music.start_time = start_seconds
-                    
-#                     if 'to_when' in update_data:
-#                         to_when_str = update_data['to_when']
-#                         end_seconds = None
-#                         if to_when_str:
-#                             if to_when_str.find(':') != -1:
-#                                 parts = to_when_str.split(':')
-#                                 if len(parts) == 2:
-#                                     end_seconds = int(parts[0]) * 60 + int(parts[1])
-#                             else:
-#                                 # Use the _seconds value if available
-#                                 seconds_key = f"existing_music_{music_id}_to_when_seconds"
-#                                 if seconds_key in request.POST:
-#                                     end_seconds = int(request.POST[seconds_key])
-#                                 else:
-#                                     end_seconds = int(to_when_str)
-                        
-#                         bg_music.end_time = end_seconds
-                    
-#                     if 'bg_level' in update_data:
-#                         bg_music.volumn = float(update_data['bg_level'])/100
-                    
-#                     # Save the updated music
-#                     bg_music.save()
-                    
-#                     # Re-apply the background music
-#                     video_processor = VideoProcessorService(video)
-#                     result = video_processor.apply_background_music(bg_music)
-#                     result = video_processor.apply_background_music_watermark(bg_music)
-#                     print(f"Updated background music: {bg_music}")
-                    
-#                 except BackgroundMusic.DoesNotExist:
-#                     print(f"Background music with ID {music_id} not found")
-            
-#             # Loop through possible new music tracks (dynamic number)
-#             i = 1
-#             while f'bg_music_{i}' in request.FILES:
-#                 # Get time values in format like "00:00"
-#                 from_when_str = request.POST.get(f'from_when_{i}', '00:00')
-#                 to_when_str = request.POST.get(f'to_when_{i}', '')
-                
-#                 # Convert time strings to seconds
-#                 start_seconds = 0
-#                 if from_when_str:
-#                     # If there's a _seconds field, use that
-#                     seconds_key = f"from_when_{i}_seconds"
-#                     if seconds_key in request.POST:
-#                         start_seconds = int(request.POST[seconds_key])
-#                     else:
-#                         # Otherwise parse the time string
-#                         if from_when_str.find(':') != -1:
-#                             parts = from_when_str.split(':')
-#                             if len(parts) == 2:
-#                                 start_seconds = int(parts[0]) * 60 + int(parts[1])
-#                         else:
-#                             start_seconds = int(from_when_str)
-                    
-#                 end_seconds = None
-#                 if to_when_str:
-#                     # If there's a _seconds field, use that
-#                     seconds_key = f"to_when_{i}_seconds"
-#                     if seconds_key in request.POST:
-#                         end_seconds = int(request.POST[seconds_key])
-#                     else:
-#                         # Otherwise parse the time string
-#                         if to_when_str.find(':') != -1:
-#                             parts = to_when_str.split(':')
-#                             if len(parts) == 2:
-#                                 end_seconds = int(parts[0]) * 60 + int(parts[1])
-#                         else:
-#                             end_seconds = int(to_when_str)
-                    
-#                 music_tracks.append({
-#                     'file': request.FILES[f'bg_music_{i}'],
-#                     'from_when': start_seconds,
-#                     'to_when': end_seconds,
-#                     'bg_level': request.POST.get(f'bg_level_{i}', '50')
-#                 })
-#                 print(f"Music Track {i}:")
-#                 print(f"  - File: {request.FILES[f'bg_music_{i}'].name}")
-#                 print(f"  - From: {from_when_str} ({start_seconds} seconds)")
-#                 print(f"  - To: {to_when_str} ({end_seconds} seconds)")
-#                 print(f"  - Level: {request.POST.get(f'bg_level_{i}', '50')}%")
-#                 i += 1
-                
-#             # Process each new music track
-#             for track in music_tracks:
-#                 bg_music = BackgroundMusic.objects.create(
-#                     video=video,
-#                     audio_file=track['file'],
-#                     start_time=track['from_when'],
-#                     end_time=track['to_when'],
-#                     volumn=float(track['bg_level'])/100
-#                 )
-#                 video_processor = VideoProcessorService(video)
-#                 result = video_processor.apply_background_music(bg_music)
-#                 result = video_processor.apply_background_music_watermark(bg_music)
-#                 if bg_music:
-#                     print(f"Added background music: {bg_music}")
-#                 else:
-#                     print(f"Failed to add background music")
-
-#             return redirect('download_video', video_id=video.id)
-    
-#         return render(request, 'home/background-music.html', {
-#             'video': video,
-#             'background_music': background_music,
-#             "user_subscription": request.user.subscription,
-#             "video_url": video_url,
-#         })
-#     except Video.DoesNotExist:
-#         return JsonResponse({'success': False, 'error': 'Video not found'}, status=404)
-# @csrf_exempt
-# @login_required(login_url='login')
-# def background_music_view(request, video_id):
-#     """
-#     View to handle background music for a specific video
-#     """
-#     try:
-#         video = Video.objects.get(id=video_id, user=request.user)
-#         # Get all background music associated with this video
-#         background_music = BackgroundMusic.objects.filter(video=video)
-        
-#         # Process file names for each background music object
-#         for music in background_music:
-#             if music.audio_file:
-#                 # Extract the filename from the full path
-#                 music.file_name = os.path.basename(music.audio_file.name)
-#             else:
-#                 music.file_name = "No file"
-        
-#         # Generate a signed URL for direct access to the video in S3
-#         video_url = None
-#         if video.output and video.output.name:
-#             # Generate a signed URL that's valid for 2 hours
-#             video_url = generate_signed_url(video.output_with_watermark.name, expires_in=7200)
-            
-#             if video_url:
-#                 print(f"Successfully generated signed URL for video: {video_url}")
-#             else:
-#                 # Fall back to the regular URL if signed URL generation fails
-#                 video_url = video.output.url
-#                 print(f"Failed to generate signed URL, falling back to: {video_url}")
-#         else:
-#             print(f"Video has no output file. Video ID: {video.id}")
-        
-#         # Handle POST request for background music
-#         if request.method == 'POST':
-#             print("==== Background Music Form Data ====")
-#             print(f"Video ID: {video_id}")
-            
-#             # Track existing music IDs to identify which ones were removed
-#             existing_music_ids = set(background_music.values_list('id', flat=True))
-#             processed_music_ids = set()
-            
-#             # Process existing music tracks updates
-#             for key in request.POST:
-#                 print(f"Processing key: {key}")
-#                 print(f"Value: {request.POST[key]}")
-#                 if key.startswith('existing_music_') and '_id' in key:
-#                     try:
-#                         music_id = request.POST[key]
-#                         processed_music_ids.add(int(music_id))
-                        
-#                         bg_music = BackgroundMusic.objects.get(id=music_id, video=video)
-                        
-#                         # Get the base name for this music's form fields
-#                         base_name = f'existing_music_{music_id}'
-                        
-#                         # Update start time
-#                         from_when_key = f'{base_name}_from_when'
-#                         if from_when_key in request.POST:
-#                             from_when_str = request.POST[from_when_key]
-#                             start_seconds = 0
-                            
-#                             # Try to get value from _seconds field first
-#                             seconds_key = f'{from_when_key}_seconds'
-#                             if seconds_key in request.POST and request.POST[seconds_key]:
-#                                 start_seconds = int(request.POST[seconds_key])
-#                             # Otherwise parse from MM:SS format
-#                             elif from_when_str:
-#                                 if ':' in from_when_str:
-#                                     parts = from_when_str.split(':')
-#                                     if len(parts) == 2:
-#                                         start_seconds = int(parts[0]) * 60 + int(parts[1])
-#                                 else:
-#                                     start_seconds = int(from_when_str)
-                            
-#                             bg_music.start_time = start_seconds
-                        
-#                         # Update end time
-#                         to_when_key = f'{base_name}_to_when'
-#                         if to_when_key in request.POST:
-#                             to_when_str = request.POST[to_when_key]
-#                             end_seconds = None
-                            
-#                             # Try to get value from _seconds field first
-#                             seconds_key = f'{to_when_key}_seconds'
-#                             if seconds_key in request.POST and request.POST[seconds_key]:
-#                                 end_seconds = int(request.POST[seconds_key])
-#                             # Otherwise parse from MM:SS format
-#                             elif to_when_str:
-#                                 if ':' in to_when_str:
-#                                     parts = to_when_str.split(':')
-#                                     if len(parts) == 2:
-#                                         end_seconds = int(parts[0]) * 60 + int(parts[1])
-#                                 else:
-#                                     end_seconds = int(to_when_str)
-                            
-#                             bg_music.end_time = end_seconds
-                        
-#                         # Update volume level
-#                         bg_level_key = f'{base_name}_bg_level'
-#                         if bg_level_key in request.POST:
-#                             bg_music.volumn = float(request.POST[bg_level_key])/100
-                        
-#                         # Check if a new file was uploaded for this existing music
-#                         file_key = f'{base_name}_file'
-#                         if file_key in request.FILES:
-#                             bg_music.audio_file = request.FILES[file_key]
-                        
-#                         # Save the updated music
-#                         bg_music.save()
-                        
-#                         # Re-apply the background music - UNCOMMENTED
-#                         # video_processor = VideoProcessorService(video)
-#                         # result = video_processor.apply_background_music(bg_music)
-#                         # result = video_processor.apply_background_music_watermark(bg_music)
-#                         print(f"Updated background music: {bg_music}")
-                        
-#                     except (BackgroundMusic.DoesNotExist, ValueError) as e:
-#                         print(f"Error updating background music: {e}")
-            
-#             # Delete music tracks that were removed in the frontend - UNCOMMENTED
-#             music_to_delete = existing_music_ids - processed_music_ids
-#             if music_to_delete:
-#                 BackgroundMusic.objects.filter(id__in=music_to_delete).delete()
-#                 print(f"Deleted background music IDs: {music_to_delete}")
-            
-#             # Process new music tracks
-#             i = 1
-#             # Check for new form fields with patterns like bg_music_1, bg_music_2, etc.
-#             while i <= 10:  # Assuming a maximum of 10 new music tracks
-#                 if f'bg_music_{i}' in request.POST or f'bg_music_{i}' in request.FILES:
-#                     # Get time values in format like "00:00"
-#                     from_when_str = request.POST.get(f'from_when_{i}', '00:00')
-#                     to_when_str = request.POST.get(f'to_when_{i}', '')
-                    
-#                     # Convert time strings to seconds
-#                     start_seconds = 0
-#                     if from_when_str:
-#                         # If there's a _seconds field, use that
-#                         seconds_key = f"from_when_{i}_seconds"
-#                         if seconds_key in request.POST and request.POST[seconds_key]:
-#                             start_seconds = int(request.POST[seconds_key])
-#                         else:
-#                             # Otherwise parse the time string
-#                             if ':' in from_when_str:
-#                                 parts = from_when_str.split(':')
-#                                 if len(parts) == 2:
-#                                     start_seconds = int(parts[0]) * 60 + int(parts[1])
-#                             else:
-#                                 try:
-#                                     start_seconds = int(from_when_str)
-#                                 except ValueError:
-#                                     start_seconds = 0
-                        
-#                     end_seconds = None
-#                     if to_when_str:
-#                         # If there's a _seconds field, use that
-#                         seconds_key = f"to_when_{i}_seconds"
-#                         if seconds_key in request.POST and request.POST[seconds_key]:
-#                             end_seconds = int(request.POST[seconds_key])
-#                         else:
-#                             # Otherwise parse the time string
-#                             if ':' in to_when_str:
-#                                 parts = to_when_str.split(':')
-#                                 if len(parts) == 2:
-#                                     end_seconds = int(parts[0]) * 60 + int(parts[1])
-#                             else:
-#                                 try:
-#                                     end_seconds = int(to_when_str)
-#                                 except ValueError:
-#                                     end_seconds = None
-                    
-#                     # Get volume level
-#                     bg_level = request.POST.get(f'bg_level_{i}', '50')
-                    
-#                     # Create new background music - handle both cases with and without file
-#                     if f'bg_music_{i}' in request.FILES:
-#                         # Create with uploaded file
-#                         bg_music = BackgroundMusic.objects.create(
-#                             video=video,
-#                             audio_file=request.FILES[f'bg_music_{i}'],
-#                             start_time=start_seconds,
-#                             end_time=end_seconds,
-#                             volumn=float(bg_level)/100
-#                         )
-#                     elif f'bg_music_{i}' in request.POST:
-#                         # Create without file (empty audio_file)
-#                         bg_music = BackgroundMusic.objects.create(
-#                             video=video,
-#                             start_time=start_seconds,
-#                             end_time=end_seconds,
-#                             volumn=float(bg_level)/100
-#                         )
-                    
-#                     # Apply the new background music if a file was provided
-#                     if f'bg_music_{i}' in request.FILES:
-#                         video_processor = VideoProcessorService(video)
-#                         result = video_processor.apply_background_music(bg_music)
-#                         result = video_processor.apply_background_music_watermark(bg_music)
-                    
-#                     print(f"Added new background music: {bg_music}")
-#                 i += 1
-
-#             return redirect('download_video', video_id=video.id)
-    
-#         return render(request, 'home/background-music.html', {
-#             'video': video,
-#             'background_music': background_music,
-#             "user_subscription": request.user.subscription,
-#             "video_url": video_url,
-#         })
-#     except Video.DoesNotExist:
-#         return JsonResponse({'success': False, 'error': 'Video not found'}, status=404)
-
 @csrf_exempt
 @login_required(login_url='login')
 def background_music_view(request, video_id):
@@ -944,25 +427,25 @@ def background_music_view(request, video_id):
                                 except ValueError:
                                     start_seconds = 0
                         
-                    # Set a default end_time to prevent NOT NULL constraint violation
-                    end_seconds = 0  # Default value
-                    if to_when_str:
-                        # If there's a _seconds field, use that
-                        seconds_key = f"to_when_{i}_seconds"
-                        if seconds_key in request.POST and request.POST[seconds_key]:
-                            end_seconds = int(request.POST[seconds_key])
-                        else:
-                            # Otherwise parse the time string
-                            if ':' in to_when_str:
-                                parts = to_when_str.split(':')
-                                if len(parts) == 2:
-                                    end_seconds = int(parts[0]) * 60 + int(parts[1])
+                        # Set a default end_time to prevent NOT NULL constraint violation
+                        end_seconds = 0  # Default value
+                        if to_when_str:
+                            # If there's a _seconds field, use that
+                            seconds_key = f"to_when_{i}_seconds"
+                            if seconds_key in request.POST and request.POST[seconds_key]:
+                                end_seconds = int(request.POST[seconds_key])
                             else:
-                                try:
-                                    end_seconds = int(to_when_str)
-                                except ValueError:
-                                    end_seconds = 0  # Default to 0 instead of None
-                    
+                                # Otherwise parse the time string
+                                if ':' in to_when_str:
+                                    parts = to_when_str.split(':')
+                                    if len(parts) == 2:
+                                        end_seconds = int(parts[0]) * 60 + int(parts[1])
+                                else:
+                                    try:
+                                        end_seconds = int(to_when_str)
+                                    except ValueError:
+                                        end_seconds = 0  # Default to 0 instead of None
+                        
                     # Get volume level
                     bg_level = request.POST.get(f'bg_level_{i}', '50')
                     
@@ -995,205 +478,8 @@ def background_music_view(request, video_id):
         })
     except Video.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Video not found'}, status=404)
-# @login_required(login_url='login')
-# def background_music_view(request, video_id):
-#     """
-#     View to handle background music for a specific video
-#     """
-#     try:
-#         video = Video.objects.get(id=video_id, user=request.user)
-#         # Get all background music associated with this video
-#         background_music = BackgroundMusic.objects.filter(video=video)
-        
-#         # Process file names for each background music object
-#         for music in background_music:
-#             if music.audio_file:
-#                 # Extract the filename from the full path
-#                 music.file_name = os.path.basename(music.audio_file.name)
-#             else:
-#                 music.file_name = "No file"
-        
-#         # Generate a signed URL for direct access to the video in S3
-#         video_url = None
-#         if video.output and video.output.name:
-#             # Generate a signed URL that's valid for 2 hours
-#             video_url = generate_signed_url(video.output_with_watermark.name, expires_in=7200)
-            
-#             if video_url:
-#                 print(f"Successfully generated signed URL for video: {video_url}")
-#             else:
-#                 # Fall back to the regular URL if signed URL generation fails
-#                 video_url = video.output.url
-#                 print(f"Failed to generate signed URL, falling back to: {video_url}")
-#         else:
-#             print(f"Video has no output file. Video ID: {video.id}")
-        
-#         # Handle POST request for background music
-#         if request.method == 'POST':
-#             print("==== Background Music Form Data ====")
-#             print(f"Video ID: {video_id}")
-            
-#             # Track existing music IDs to identify which ones were removed
-#             existing_music_ids = set(background_music.values_list('id', flat=True))
-#             processed_music_ids = set()
-            
-#             # Process existing music tracks updates
-#             for key in request.POST:
-#                 print(f"Processing key: {key}")
-#                 print(f"Value: {request.POST[key]}")
-#                 if key.startswith('existing_music_') and '_id' in key:
-#                     try:
-#                         music_id = request.POST[key]
-#                         processed_music_ids.add(int(music_id))
-                        
-#                         bg_music = BackgroundMusic.objects.get(id=music_id, video=video)
-                        
-#                         # Get the base name for this music's form fields
-#                         base_name = f'existing_music_{music_id}'
-                        
-#                         # Update start time
-#                         from_when_key = f'{base_name}_from_when'
-#                         if from_when_key in request.POST:
-#                             from_when_str = request.POST[from_when_key]
-#                             start_seconds = 0
-                            
-#                             # Try to get value from _seconds field first
-#                             seconds_key = f'{from_when_key}_seconds'
-#                             if seconds_key in request.POST and request.POST[seconds_key]:
-#                                 start_seconds = int(request.POST[seconds_key])
-#                             # Otherwise parse from MM:SS format
-#                             elif from_when_str:
-#                                 if ':' in from_when_str:
-#                                     parts = from_when_str.split(':')
-#                                     if len(parts) == 2:
-#                                         start_seconds = int(parts[0]) * 60 + int(parts[1])
-#                                 else:
-#                                     start_seconds = int(from_when_str)
-                            
-#                             bg_music.start_time = start_seconds
-                        
-#                         # Update end time
-#                         to_when_key = f'{base_name}_to_when'
-#                         if to_when_key in request.POST:
-#                             to_when_str = request.POST[to_when_key]
-#                             end_seconds = None
-                            
-#                             # Try to get value from _seconds field first
-#                             seconds_key = f'{to_when_key}_seconds'
-#                             if seconds_key in request.POST and request.POST[seconds_key]:
-#                                 end_seconds = int(request.POST[seconds_key])
-#                             # Otherwise parse from MM:SS format
-#                             elif to_when_str:
-#                                 if ':' in to_when_str:
-#                                     parts = to_when_str.split(':')
-#                                     if len(parts) == 2:
-#                                         end_seconds = int(parts[0]) * 60 + int(parts[1])
-#                                 else:
-#                                     end_seconds = int(to_when_str)
-                            
-#                             bg_music.end_time = end_seconds
-                        
-#                         # Update volume level
-#                         bg_level_key = f'{base_name}_bg_level'
-#                         if bg_level_key in request.POST:
-#                             bg_music.volumn = float(request.POST[bg_level_key])/100
-                        
-#                         # Check if a new file was uploaded for this existing music
-#                         file_key = f'{base_name}_file'
-#                         if file_key in request.FILES:
-#                             bg_music.audio_file = request.FILES[file_key]
-                        
-#                         # Save the updated music
-#                         bg_music.save()
-                        
-#                         # Re-apply the background music
-#                         # video_processor = VideoProcessorService(video)
-#                         # result = video_processor.apply_background_music(bg_music)
-#                         # result = video_processor.apply_background_music_watermark(bg_music)
-#                         print(f"Updated background music: {bg_music}")
-                        
-#                     except (BackgroundMusic.DoesNotExist, ValueError) as e:
-#                         print(f"Error updating background music: {e}")
-            
-#             # Delete music tracks that were removed in the frontend
-#             # music_to_delete = existing_music_ids - processed_music_ids
-#             # if music_to_delete:
-#             #     BackgroundMusic.objects.filter(id__in=music_to_delete).delete()
-#             #     print(f"Deleted background music IDs: {music_to_delete}")
-            
-#             # Process new music tracks
-#             i = 1
-#             while f'bg_music_{i}' in request.FILES:
-#                 # Get time values in format like "00:00"
-#                 from_when_str = request.POST.get(f'from_when_{i}', '00:00')
-#                 to_when_str = request.POST.get(f'to_when_{i}', '')
-                
-#                 # Convert time strings to seconds
-#                 start_seconds = 0
-#                 if from_when_str:
-#                     # If there's a _seconds field, use that
-#                     seconds_key = f"from_when_{i}_seconds"
-#                     if seconds_key in request.POST and request.POST[seconds_key]:
-#                         start_seconds = int(request.POST[seconds_key])
-#                     else:
-#                         # Otherwise parse the time string
-#                         if ':' in from_when_str:
-#                             parts = from_when_str.split(':')
-#                             if len(parts) == 2:
-#                                 start_seconds = int(parts[0]) * 60 + int(parts[1])
-#                         else:
-#                             start_seconds = int(from_when_str)
-                    
-#                 end_seconds = None
-#                 if to_when_str:
-#                     # If there's a _seconds field, use that
-#                     seconds_key = f"to_when_{i}_seconds"
-#                     if seconds_key in request.POST and request.POST[seconds_key]:
-#                         end_seconds = int(request.POST[seconds_key])
-#                     else:
-#                         # Otherwise parse the time string
-#                         if ':' in to_when_str:
-#                             parts = to_when_str.split(':')
-#                             if len(parts) == 2:
-#                                 end_seconds = int(parts[0]) * 60 + int(parts[1])
-#                         else:
-#                             end_seconds = int(to_when_str)
-                
-#                 # Create new background music
-#                 bg_level = request.POST.get(f'bg_level_{i}', '50')
-#                 bg_music = BackgroundMusic.objects.create(
-#                     video=video,
-#                     audio_file=request.FILES[f'bg_music_{i}'],
-#                     start_time=start_seconds,
-#                     end_time=end_seconds,
-#                     volumn=float(bg_level)/100
-#                 )
-                
-#                 # Apply the new background music
-#                 # video_processor = VideoProcessorService(video)
-#                 # result = video_processor.apply_background_music(bg_music)
-#                 # result = video_processor.apply_background_music_watermark(bg_music)
-                
-#                 print(f"Added new background music: {bg_music}")
-#                 i += 1
 
-#             # If no background music exists after processing
-#             if not BackgroundMusic.objects.filter(video=video).exists():
-#                 video.output_with_bg = video.output
-#                 video.output_with_bg_watermark = video.output_with_watermark
-#                 video.save()
-
-#             return redirect('download_video', video_id=video.id)
-    
-#         return render(request, 'home/background-music.html', {
-#             'video': video,
-#             'background_music': background_music,
-#             "user_subscription": request.user.subscription,
-#             "video_url": video_url,
-#         })
-#     except Video.DoesNotExist:
-#         return JsonResponse({'success': False, 'error': 'Video not found'}, status=404)
-
+        
 @require_POST
 @login_required(login_url='login')
 def handle_clip_assignment(request):
@@ -1539,13 +825,22 @@ def recent_videos_view(request):
         
     # Get videos for the current user, ordered by creation date (newest first)
     # Make sure we get only videos with a non-empty output_with_bg field
-    videos = Video.objects.filter(
-        user=request.user, 
-        output_with_bg__isnull=False
-    ).exclude(
-        output_with_bg__exact=''
-    ).order_by('-created_at')[:10]
+    all_user_videos = Video.objects.filter(user=request.user)
     
+    # Then, filter for videos with a name
+    named_videos = all_user_videos.filter(name__isnull=False).exclude(name="")
+    
+    # Get videos with output
+    output_videos = all_user_videos.filter(output__isnull=False).exclude(output="")
+    
+    # Combine the two querysets using union
+    # The "|" operator on querysets performs a SQL UNION operation
+    videos = (named_videos | output_videos).distinct().order_by('-created_at')
+    
+    print(f"All user videos: {all_user_videos.count()}")
+    print(f"Named videos: {named_videos.count()}")
+    print(f"Output videos: {output_videos.count()}")
+    print(f"Combined videos: {videos.count()}")
     return render(request, 'manage/recent-videos.html', {
         'videos': videos,
         'user_subscription': getattr(request.user, 'subscription', None)
@@ -1635,21 +930,33 @@ def get_processing_status(request, video_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-# def _process_video_background(video, user_id, status_obj):
+# def _process_video_background(video:Video, user_id, status_obj):
 #     """Background task to process the video"""
-
+    
 #     try:
+#         all_clips = Clips.objects.filter(video=video).order_by('sequence')
+#         is_text_changed = False
+#         clips_text = ""
+#         for clip in all_clips:
+#             if clip.text != clips_text:
+#                 clips_text += clip.text + "\n"
+#         if video.content != clips_text or video.content in ["", None]:
+#             is_text_changed = True
+#             video.content = clips_text
+#             video.save()
+
 #         # Step 1: Generate audio (20% of progress)
 #         status_obj.progress = 5
 #         status_obj.current_step = "Generating audio"
 #         status_obj.save()
-        
-#         success = generate_audio_file(video, user_id)
-#         if not success:
-#             status_obj.status = 'error'
-#             status_obj.error_message = "Failed to generate audio file"
-#             status_obj.save()
-#             return
+#         if is_text_changed is True:
+#             success = generate_audio_file(video, user_id)
+
+#             if not success:
+#                 status_obj.status = 'error'
+#                 status_obj.error_message = "Failed to generate audio file"
+#                 status_obj.save()
+#                 return
         
 #         status_obj.progress = 20
 #         status_obj.save()
@@ -1657,50 +964,108 @@ def get_processing_status(request, video_id):
 #         # Step 2: Generate SRT file (40% of progress)
 #         status_obj.current_step = "Generating SRT file"
 #         status_obj.save()
+
+#         if is_text_changed is True:
+#             success = generate_srt_file(video, user_id)
+
+#             if not success:
+#                 status_obj.status = 'error'
+#                 status_obj.error_message = "Failed to generate SRT file"
+#                 status_obj.save()
+#                 return
+            
+#         status_obj.progress = 40
+#         status_obj.save()
         
-#         success = generate_srt_file(video, user_id)
-#         if not success:
+#         # Step 3: Generate clips from SRT (60% of progress)
+#         status_obj.current_step = "Generating video clips"
+#         status_obj.save()
+#         if is_text_changed is True:
+#             generate_clips_from_srt(video)
+        
+#         status_obj.progress = 60
+#         status_obj.save()
+        
+#         # Step 4: Submit to RunPod for video processing (70% of progress)
+#         status_obj.current_step = "Submitting to RunPod for processing"
+#         status_obj.save()
+        
+#         # Initialize RunPod processor
+#         from apps.processors.services.runpod_videoprocessor import RunPodVideoProcessor
+#         processor = RunPodVideoProcessor(video.id)
+
+#         for subclip in Subclip.objects.filter(clip__video=video).order_by('clip__sequence', 'start_time'):
+#             subclip.save()
+#         # Submit job to RunPod
+#         if is_text_changed is False and video.output:
+
+#             result = processor.replace_subclips(video)
+#         else:
+#             result = processor.process_video(video)
+        
+#         if not result["success"]:
 #             status_obj.status = 'error'
-#             status_obj.error_message = "Failed to generate SRT file"
+#             status_obj.error_message = f"Failed to submit job to RunPod: {result.get('error', 'Unknown error')}"
 #             status_obj.save()
 #             return
         
-#         status_obj.progress = 40
+#         # Job submitted successfully
+#         print(result)
+#         job_id = result["job_id"]
+#         status_obj.current_step = "Processing on RunPod"
+#         status_obj.progress = 70
 #         status_obj.save()
+        
+#         # Step 5: Poll RunPod until job completes (up to 90% progress)
+#         max_attempts = 60  # Adjust based on your expected processing time
+#         delay_seconds = 10  # Check every 10 seconds
+#         print("Polling RunPod for job completion...")
+#         print("Job ID:", job_id)
+#         # Poll for results
+#         poll_result = processor.poll_until_complete(job_id, max_attempts, delay_seconds)
+        
+#         if not poll_result["success"]:
+#             status_obj.status = 'error'
+#             status_obj.error_message = f"RunPod processing failed: {poll_result.get('error', 'Unknown error')}"
+#             status_obj.save()
+#             return
+        
+#         # Processing successful, save results
+#         output_data = poll_result["output"]
+#         print("RunPod processing completed successfully.")
+#         print("Output data:", output_data)
+#         save_success = processor.save_results(video, output_data)
+        
+#         if not save_success:
+#             status_obj.status = 'error'
+#             status_obj.error_message = "Failed to save results from RunPod"
+#             status_obj.save()
+#             return
+        
+#         status_obj.progress = 90
+#         status_obj.save()
+        
+#         # Step 6: Apply any additional processing if needed (100% progress)
+#         status_obj.current_step = "Finalizing video"
+#         status_obj.save()
+        
+#         # Check if we need to set output_with_bg from output
+#         if video.output:
+#             video.output_with_bg = video.output
+#             video.save()
 
+#         if video.output_with_watermark: 
+#             video.output_with_bg_watermark = video.output_with_watermark
+#             video.save()
 
-        
-#         # Step 4: Generate clips from SRT (80% of progress)
-#         status_obj.current_step = "Generating video clips"
-#         status_obj.save()
-        
-#         generate_clips_from_srt(video)
-        
-#         status_obj.progress = 80
-#         status_obj.save()
-        
-#         # Step 5: Generate final video (100% of progress)
-#         status_obj.current_step = "Generating final video"
-#         status_obj.save()
-        
-#         generate_final_video(video)
-        
-#         # Update video with the output
-#         video.output_with_bg = video.output
-#         video.save()
-        
-#         # Deduct a credit from the user's subscription
-#         try:
-#             Subscription.objects.filter(user_id=user_id).update(unused_credits=F('unused_credits') - 1)
-#         except Exception as e:
-#             print(f"Error updating credits: {str(e)}")
+#         Clips.objects.filter(video=video).update(is_changed=False)
         
 #         # Update status to completed
 #         status_obj.progress = 100
 #         status_obj.status = 'completed'
 #         status_obj.current_step = "Processing complete"
 #         status_obj.save()
-        
+    
 #     except Exception as e:
 #         # Update status to error
 #         status_obj.status = 'error'
@@ -1710,9 +1075,8 @@ def get_processing_status(request, video_id):
 #         print(traceback.format_exc())
 
 
-
-def _process_video_background(video:Video, user_id, status_obj):
-    """Background task to process the video"""
+def _process_video_background(video: Video, user_id, status_obj):
+    """Background task to process the video with better error handling"""
     
     try:
         all_clips = Clips.objects.filter(video=video).order_by('sequence')
@@ -1726,22 +1090,52 @@ def _process_video_background(video:Video, user_id, status_obj):
             video.content = clips_text
             video.save()
 
+        if not video.audio_file:
+            is_text_changed = True
         # Step 1: Generate audio (20% of progress)
         status_obj.progress = 5
         status_obj.current_step = "Generating audio"
         status_obj.save()
-        if is_text_changed is True:
-            success = generate_audio_file(video, user_id)
-
-            if not success:
-                status_obj.status = 'error'
-                status_obj.error_message = "Failed to generate audio file"
-                status_obj.save()
-                return
         
+        if is_text_changed is True:
+            try:
+                success = generate_audio_file(video, user_id)
+                if not success:
+                    status_obj.status = 'error'
+                    status_obj.error_message = "Failed to generate audio file"
+                    status_obj.save()
+                    return
+            except Exception as e:
+                error_msg = str(e)
+                # Check if it's a credits issue
+                if "Insufficient credits" in error_msg:
+                    status_obj.status = 'error'
+                    status_obj.error_message = "Insufficient credits to generate voiceover"
+                    status_obj.save()
+                    return
+                elif "payment_issue" in error_msg or "failed or incomplete payment" in error_msg:
+                    status_obj.status = 'error'
+                    status_obj.error_message = "ElevenLabs payment issue: Your subscription has a failed or incomplete payment. Complete the latest invoice to continue usage."
+                    status_obj.save()
+                    return
+                elif "Invalid ElevenLabs API key" in error_msg:
+                    status_obj.status = 'error'  
+                    status_obj.error_message = "Invalid ElevenLabs API key"
+                    status_obj.save()
+                    return
+                elif "Invalid Voice ID" in error_msg:
+                    status_obj.status = 'error'
+                    status_obj.error_message = "Invalid Voice ID"  
+                    status_obj.save()
+                    return
+                else:
+                    # Re-raise other exceptions
+                    raise e
+                    
         status_obj.progress = 20
         status_obj.save()
         
+        # Rest of your existing processing code remains the same...
         # Step 2: Generate SRT file (40% of progress)
         status_obj.current_step = "Generating SRT file"
         status_obj.save()
@@ -1778,8 +1172,7 @@ def _process_video_background(video:Video, user_id, status_obj):
         for subclip in Subclip.objects.filter(clip__video=video).order_by('clip__sequence', 'start_time'):
             subclip.save()
         # Submit job to RunPod
-        if is_text_changed is False:
-
+        if is_text_changed is False and video.output:
             result = processor.replace_subclips(video)
         else:
             result = processor.process_video(video)
@@ -1813,6 +1206,8 @@ def _process_video_background(video:Video, user_id, status_obj):
         
         # Processing successful, save results
         output_data = poll_result["output"]
+        print("RunPod processing completed successfully.")
+        print("Output data:", output_data)
         save_success = processor.save_results(video, output_data)
         
         if not save_success:
@@ -1851,6 +1246,7 @@ def _process_video_background(video:Video, user_id, status_obj):
         status_obj.error_message = str(e)
         status_obj.save()
         print(f"Error processing video: {str(e)}")
+        import traceback
         print(traceback.format_exc())
 
 @csrf_exempt
@@ -1926,3 +1322,143 @@ def generate_scene_suggestions(request):
             'status': 'error',
             'message': f'Failed to generate scene suggestions: {str(e)}'
         }, status=500)
+
+@csrf_exempt
+@require_POST
+@login_required(login_url='login')
+def save_draft(request):
+    """
+    Save video draft with a name
+    """
+    try:
+        data = json.loads(request.body)
+        video_id = data.get('video_id')
+        name = data.get('name')
+        
+        if not video_id or not name:
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+            
+        try:
+            video = Video.objects.get(id=video_id, user=request.user)
+            video.name = name
+            video.save()
+            return JsonResponse({'success': True})
+        except Video.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Video not found'}, status=404)
+            
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+
+@csrf_exempt  
+@require_http_methods(["POST"])
+@login_required(login_url='login')
+def update_video_credentials(request, video_id):
+    from apps.processors.handler.elevenlabs import ElevenLabsHandler
+
+    """
+    API endpoint to update video ElevenLabs credentials
+    """
+    try:
+        video = get_object_or_404(Video, id=video_id, user=request.user)
+        
+        data = json.loads(request.body)
+        api_key = data.get('elevenlabs_api_key', '').strip()
+        voice_id = data.get('voice_id', '').strip()
+        
+        if not api_key or not voice_id:
+            return JsonResponse({
+                'success': False, 
+                'error': 'Both API key and Voice ID are required'
+            })
+        
+        # Validate the credentials before saving
+        try:
+            handler = ElevenLabsHandler(api_key=api_key, voice_id=voice_id)
+            # This will raise an exception if invalid
+            handler._verify_api_key()
+            print(video.content)
+            if handler.has_sufficient_credits(len(video.content)) is False:
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Insufficient credits to generate voiceover'
+                })
+            video.elevenlabs_api_key = api_key
+            video.voice_id = voice_id
+            video.save()
+        except Exception as e:
+            error_msg = str(e)
+            if "Insufficient credits" in error_msg:
+                error_to_return = "Insufficient credits to generate voiceover"
+            elif "payment_issue" in error_msg or "failed or incomplete payment" in error_msg:
+                error_to_return = "ElevenLabs payment issue: Your subscription has a failed or incomplete payment. Complete the latest invoice to continue usage."
+            elif "Invalid ElevenLabs API key" in error_msg:
+                error_to_return = "Invalid ElevenLabs API key"
+            elif "Invalid Voice ID" in error_msg:
+                error_to_return = "Invalid Voice ID"  
+            else:
+                error_to_return = f"Error validating credentials: {error_msg}"
+            return JsonResponse({
+                'success': False, 
+                'error': error_to_return
+            })
+        
+        # Update video with new credentials
+        
+        # Reset processing status to allow reprocessing
+        video.audio_file = None
+        video.srt_file = None
+        video.output = None
+        video.output_with_bg = None
+        video.output_with_watermark = None
+        video.output_with_bg_watermark = None
+        video.save()
+
+        # Mark all clips as changed to force regeneration
+        Clips.objects.filter(video=video).update(is_changed=True)
+
+        # Reset processing status to allow reprocessing
+        ProcessingStatus.objects.filter(video=video).delete()
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Credentials updated successfully'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'error': str(e)
+        }, status=500)
+
+
+# Add this endpoint to get processing status with credentials info
+@login_required(login_url='login')
+def get_processing_status_with_credentials(request, video_id):
+    """
+    Get processing status including current credentials for error handling
+    """
+    try:
+        video = get_object_or_404(Video, id=video_id, user=request.user)
+        
+        try:
+            status_obj = ProcessingStatus.objects.get(video=video)
+            response_data = {
+                'status': status_obj.status,
+                'progress': status_obj.progress,
+                'current_step': status_obj.current_step,
+                'error_message': status_obj.error_message,
+                'current_api_key': video.elevenlabs_api_key or '',
+                'current_voice_id': video.voice_id or ''
+            }
+            return JsonResponse(response_data)
+        except ProcessingStatus.DoesNotExist:
+            return JsonResponse({
+                'status': 'not_started',
+                'progress': 0,
+                'current_api_key': video.elevenlabs_api_key or '',
+                'current_voice_id': video.voice_id or ''
+            })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

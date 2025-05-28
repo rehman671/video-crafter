@@ -40,6 +40,7 @@ def create_subclip_from_text(clip, text_to_match):
         start_time=subclip_start,
         end_time=subclip_end,
         text=text_to_match
+        sequence=Subclip.objects.filter(clip=clip).count() + 1,  # Increment sequence number
     )
     
     # In a real implementation, we would generate the actual video file here

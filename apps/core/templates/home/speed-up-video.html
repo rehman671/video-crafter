@@ -1,0 +1,668 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoCrafter.io</title>
+    <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
+    <link rel="stylesheet" href="{% static 'styles/fonts.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/music.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/preview.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #ffffff !important;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .upload-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+            border: 2px dashed #864AF9;
+            border-radius: 10px;
+            background-color: #f8f8f8;
+            text-align: center;
+            cursor: pointer;
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            transition: all 0.3s ease;
+        }
+
+        .upload-container:hover,
+        .upload-container.dragover {
+            background-color: #f0f0f0;
+            border-color: #7a3fdf;
+        }
+
+        #drop-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #drop-area i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #864AF9;
+        }
+
+        #drop-area p {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        #drop-area span {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .video-container {
+            display: none;
+            text-align: center;
+            width: 100%;
+            max-width: 640px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .slider-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #speed-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 20px;
+            border-radius: 10px;
+            background: linear-gradient(to right, #864AF9 0%, #864AF9 0%, #ddd 0%, #ddd 100%);
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        #speed-slider:hover {
+            opacity: 1;
+        }
+
+        #speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 29px;
+            height: 29px;
+            border-radius: 50%;
+            background: #864AF9;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #speed-slider::-webkit-slider-thumb:hover {
+            background: #7a3fdf;
+        }
+
+        #speed-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #864AF9;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #speed-slider::-moz-range-thumb:hover {
+            background: #7a3fdf;
+        }
+
+        #speed-value {
+            display: block;
+            margin-top: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .play-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background-color: #864AF9;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            margin: 15px 0;
+        }
+
+        .play-btn:hover {
+            background-color: #7a3fdf;
+            transform: scale(1.1);
+        }
+
+        .play-btn i {
+            font-size: 24px;
+            color: white;
+        }
+
+        #reupload {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: #864AF9;
+            border: 1px solid #864AF9;
+            border-radius: 8px;
+            justify-content: center;
+            text-align: center;
+            text-decoration: none;
+            box-sizing: border-box;
+            transition: 0.3s ease;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        #speedup {
+            background: #864AF9;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            display: none;
+        }
+
+        #speedup:hover {
+            background: #7a3fdf;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading-spinner {
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            border-top: 5px solid #864AF9;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Premium popup styles */
+        .premium-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            z-index: 1000;
+            text-align: center;
+        }
+        .premium-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .premium-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #191919;
+        }
+        .premium-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #555;
+            margin-bottom: 25px;
+        }
+        .premium-button {
+            display: inline-block;
+            background-color: #864AF9;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-family: 'Montserrat', sans-serif;
+            transition: background-color 0.2s;
+        }
+        .premium-button:hover {
+            background-color: #7a3fdf;
+        }
+        .premium-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="main-div">
+            <div class="sub-main-div">
+                <img src="{% static 'images/logo.svg' %}" alt="Logo">
+                <a href="{% url 'preview' %}" class="anchor-sub-main"></a>
+            </div>
+            <div class="right">
+                <span class="right-span">Credits Remaining: <span id="number">{{ user_subscription.unused_credits }}</span></span>
+                <div class="line"></div>
+                <div class="img" id="pfp" onclick="toggleDropdown()">
+                    <div class="img-sub-div">
+                        <div class="img-sub">
+                            <img src="{% static 'images/profile.svg' %}" alt="Profile">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pfpdropdown" class="not-present">
+                    <div class="not-present-sub">
+                        <span class="not-present-sub-span1">{{ user_subscription.user.first_name }}</span>
+                        <span class="not-present-sub-span2">{{ user_subscription.user.email }}</span>
+                    </div>
+                    <div class="profile-main-div">
+                        <div class="profile-sub-div">
+                            <div class="dropdownText">
+                                <span class="dropdownText" style="width: fit-content;">Credit Left</span>
+                                <span class="dropdownText" style="width: fit-content; color: #19191980;">{{ user_subscription.unused_credits }}</span>
+                            </div>
+                        </div>
+                        <span class="dropdownText">
+                            <a href="{% url 'asset_library' %}">Manage Asset Library</a>
+                        </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'recent_videos' %}">Manage Video Drafts</a>
+                        </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'manage_subscription' %}">Manage Subscription</a>
+                        </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'speed_up_video' %}">Video Speed Up</a>
+                        </span>
+                    </div>
+                    <div class="profile-last-div">
+                        <span class="dropdownText"><a href="{% url 'logout' %}">Log Out</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div style="display: flex; justify-content: center; align-items: center; position: relative; margin-top: 99px;">
+        <img src="https://vlsmlsaker.s3.amazonaws.com/assets/background/Ellipse%202.svg" alt="" style="
+            position: absolute;
+            z-index: -1;
+            width: 1000px;
+            height: auto;
+            filter: blur(400px);
+            opacity: 35%;
+        ">
+
+        {% if 'Free' in user_subscription.plan.name %}
+        <!-- Premium popup for free users -->
+        <div class="premium-overlay"></div>
+        <div class="premium-popup">
+            <h2 class="premium-title">Premium Feature</h2>
+            <p class="premium-text">
+                Video speed-up functionality is available exclusively for premium subscribers. Upgrade your plan to unlock this feature and more.
+            </p>
+            <a href="{% url 'manage_subscription' %}" class="premium-button">
+                Upgrade Now
+            </a>
+        </div>
+        
+        <div style="filter: blur(5px); pointer-events: none;">
+        {% endif %}
+
+        <form id="speedUpForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="container" style="display: flex; width: 100%; justify-content: center; margin-bottom: 50px; background:#ffffff">
+                <div style="
+                display: flex;
+                text-align: center;
+                min-width: 524px;
+                height: fit-content;
+                gap: 34px;
+                background:#ffffff;
+                border: 1px solid #0000004D;
+                border-radius: 8px;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                padding: 28px 24px;
+                ">
+                    <div>
+                        <span style="font-family: Montserrat; font-size: 24px; font-weight: 700; line-height: 29.26px; text-align: center;color: #864AF9;">
+                            Speed Up Your Video
+                        </span>
+                    </div>
+
+                    <div style="width: 100%; border-radius: 8px; align-items: center; justify-content: center; display: flex;">
+                        <div id="videoPreviewContainer" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                            <div class="video-container" id="video-container">
+                                <div id="video-container-box" style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
+                                    <video id="video-player" controls preload="auto" width="100%" height="auto">
+                                        <source src="" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            </div>
+
+                            <div class="upload-container" id="upload-container">
+                                <div id="drop-area">
+                                    <i class="ri-upload-cloud-2-line"></i>
+                                    <p>Click to Upload or Drag Video Here</p>
+                                    <span>Supported formats: MP4, MOV, AVI</span>
+                                    <input type="file" id="file-input" name="video_file" accept="video/*" style="display: none;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="controls" style="display: none;" class="controls">
+                        <button id="reupload" type="button">Change Video</button>
+                        
+                        <div class="play-btn" id="play-btn">
+                            <i class="ri-play-fill" id="play-icon"></i>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="speed-slider">Speed:</label>
+                            <input type="range" id="speed-slider" name="speed" min="1" max="4" step="0.01" value="1" />
+                            <span id="speed-value">1.00x</span>
+                        </div>
+                    </div>
+                    
+                    <button id="speedup" type="submit">Process</button>
+                    
+                    <div id="loading" class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Processing your video. This may take a few moments...</p>
+                    </div>
+                </div>
+            </div>
+        </form>
+        {% if 'Free' in user_subscription.plan.name %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        // Profile dropdown function
+        function toggleDropdown() {
+            const dropdown = document.getElementById('pfpdropdown');
+            dropdown.classList.toggle('not-present');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('file-input');
+            const uploadContainer = document.getElementById('upload-container');
+            const videoContainer = document.getElementById('video-container');
+            const controls = document.getElementById('controls');
+            const playBtn = document.getElementById('play-btn');
+            const playIcon = document.getElementById('play-icon');
+            const speedSlider = document.getElementById('speed-slider');
+            const speedValue = document.getElementById('speed-value');
+            const speedupBtn = document.getElementById('speedup');
+            const videoPlayer = document.getElementById('video-player');
+            const form = document.getElementById('speedUpForm');
+            const loading = document.getElementById('loading');
+            const reuploadBtn = document.getElementById('reupload');
+
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+
+            // Highlight drop zone when item is dragged over it
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            // Handle dropped files
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            // Handle click to upload
+            dropArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            // Re-upload button
+            reuploadBtn.addEventListener('click', () => {
+                resetUpload();
+            });
+
+            fileInput.addEventListener('change', handleFileSelect, false);
+
+            // Play/Pause functionality
+            playBtn.addEventListener('click', togglePlay);
+
+            // Update playback speed
+            speedSlider.addEventListener('input', updateSpeed);
+
+            // Update slider color based on value
+            speedSlider.addEventListener('input', updateSliderBg);
+
+            // Form submission
+            form.addEventListener('submit', handleSubmit);
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            function highlight(e) {
+                uploadContainer.classList.add('dragover');
+            }
+
+            function unhighlight(e) {
+                uploadContainer.classList.remove('dragover');
+            }
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+
+            function handleFileSelect(e) {
+                const files = e.target.files;
+                handleFiles(files);
+            }
+
+            function handleFiles(files) {
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('video/')) {
+                        const videoURL = URL.createObjectURL(file);
+                        videoPlayer.src = videoURL;
+                        showVideoPlayer();
+                    } else {
+                        alert('Please upload a video file');
+                    }
+                }
+            }
+
+            function showVideoPlayer() {
+                uploadContainer.style.display = 'none';
+                videoContainer.style.display = 'block';
+                controls.style.display = 'flex';
+                speedupBtn.style.display = 'block';
+                videoPlayer.load();
+            }
+
+            function resetUpload() {
+                videoPlayer.src = '';
+                uploadContainer.style.display = 'flex';
+                videoContainer.style.display = 'none';
+                controls.style.display = 'none';
+                speedupBtn.style.display = 'none';
+                speedSlider.value = 1;
+                speedValue.textContent = '1.00x';
+                updateSliderBg();
+                fileInput.value = '';
+            }
+
+            function togglePlay() {
+                if (videoPlayer.paused || videoPlayer.ended) {
+                    videoPlayer.play();
+                    playIcon.className = 'ri-pause-fill';
+                } else {
+                    videoPlayer.pause();
+                    playIcon.className = 'ri-play-fill';
+                }
+            }
+
+            // Update video playback speed for preview
+            function updateSpeed() {
+                const speed = parseFloat(speedSlider.value);
+                videoPlayer.playbackRate = speed;
+                speedValue.textContent = speed.toFixed(2) + 'x';
+                updateSliderBg();
+            }
+
+            // Update slider background based on value
+            function updateSliderBg() {
+                const value = ((speedSlider.value - speedSlider.min) / (speedSlider.max - speedSlider.min)) * 100;
+                speedSlider.style.background = `linear-gradient(to right, #864AF9 0%, #864AF9 ${value}%, #ddd ${value}%, #ddd 100%)`;
+            }
+
+            // Handle form submission
+            function handleSubmit(e) {
+                e.preventDefault();
+                
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('Please select a video file first.');
+                    return;
+                }
+                
+                // Show loading indicator
+                loading.style.display = 'block';
+                speedupBtn.style.display = 'none';
+                controls.style.display = 'none';
+                
+                // Submit the form
+                const formData = new FormData(form);
+                
+                // Make sure we're using the correct field name for the Django view
+                // Keep both field names to handle either in the backend
+                const videoFile = fileInput.files[0];
+                formData.append('file', videoFile);
+                formData.append('video_file', videoFile);
+                
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.blob();
+                    }
+                    throw new Error('Network response was not ok.');
+                })
+                .then(blob => {
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'sped_up_video.mp4';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    
+                    // Reset UI
+                    loading.style.display = 'none';
+                    resetUpload();
+                    alert('Video has been processed successfully!');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loading.style.display = 'none';
+                    speedupBtn.style.display = 'block';
+                    controls.style.display = 'flex';
+                    alert('An error occurred while processing the video. Please try again.');
+                });
+            }
+
+            // Initialize slider background
+            updateSliderBg();
+        });
+    </script>
+</body>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/67bde19ce1b723191240f344/1ikurij78';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+</html>

@@ -51,6 +51,15 @@
 .button-proceed.loading img {
   visibility: hidden; /* Use visibility instead of display to maintain layout */
 }
+        .progress-fill{
+            width: 70% !important;
+        }
+        .sub-div3{
+            background-color: #9662f9 !important;
+        }
+        .sub-div4{
+            background-color: #9662f9 !important;
+        }
     </style>
 </head>
 
@@ -94,6 +103,10 @@
                         <span class="dropdownText">
                             <a href="{% url 'manage_subscription' %}">Manage Subscription</a>
                         </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'speed_up_video' %}">Video Speed Up</a>
+                        </span>
+        
                     </div>
                     <div class="profile-last-div">
                         <span class="dropdownText"><a href="/">Log Out</a></span>
@@ -210,7 +223,7 @@
              <div class="submit-container" style="margin-top: 40px;">
     <button type="submit" class="button button-proceed" id="submitBgButton">
         <div class="spinner"></div>
-        <span id="submitButtonText">Proceed without background music</span>
+        <span id="submitButtonText">Proceed Without Background Music</span>
         <img src="{% static 'images/arrow.svg' %}" alt="">
     </button>
 </div>
@@ -446,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hasFiles) {
             submitButtonText.textContent = 'Apply Background Music';
         } else {
-            submitButtonText.textContent = 'Proceed without background music';
+            submitButtonText.textContent = 'Proceed Without Background Music';
         }
     }
     
@@ -532,6 +545,18 @@ document.querySelectorAll('.slider').forEach(slider => {
 
     </script>
 </body>
-
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/67bde19ce1b723191240f344/1ikurij78';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 
 </html>

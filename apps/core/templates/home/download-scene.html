@@ -13,6 +13,79 @@
     <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
     <!-- Force HTTPS for all resources to prevent mixed content warnings -->
     <title>VideoCrafter.io</title>
+    <style>
+                .progress-fill{
+            width: 100% !important;
+        }
+        .sub-div3{
+            background-color: #9662f9 !important;
+        }
+        .sub-div4{
+            background-color: #9662f9 !important;
+        }
+        .sub-div5{
+            background-color: #9662f9 !important;
+        }
+        
+        /* Premium popup styles */
+        .premium-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            z-index: 1000;
+            text-align: center;
+            display: none;
+        }
+        .premium-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+        .premium-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #191919;
+        }
+        .premium-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #555;
+            margin-bottom: 25px;
+        }
+        .premium-button {
+            display: inline-block;
+            background-color: #864AF9;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-family: 'Montserrat', sans-serif;
+            transition: background-color 0.2s;
+        }
+        .premium-button:hover {
+            background-color: #7a3fdf;
+        }
+        .premium-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 
 <body>
@@ -56,6 +129,9 @@
                         <span class="dropdownText">
                             <a href="{% url 'manage_subscription' %}">Manage Subscription</a>
                         </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'speed_up_video' %}">Video Speed Up</a>
+                        </span>
                     </div>
                     <div class="profile-last-div">
                         <span class="dropdownText"><a href="{% url 'logout' %}">Log Out</a></span>
@@ -94,13 +170,30 @@
                     </video>
                 </div>
             </div>
-            <a href="/manage/recent-videos.html" class="draft">
+           <a href="{% url 'recent_videos' %}" class="draft">
                 <span class="draft-heading">Save as Draft</span>
             </a>
             {% if 'free' in user_subscription.plan.name|lower %}
-                <a id="downloadButton" class="download-link disabled" style="pointer-events: none;background-color: #19191980;">
-                    <span id="download_text">Upgrade to Download</span>
+                <a id="downloadButton" class="download-link" href="javascript:void(0);" onclick="showPremiumPopup()">
+                    <img src="{% static 'images/download-icon.svg' %}" alt="Download Icon">
+                    <span id="download_text">Download</span>
                 </a>
+                <!-- Premium popup elements -->
+                <div class="premium-overlay" id="premiumOverlay"></div>
+                <div class="premium-popup" id="premiumPopup">
+                    <h2 class="premium-title">Premium Feature</h2>
+                    <p class="premium-text">
+                        Downloading videos without watermark is a premium feature. Upgrade your subscription to download unlimited videos.
+                    </p>
+                    <a href="{% url 'manage_subscription' %}" class="premium-button">
+                        Upgrade Now
+                    </a>
+                    <div style="margin-top: 20px;">
+                        <button onclick="hidePremiumPopup()" style="background: none; border: none; color: #555; cursor: pointer; font-size: 14px; text-decoration: underline;">
+                            Close
+                        </button>
+                    </div>
+                </div>
             {% else %}
                 <a id="downloadButton" href="{% url 'proxy_video_download' video.id %}?redirect_to=preview" class="download-link" download>
                     <img src="{% static 'images/download-icon.svg' %}" alt="Download Icon">
@@ -163,6 +256,43 @@
             }
         });
     </script>
+    
+    <!-- Premium popup handling script -->
+    <script>
+        function showPremiumPopup() {
+            document.getElementById('premiumOverlay').style.display = 'block';
+            document.getElementById('premiumPopup').style.display = 'block';
+        }
+        
+        function hidePremiumPopup() {
+            document.getElementById('premiumOverlay').style.display = 'none';
+            document.getElementById('premiumPopup').style.display = 'none';
+        }
+        
+        // Close premium popup when clicking outside
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('premiumOverlay');
+            if (overlay) {
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) {
+                        hidePremiumPopup();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
-
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/67bde19ce1b723191240f344/1ikurij78';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </html>

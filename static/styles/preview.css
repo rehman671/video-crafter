@@ -71,7 +71,7 @@
 }
 
 .subtitle-border-radius-slider {
-    background: linear-gradient(to right, rgb(134, 74, 249) 52%, rgb(217, 217, 217) 52%);
+    background: linear-gradient(to right, rgb(134, 74, 249) 100%, rgb(217, 217, 217) 100%);
 }
 
 #preview-box {

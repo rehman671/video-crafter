@@ -4,6 +4,7 @@ from .constants import RESOLUTIONS
 
 class Video(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=225, null=True, blank=True)
     output = models.FileField(upload_to="output/", null=True, blank=True)
     text_file = models.FileField(upload_to="text_files/", null=True, blank=True)
     content = models.TextField(null=True, blank=True)

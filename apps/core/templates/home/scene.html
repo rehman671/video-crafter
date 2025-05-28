@@ -17,6 +17,7 @@
     <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
     <title>VideoCrafter.io</title>
     <style>
+        
         /* Free user overlay styling */
 #freeUserOverlay {
     position: absolute;
@@ -73,6 +74,98 @@
         75% { transform: translateX(5px); }
     }
 
+        /* Draft Save Button and Modal Styling */
+        .save-draft-btn {
+            background-color: #864AF9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 15px;
+                font-family: 'Montserrat', sans-serif;
+                font-weight: 600;
+
+        }
+
+        .save-draft-btn:hover {
+            background-color: #7038e0;
+        }
+
+        .draft-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .draft-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            min-width: 300px;
+            text-align: center;
+        }
+
+        .draft-modal-content h3 {
+            color: #864AF9;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .draft-modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .draft-modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .draft-save-btn, .draft-cancel-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Arial', sans-serif;
+
+        }
+
+        .draft-save-btn {
+            background-color: #864AF9;
+            color: white;
+        }
+
+        .draft-save-btn:hover {
+            background-color: #7038e0;
+        }
+
+        .draft-cancel-btn {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .draft-cancel-btn:hover {
+            background-color: #d0d0d0;
+        }
+        .progress-fill{
+            width: 38% !important;
+        }
+        .sub-div3{
+            background-color: #9662f9 !important;
+        }
     </style>
 </head>
 <body>
@@ -114,6 +207,9 @@
                         <span class="dropdownText">
                             <a href="{% url 'manage_subscription' %}">Manage Subscription</a>
                         </span>
+                        <span class="dropdownText">
+                            <a href="{% url 'speed_up_video' %}">Video Speed Up</a>
+                        </span>
                     </div>
                     <div class="profile-last-div">
                         <span class="dropdownText"><a href="{% url 'logout' %}">Log Out</a></span>
@@ -121,7 +217,21 @@
                 </div>
             </div>
         </div>
+        <!-- Draft Save Button -->
     </header>
+
+    <!-- Draft Name Popup Modal -->
+    <div id="draftModal" class="draft-modal">
+        <div class="draft-modal-content">
+            <h3>Save as Draft</h3>
+            <input type="text" id="draftName" placeholder="Enter draft name" maxlength="25">
+            <div class="draft-modal-buttons">
+                <button id="saveDraftConfirm" class="draft-save-btn">Save</button>
+                <button id="cancelDraft" class="draft-cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div class="progressbar">
         <div class="sub-div">
             <div class="progress-fill" style="width:66.66666666666667%"></div>
@@ -191,12 +301,7 @@
                         <div class="upload-folder-heading">
                             <div class="Script-text-file-text-sub">
                                 <div class="script-text">Upload Folder:</div>
-                                <div class="vh-parent">
-                                    <div class="vh-child">
-                                        <span class="text3">Please Make Sure Your Script Is On Txt
-                                            File</span>
-                                    </div>?
-                                </div>
+                               
                             </div>
                         </div>
                     </div>
@@ -349,6 +454,8 @@
                 </div>
             </div><input type="number" id="no_of_slides" hidden="" readonly="" name="no_of_slides" value="1">
             <div class="button-container">
+                <button id="saveDraftBtn" class="save-draft-btn">Save Draft</button>
+
                 <a href="" class="button-container-btn ">
                     <span id="button-text">Proceed To Background Music Selection</span>
                     <img id="proceed-svg" src="{% static 'images/arrow.svg' %}" alt="Arrow" style="display:inline-block">
@@ -530,7 +637,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log("Current subtitle count:", subtitleCount);
             
-            if(subtitleCount >= 10) {
+            if(subtitleCount > 10) {
                 // Disable add button
                 if(createLeadBtn) {
                     createLeadBtn.style.opacity = '0.5';
@@ -640,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if(isFreePlan) {
                 const subtitleCount = slides ? slides.length : 0;
                 
-                if(subtitleCount >= 10) {
+                if(subtitleCount > 10) {
                     e.preventDefault();
                     const subtitleLimitError = document.getElementById('subtitle-limit-error');
                     if(subtitleLimitError) {
@@ -815,73 +922,101 @@ function handleTopicChange(event) {
         }
 
         // These functions are for selecting and handling files in the popup
-        function handlePopupFileChange(e) {
-            console.log("File change event triggered");
-            const fileInput = document.getElementById('slide_file');
-            
-            if (fileInput && fileInput.files && fileInput.files.length > 0) {
-                popupFile = fileInput.files[0];
-                const fileName = popupFile.name;
-                console.log("File selected:", fileName);
-                
-                // Clear dropdown selections when file is chosen
-                const topicSelect = document.getElementById('selected_topic');
-                const videoSelect = document.getElementById('videoSelect');
-                
-                if (topicSelect) {
-                    topicSelect.value = "";
-                    popupTopic = "";
-                }
-                
-                if (videoSelect) {
-                    videoSelect.value = "";
-                    popupVideoClip = "";
-                }
-                
-                // Update upload text UI
-                const uploadText = document.getElementById("upload-text");
-                if (uploadText) {
-                    const lastDotIndex = fileName.lastIndexOf('.');
-                    const nameWithoutExt = lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : '';
-                    const extension = lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : '';
-                    const truncatedName = nameWithoutExt.length > 7 ? nameWithoutExt.substring(0, 7) : nameWithoutExt;
-                    uploadText.textContent = truncatedName + extension;
-                }
-                
-                // Show clear file button
-                const clearFileBtn = document.getElementById("clear-file");
-                if (clearFileBtn) {
-                    clearFileBtn.style.display = "inline";
-                }
-                
-                // Enable submit button
-                const submitButton = document.getElementById("submit-clip");
-                if (submitButton) {
-                    submitButton.disabled = false;
-                }
-            } else {
-                console.log("No file selected or file input not found");
-                popupFile = null;
-                
-                // Reset UI
-                const uploadText = document.getElementById("upload-text");
-                if (uploadText) {
-                    uploadText.textContent = "Choose File";
-                }
-                
-                // Hide clear file button
-                const clearFileBtn = document.getElementById("clear-file");
-                if (clearFileBtn) {
-                    clearFileBtn.style.display = "none";
-                }
-                
-                // Disable submit button if no video clip selected
-                const submitButton = document.getElementById("submit-clip");
-                if (submitButton) {
-                    submitButton.disabled = !popupVideoClip;
-                }
+  function handlePopupFileChange(e) {
+    console.log("File change event triggered");
+    const fileInput = document.getElementById('slide_file');
+    
+    if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        popupFile = fileInput.files[0];
+        const fileName = popupFile.name;
+        const fileSizeMB = popupFile.size / (1024 * 1024); // convert bytes to MB
+
+        // 500 MB size limit
+        if (fileSizeMB > 500) {
+            alert("File size exceeds 500MB. Please choose a smaller file.");
+            fileInput.value = ''; // Reset the file input
+            popupFile = null;
+
+            // Reset UI
+            const uploadText = document.getElementById("upload-text");
+            if (uploadText) {
+                uploadText.textContent = "Choose File";
             }
+
+            const clearFileBtn = document.getElementById("clear-file");
+            if (clearFileBtn) {
+                clearFileBtn.style.display = "none";
+            }
+
+            const submitButton = document.getElementById("submit-clip");
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+
+            return;
         }
+
+        console.log("File selected:", fileName);
+        
+        // Clear dropdown selections when file is chosen
+        const topicSelect = document.getElementById('selected_topic');
+        const videoSelect = document.getElementById('videoSelect');
+        
+        if (topicSelect) {
+            topicSelect.value = "";
+            popupTopic = "";
+        }
+        
+        if (videoSelect) {
+            videoSelect.value = "";
+            popupVideoClip = "";
+        }
+        
+        // Update upload text UI
+        const uploadText = document.getElementById("upload-text");
+        if (uploadText) {
+            const lastDotIndex = fileName.lastIndexOf('.');
+            const nameWithoutExt = lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : '';
+            const extension = lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : '';
+            const truncatedName = nameWithoutExt.length > 7 ? nameWithoutExt.substring(0, 7) : nameWithoutExt;
+            uploadText.textContent = truncatedName + extension;
+        }
+        
+        // Show clear file button
+        const clearFileBtn = document.getElementById("clear-file");
+        if (clearFileBtn) {
+            clearFileBtn.style.display = "inline";
+        }
+        
+        // Enable submit button
+        const submitButton = document.getElementById("submit-clip");
+        if (submitButton) {
+            submitButton.disabled = false;
+        }
+    } else {
+        console.log("No file selected or file input not found");
+        popupFile = null;
+        
+        // Reset UI
+        const uploadText = document.getElementById("upload-text");
+        if (uploadText) {
+            uploadText.textContent = "Choose File";
+        }
+        
+        // Hide clear file button
+        const clearFileBtn = document.getElementById("clear-file");
+        if (clearFileBtn) {
+            clearFileBtn.style.display = "none";
+        }
+        
+        // Disable submit button if no video clip selected
+        const submitButton = document.getElementById("submit-clip");
+        if (submitButton) {
+            submitButton.disabled = !popupVideoClip;
+        }
+    }
+}
+
 
         function clearPopupFile() {
             console.log("Clearing file selection");
@@ -1204,7 +1339,7 @@ function handleTopicChange(event) {
     // Check for free plan restrictions
     if(isFreePlan) {
         const subtitleCount = slides ? slides.length : 0;
-        if(subtitleCount >= 10) {
+        if(subtitleCount > 10) {
             popupErrorMessage = "Free plan users are limited to 10 subtitles. Please upgrade your subscription.";
             renderPopup();
             return;
@@ -1751,7 +1886,15 @@ document.addEventListener('DOMContentLoaded', addNotificationStyles);
                                     </div>
                                 </div>
                                 <div style="align-items: end;" class="form-group ai-form">
-                                <a href="javascript:void(0);" id="ai-clip">Click For AI Scene Suggestions</a>
+                                ${isFreePlan ? 
+                                    `<a href="javascript:void(0);" id="ai-clip" style="display: flex; align-items: center; color: #864AF9;">
+                                        Click For AI Scene Suggestions
+                                        <span style="margin-left: 5px; font-size: 12px; color: #ff5555; font-weight: bold; display: inline-flex; align-items: center;">
+                                            <span style="border: 1px solid #ff5555; border-radius: 4px; padding: 1px 4px; margin-left: 4px;">Premium</span>
+                                        </span>
+                                    </a>` : 
+                                    `<a href="javascript:void(0);" id="ai-clip">Click For AI Scene Suggestions</a>`
+                                }
                                     <button type="submit" id="submit-clip" class="submit-btn" ${popupFile || (!isFreePlan && popupTopic && popupVideoClip) ? '' : 'disabled'}>
                                         Submit
                                     </button>
@@ -1764,6 +1907,32 @@ document.addEventListener('DOMContentLoaded', addNotificationStyles);
         }
         // Function to handle AI scene suggestions button click
 function handleAISceneSuggestions() {
+    // Check if user is on free plan
+    if (typeof isFreePlan !== 'undefined' && isFreePlan) {
+        // Show premium feature modal
+        const premiumModal = document.createElement('div');
+        premiumModal.className = 'ai-modal';
+        premiumModal.style.display = 'flex';
+        premiumModal.innerHTML = `
+            <div class="ai-modal-content" style="background-color: white; border-radius: 8px; padding: 30px; max-width: 450px; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);">
+                <h2 style="font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 600; margin-bottom: 15px; color: #191919;">Premium Feature</h2>
+                <p style="font-family: 'Montserrat', sans-serif; font-size: 15px; line-height: 1.5; color: #555; margin-bottom: 25px;">
+                    AI scene suggestions are only available for premium users. Upgrade your subscription to access this feature and more.
+                </p>
+                <a href="{% url 'manage_subscription' %}" style="display: inline-block; background-color: #864AF9; color: white; padding: 12px 28px; border-radius: 4px; text-decoration: none; font-weight: 500; font-family: 'Montserrat', sans-serif;">
+                    Upgrade Now
+                </a>
+                <div style="margin-top: 20px;">
+                    <button onclick="this.parentNode.parentNode.parentNode.remove()" style="background: none; border: none; color: #555; cursor: pointer; font-size: 14px; text-decoration: underline;">
+                        Close
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(premiumModal);
+        return;
+    }
+    
     // Get currently selected text from the popup
     const selectedText = document.getElementById('slide_text')?.value || '';
     
@@ -2141,6 +2310,76 @@ document.head.appendChild(styleElement);
 document.addEventListener('DOMContentLoaded', function() {
     console.log('AI Scene Suggestions initialized');
 });
+
+// Draft handling functions
+document.getElementById('saveDraftBtn').addEventListener('click', function() {
+    document.getElementById('draftModal').style.display = 'flex';
+});
+
+document.getElementById('cancelDraft').addEventListener('click', function() {
+    document.getElementById('draftModal').style.display = 'none';
+});
+
+document.getElementById('saveDraftConfirm').addEventListener('click', function() {
+    const draftName = document.getElementById('draftName').value.trim();
+    if (!draftName) {
+        alert('Please enter a draft name');
+        return;
+    }
+
+    // Get current video ID from URL
+    const videoId = window.location.pathname.split('/').filter(Boolean).pop();
+
+    // Get CSRF token from cookie
+    const csrftoken = getCookie('csrftoken');
+
+    // Save draft
+    fetch('/save-draft/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            video_id: videoId,
+            name: draftName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Draft saved successfully!');
+            document.getElementById('draftModal').style.display = 'none';
+            window.location.href = '/recent-videos/';
+        } else {
+            alert(data.error || 'Failed to save draft');
+        }
+    })
+    .catch(error => {
+        alert('Failed to save draft');
+    });
+});
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('draftModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+};
     </script>
 </body>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/67bde19ce1b723191240f344/1ikurij78';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </html>

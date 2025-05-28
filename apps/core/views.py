@@ -27,12 +27,13 @@ from apps.processors.models import Video, Clips, Subclip, BackgroundMusic
 from apps.processors.handler.elevenlabs import ElevenLabsHandler
 from apps.processors.utils import generate_clips_from_text_file
 from django.urls import reverse
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from datetime import datetime, timedelta
 from django.conf import settings
 from apps.core.models import UserAsset
 from django.utils.encoding import force_bytes, force_str
-from apps.processors.utils import generate_signed_url
+from apps.processors.utils import generate_signed_url, generate_signed_url_for_upload
+from apps.core.utils import process_video_speed
 
 
 def index(request):
@@ -379,12 +380,26 @@ def scene_view(request, video_id):
         
         if request.method == "POST":
             if 'videotextfile' in request.FILES:
+                print("GOT FILE")
                 uploaded_file = request.FILES['videotextfile']
-                # Save the file to the text_file field instead of reading its content
-                video.text_file = uploaded_file
-                video.save()
-                generate_clips_from_text_file(video)
-        
+                
+                # Read content of uploaded file
+                uploaded_content = uploaded_file.read().decode('utf-8')
+                
+                # Check if video already has text file content
+                existing_content = ''
+                if video.text_file:
+                    video.text_file.seek(0)
+                    existing_content = video.text_file.read().decode('utf-8')
+                
+                # Only save and generate clips if content is different
+                if uploaded_content != existing_content:
+                    print("Content changed, updating text file")
+                    video.text_file = uploaded_file
+                    video.save()
+                    generate_clips_from_text_file(video)
+                else:
+                    print("Text file content unchanged, skipping update")
         # Get clips in sequence order
         clips = Clips.objects.filter(video=video).order_by('sequence')
         asset_folders = UserAsset.objects.filter(user=request.user, is_folder=True).order_by('filename')
@@ -429,7 +444,6 @@ def download_video(request, video_id):
     View to download the final video based on its ID
     """
     from apps.processors.services.video_processor import VideoProcessorService
-
     try:
         video = Video.objects.get(id=video_id, user=request.user)
         
@@ -473,8 +487,12 @@ def download_video(request, video_id):
         
         if video.output_with_bg and video.output_with_bg.name:
             # Generate a signed URL that's valid for 2 hours
-            video_url = generate_signed_url(video.output_with_bg.name, expires_in=7200)
-            video_url_preview = generate_signed_url(video.output_with_bg_watermark.name, expires_in=7200)
+            if BackgroundMusic.objects.filter(video=video).exists():
+                video_url = generate_signed_url_for_upload(video.output_with_bg.name, expires_in=7200)
+                video_url_preview = generate_signed_url_for_upload(video.output_with_bg_watermark.name, expires_in=7200)
+            else:
+                video_url = generate_signed_url(video.output_with_bg.name, expires_in=7200)
+                video_url_preview = generate_signed_url(video.output_with_bg_watermark.name, expires_in=7200)
             
             if video_url:
                 print(f"Successfully generated signed URL for video: {video_url}")
@@ -485,6 +503,7 @@ def download_video(request, video_id):
                 print(f"Failed to generate signed URL, falling back to: {video_url}")
         else:
             print(f"Video has no output file. Video ID: {video.id}")
+            return redirect("scene_view", video_id=video.id)
 
         return render(request, "home/download-scene.html", {
             'video': video,
@@ -1646,11 +1665,11 @@ def register_view(request):
                 'user': user,
                 'verification_url': verification_url,
                 'site_name': 'VideoCrafter.io',
-                'logo_url': request.build_absolute_uri('/media/logo.svg')
+                'logo_url': request.build_absolute_uri('/static/images/logo.png')
             }
             email_subject = "Verify Your Email Address"
             email_body = render_to_string('auth/email_template.html', context)
-
+            print(request.build_absolute_uri('/static/images/logo.png'))
             send_mail(
                 email_subject,
                 "Please verify your email address to complete registration",
@@ -1720,7 +1739,7 @@ def password_reset_request(request):
                 'user': user,
                 'reset_url': reset_url,
                 'site_name': 'Video Creator',
-                'logo_url': request.build_absolute_uri('/media/logo.svg')
+                'logo_url': request.build_absolute_uri('/static/images/logo.png')
             }
             
             # Render the email template
@@ -1920,3 +1939,84 @@ def cancel_subscription(request):
     
     # If not POST, redirect to plans view
     return redirect('manage_subscription')
+
+
+
+
+@login_required
+def speed_up_video(request):
+    if request.method == "POST":
+        try:
+            speed = float(request.POST.get("speed", 1.0))
+            print(f"Processing video with speed {speed}x")
+            
+            # Check if file exists in request.FILES
+            if 'file' in request.FILES:
+                video_file = request.FILES['file']
+            elif 'video_file' in request.FILES:
+                video_file = request.FILES['video_file']
+            else:
+                print("No video file found in request")
+                return JsonResponse({'error': 'No video file uploaded'}, status=400)
+
+            print(f"Received file: {video_file.name}, size: {video_file.size} bytes")
+            
+            if video_file:
+                processed_video_path = process_video_speed(video_file, speed)
+
+                if processed_video_path:
+                    try:
+                        # Open the file in binary mode
+                        video_file = open(processed_video_path, 'rb')
+                        response = FileResponse(
+                            video_file, 
+                            content_type='video/mp4'
+                        )
+                        
+                        # Set headers for download
+                        response['Content-Disposition'] = 'attachment; filename="sped_up_video.mp4"'
+                        response['Content-Length'] = os.path.getsize(processed_video_path)
+
+                        # Delete the file after sending
+                        os.remove(processed_video_path)
+                        
+                        return response
+
+                    except Exception as e:
+                        print(f"Error creating response: {str(e)}")
+                        # Clean up in case of error
+                        if os.path.exists(processed_video_path):
+                            os.remove(processed_video_path)
+                        return JsonResponse({'error': str(e)}, status=500)
+                else:
+                    return JsonResponse({'error': 'Failed to process video'}, status=500)
+            else:
+                return JsonResponse({'error': 'No video file uploaded'}, status=400)
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+
+    # For GET requests, render the template
+    context = {
+        'user_subscription': Subscription.objects.filter(user=request.user).first(),
+    }
+    return render(request, 'home/speed-up-video.html', context)
+
+
+
+def affiliate_program(request):
+    """View for the affiliate program"""
+    return render(request, "terms/affiliate-program.html")
+
+def refund(request):
+    """View for the affiliate program"""
+    return render(request, "terms/refund.html")
+
+def privacy(request):
+    """View for the affiliate program"""
+    return render(request, "terms/privacy.html")
+
+
+def terms_and_condition(request):
+    """View for the affiliate program"""
+    return render(request, "terms/terms-and-conditions.html")

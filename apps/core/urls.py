@@ -6,7 +6,7 @@ from apps.core.views import (
     stripe_billing_portal, purchase_credits, credits_success, stripe_webhook,
     upgrade_plan, asset_view, delete_asset, rename_asset, verify_email,
     register_view, register, password_reset_request, password_reset_confirm, loading_view, proxy_video_download,
-    cancel_subscription
+    cancel_subscription, speed_up_video, affiliate_program, refund, privacy, terms_and_condition
 )
 
 urlpatterns = [
@@ -47,5 +47,11 @@ urlpatterns = [
     path('password-reset/', password_reset_request, name='password_reset_request'),
     path('password-reset/<uidb64>/<token>/', password_reset_confirm, name='password_reset_confirm'),
     path('loading/<int:video_id>/', loading_view, name='loading'),  # Add loading URL pattern
+        path('speed-up-video/', speed_up_video, name='speed_up_video'),
+        path('affiliate-program/', affiliate_program, name='affiliate_program'),
+        path('refund/', refund, name='refund'),
+        path('privacy/', privacy, name='privacy'),
+        path('terms-and-condition/', terms_and_condition, name='terms_and_condition'),
+
 
 ]
