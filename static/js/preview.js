@@ -243,7 +243,7 @@ function updateResolutionSettings(selectedResolution) {
     const slider = document.getElementById('mySlider');
     if (slider) {
         slider.value = newFontSize;
-        updateSliderBackground('mySlider', newFontSize, 0, 25);
+        updateSliderBackground('mySlider', newFontSize, 16, 25);
     }
     document.getElementById('SliderValue').textContent = newFontSize;
     document.getElementById('recommended-font-size').textContent = `(Recommended Font Size: ${newFontSize})`;
@@ -302,7 +302,7 @@ function handleFontSizeChange(event) {
     // Update subtitle preview
     document.getElementById('previewText').style.fontSize = `${value * 0.8}px`;
 
-    updateSliderBackground('mySlider', value, 0, 25);
+    updateSliderBackground('mySlider', value, 16, 25);
 }
 
 function handleBorderRadiusChange(event) {
@@ -485,7 +485,7 @@ function handleResolutionChange(newResolution) {
 
 document.addEventListener('DOMContentLoaded', () => {
     updateResolutionSettings('1:1');
-    updateSliderBackground('mySlider', fontSize, 0, 25);
+    updateSliderBackground('mySlider', fontSize, 16, 25);
     updateSliderBackground('subtitleBorderRadiusSlider', borderRadius, 0, 26);
     document.getElementById('previewText').style.fontSize = `${fontSize * 0.8}px`;
     document.getElementById('previewBackground').style.borderRadius = `${borderRadius}px`;
@@ -573,7 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('pageshow', (event) => {
         if (event.persisted) {
             stopProcessingAnimation();
-            updateSliderBackground('mySlider', fontSize, 0, 25);
+            updateSliderBackground('mySlider', fontSize, 16, 25);
         }
     });
 });

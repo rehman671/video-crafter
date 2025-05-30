@@ -487,6 +487,7 @@ main .content {
     padding: 1.7vw 0;
     /* font-size: 1.388vw; */
     font-weight: 500;
+    justify-content: space-between;
     position: relative;
 }
 
@@ -500,7 +501,7 @@ main .content {
     display: flex;
     align-items: center;
     gap: 2.222vw;
-    width: 54.1vw;
+    width: 46.1vw;
 }
 
 .box>.log>div:first-child>div:nth-child(2) {
@@ -515,7 +516,7 @@ main .content {
 
 .box>.log>div:first-child>div:nth-child(3) {
     margin-right: 0vw;
-    width: 21vw;
+    width: 28vw;
 }
 
 .box>.log>div>div:nth-child(3) {

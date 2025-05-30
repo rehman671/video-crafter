@@ -438,6 +438,7 @@
     display: flex;
     width: 100%;
     flex-direction: column;
+    /* line-height: 20px; */
 }
 
 .textarea-class {

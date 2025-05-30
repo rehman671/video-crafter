@@ -153,16 +153,21 @@ def register_after_payment(request):
                 )
                 
                 # Get subscription details from Stripe
+                # Get subscription details from Stripe to get the actual period end
                 stripe_subscription = stripe.Subscription.retrieve(subscription_id)
-                
-                # Calculate period end date
-                print("xx")
-                print(stripe_subscription)
-                print("xx")
-                # In register_after_payment function:
-                # Calculate period end date with validation
 
-                period_end = timezone.now() + timedelta(days=30)
+                # Calculate period end date from Stripe subscription
+                if stripe_subscription and stripe_subscription.current_period_end:
+                    # Convert Stripe timestamp to Django datetime
+                    period_end = timezone.datetime.fromtimestamp(
+                        stripe_subscription.current_period_end, 
+                        tz=timezone.utc
+                    )
+                    print(f"Period end from Stripe: {period_end}")
+                else:
+                    # Fallback: 30 days from now if Stripe data is unavailable
+                    period_end = timezone.now() + timedelta(days=30)
+                    print(f"Fallback period end: {period_end}")
 
                 
                 # Create subscription in our database
@@ -1089,20 +1094,28 @@ def handle_plan_upgrade(session, metadata):
             current_subscription.unused_credits = remaining_credits + plan.ad_variations_per_month
             
             # Get period end date
+            # Get period end date from Stripe subscription
             try:
                 stripe_subscription = stripe.Subscription.retrieve(new_subscription_id)
                 if stripe_subscription and stripe_subscription.current_period_end:
-                    import datetime
-                    from django.utils import timezone
-                    
-                    # Use make_aware to properly handle timezone
-                    period_end = timezone.make_aware(
-                        datetime.datetime.fromtimestamp(stripe_subscription.current_period_end)
+                    # Convert Stripe timestamp to Django datetime with UTC timezone
+                    period_end = timezone.datetime.fromtimestamp(
+                        stripe_subscription.current_period_end,
+                        tz=timezone.utc
                     )
                     current_subscription.current_period_end = period_end
-                    print(f"Updated period end date to: {period_end}")
+                    print(f"Updated period end date from Stripe: {period_end}")
+                else:
+                    # Fallback: 30 days from now if Stripe data is unavailable
+                    period_end = timezone.now() + timedelta(days=30)
+                    current_subscription.current_period_end = period_end
+                    print(f"Fallback period end date: {period_end}")
             except Exception as e:
                 print(f"Error getting period end date: {str(e)}")
+                # Fallback on error
+                period_end = timezone.now() + timedelta(days=30)
+                current_subscription.current_period_end = period_end
+                print(f"Error fallback period end date: {period_end}")
             
             # Save the updated subscription
             current_subscription.save()
@@ -1171,19 +1184,26 @@ def handle_new_subscription(session, metadata):
                     billing_info.save()
             
             # Get period end date
+            # Get period end date from Stripe subscription
             period_end = None
             try:
                 stripe_subscription = stripe.Subscription.retrieve(subscription_id)
                 if stripe_subscription and stripe_subscription.current_period_end:
-                    import datetime
-                    from django.utils import timezone
-                    
-                    period_end = datetime.datetime.fromtimestamp(
+                    # Convert Stripe timestamp to Django datetime with UTC timezone
+                    period_end = timezone.datetime.fromtimestamp(
                         stripe_subscription.current_period_end, 
                         tz=timezone.utc
                     )
+                    print(f"Period end from Stripe: {period_end}")
+                else:
+                    # Fallback: 30 days from now if Stripe data is unavailable
+                    period_end = timezone.now() + timedelta(days=30)
+                    print(f"Fallback period end: {period_end}")
             except Exception as e:
                 print(f"Error getting subscription details: {str(e)}")
+                # Fallback on error
+                period_end = timezone.now() + timedelta(days=30)
+                print(f"Error fallback period end: {period_end}")
             
             # Create or update the subscription
             subscription, created = Subscription.objects.update_or_create(

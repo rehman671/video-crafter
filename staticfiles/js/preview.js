@@ -243,7 +243,7 @@ function updateResolutionSettings(selectedResolution) {
     const slider = document.getElementById('mySlider');
     if (slider) {
         slider.value = newFontSize;
-        updateSliderBackground('mySlider', newFontSize, 0, 25);
+        updateSliderBackground('mySlider', newFontSize, 16, 25);
     }
     document.getElementById('SliderValue').textContent = newFontSize;
     document.getElementById('recommended-font-size').textContent = `(Recommended Font Size: ${newFontSize})`;

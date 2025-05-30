@@ -223,7 +223,7 @@
         </div>
     </div>
     <div class="placeholder">
-        <video src="{% static 'public/videos/dummy.mp4' %}" style="width: 100%;" poster="{% static 'images/poster.jpg' %}" controls></video>
+        <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/VideoCrafter+VSL.mp4" style="width: 100%;"  controls poster="{% static 'images/main_video_poster.jpg' %}"></video>
     </div>
     <div class="portfolio" id="Portfolio">
         <div class="portfoliotext mtg">
@@ -285,151 +285,49 @@
                 you in control.</p>
         </div>
     </div>
-    <div class="video-slider">
-        <!-- Header -->
-        <div class="portfolio-header">
+<div class="video-showcase">
+        <div class="showcase-title">
             <h2>
                 See What <br />
-                <span class="highlight">VideoCrafter.io</span> Has Done
+                <span class="accent-text">VideoCrafter.io</span> Has Done
             </h2>
         </div>
 
-        <!-- Desktop Grid Layout -->
-        <div class="video-grid">
-            <!-- TikTok Videos -->
-            <h3 class="grid-title">TikTok Ad Examples</h3>
-            <div class="grid-container">
-                <div class="grid-video">
-                    <video src="{% static 'videos/tiktok/tiktok1.mp4' %}" style="width: 100%;" poster="{% static 'images/tiktok-poster.png' %}"
-                        controls playsinline></video>
+        <div class="video-layout">
+            <div class="video-row">
+                <div class="video-item">
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%205.mp4"
+                        style="width: 100%;"
+                        poster="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%201.jpg" controls
+                        playsinline></video>
                 </div>
-                <div class="grid-video">
-                    <video src="{% static 'videos/tiktok/tiktok1.mp4' %}" style="width: 100%;" poster="{% static 'images/tiktok-poster.png' %}"
-                        controls playsinline></video>
+                <div class="video-item">
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%201.mp4"
+                        style="width: 100%;"
+                        poster="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%203.jpg" controls
+                        playsinline></video>
                 </div>
-                <div class="grid-video">
-                    <video src="{% static 'videos/tiktok/tiktok1.mp4' %}" style="width: 100%;" poster="{% static 'images/tiktok-poster.png' %}"
-                        controls playsinline></video>
-                </div>
-            </div>
-
-            <!-- Facebook Videos -->
-            <h3 class="grid-title">Facebook/Instagram Ad Examples</h3>
-            <div class="grid-container">
-                <div class="grid-video">
-                    <video src="{% static 'videos/facebook/facebook1.mp4' %}" style="width: 100%;" poster="{% static 'images/facebook-poster.png' %}"
-                        controls playsinline></video>
-                </div>
-                <div class="grid-video">
-                    <video src="{% static 'videos/facebook/facebook1.mp4' %}" style="width: 100%;" poster="{% static 'images/facebook-poster.png' %}"
-                        controls playsinline></video>
-                </div>
-                <div class="grid-video">
-                    <video src="{% static 'videos/facebook/facebook1.mp4' %}" style="width: 100%;" poster="{% static 'images/facebook-poster.png' %}"
-                        controls playsinline></video>
+                <div class="video-item">
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%204.mp4"
+                        style="width: 100%;"
+                        poster="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%202.jpg" controls
+                        playsinline></video>
                 </div>
             </div>
 
-            <!-- YouTube Videos -->
-            <h3 class="grid-title">YouTube Ad Examples</h3>
-            <div class="grid-container">
-                <div class="grid-video">
-                    <video src="{% static 'videos/youtube/youtube1.mp4' %}" style="width: 100%;" poster="{% static 'images/youtube-poster.png' %}"
-                        controls playsinline></video>
+            <div class="video-stack last-clips">
+                <div class="video-item">
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%203.mp4"
+                        style="width: 100%;"
+                        poster="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%204.jpg" controls
+                        playsinline></video>
                 </div>
-                <div class="grid-video">
-                    <video src="{% static 'videos/youtube/youtube1.mp4' %}" style="width: 100%;" poster="{% static 'images/youtube-poster.png' %}"
-                        controls playsinline></video>
+                <div class="video-item">
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%202.mp4"
+                        style="width: 100%;"
+                        poster="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%205.jpg" controls
+                        playsinline></video>
                 </div>
-                <div class="grid-video">
-                    <video src="{% static 'videos/youtube/youtube1.mp4' %}" style="width: 100%;" poster="{% static 'images/youtube-poster.png' %}"
-                        controls playsinline></video>
-                </div>
-            </div>
-        </div>
-
-        <!-- Mobile Sliders -->
-        <!-- TikTok Slider -->
-        <div class="mobile-slider tiktok">
-            <h3 class="slider-title">TikTok Ad Examples</h3>
-            <div class="slider-wrapper" id="tiktok-slider">
-                <button class="slider-btn prev" onclick="moveSlider('tiktok', -1)"> &lt; </button>
-                <div class="slider-videos">
-                    <div class="slider-video">
-                        <video src="{% static 'videos/tiktok/tiktok1.mp4' %}" poster="{% static 'images/tiktok-poster.png' %}" controls
-                            playsinline></video>
-                    </div>
-                    <div class="slider-video">
-                        <video src="{% static 'videos/tiktok/tiktok1.mp4' %}" poster="{% static 'images/tiktok-poster.png' %}" controls
-                            playsinline></video>
-                    </div>
-                    <div class="slider-video">
-                        <video src="{% static 'videos/tiktok/tiktok1.mp4' %}" poster="{% static 'images/tiktok-poster.png' %}" controls
-                            playsinline></video>
-                    </div>
-                </div>
-                <button class="slider-btn next" onclick="moveSlider('tiktok', 1)"> &gt; </button>
-            </div>
-            <div class="slider-dots" id="tiktok-dots">
-                <span class="dot active" onclick="setSliderIndex('tiktok', 0)"></span>
-                <span class="dot" onclick="setSliderIndex('tiktok', 1)"></span>
-                <span class="dot" onclick="setSliderIndex('tiktok', 2)"></span>
-            </div>
-        </div>
-
-        <!-- Facebook Slider -->
-        <div class="mobile-slider facebook">
-            <h3 class="slider-title">Facebook/Instagram Ad Examples</h3>
-            <div class="slider-wrapper" id="facebook-slider">
-                <button class="slider-btn prev" onclick="moveSlider('facebook', -1)"> &lt; </button>
-                <div class="slider-videos">
-                    <div class="slider-video">
-                        <video src="{% static 'videos/facebook/facebook1.mp4' %}" poster="{% static 'images/facebook-poster.png' %}" controls
-                            playsinline></video>
-                    </div>
-                    <div class="slider-video">
-                        <video src="{% static 'videos/facebook/facebook1.mp4' %}" poster="{% static 'images/facebook-poster.png' %}" controls
-                            playsinline></video>
-                    </div>
-                    <div class="slider-video">
-                        <video src="{% static 'videos/facebook/facebook1.mp4' %}" poster="{% static 'images/facebook-poster.png' %}" controls
-                            playsinline></video>
-                    </div>
-                </div>
-                <button class="slider-btn next" onclick="moveSlider('facebook', 1)"> &gt; </button>
-            </div>
-            <div class="slider-dots" id="facebook-dots">
-                <span class="dot active" onclick="setSliderIndex('facebook', 0)"></span>
-                <span class="dot" onclick="setSliderIndex('facebook', 1)"></span>
-                <span class="dot" onclick="setSliderIndex('facebook', 2)"></span>
-            </div>
-        </div>
-
-        <!-- YouTube Slider -->
-        <div class="mobile-slider youtube">
-            <h3 class="slider-title">YouTube Ad Examples</h3>
-            <div class="slider-wrapper" id="youtube-slider">
-                <button class="slider-btn prev" onclick="moveSlider('youtube', -1)"> &lt; </button>
-                <div class="slider-videos">
-                    <div class="slider-video">
-                        <video src="{% static 'videos/youtube/youtube1.mp4' %}" poster="{% static 'images/youtube-poster.png' %}" controls
-                            playsinline></video>
-                    </div>
-                    <div class="slider-video">
-                        <video src="{% static 'videos/youtube/youtube1.mp4' %}" poster="{% static 'images/youtube-poster.png' %}" controls
-                            playsinline></video>
-                    </div>
-                    <div class="slider-video">
-                        <video src="{% static 'videos/youtube/youtube1.mp4' %}" poster="{% static 'images/youtube-poster.png' %}" controls
-                            playsinline></video>
-                    </div>
-                </div>
-                <button class="slider-btn next" onclick="moveSlider('youtube', 1)"> &gt; </button>
-            </div>
-            <div class="slider-dots" id="youtube-dots">
-                <span class="dot active" onclick="setSliderIndex('youtube', 0)"></span>
-                <span class="dot" onclick="setSliderIndex('youtube', 1)"></span>
-                <span class="dot" onclick="setSliderIndex('youtube', 2)"></span>
             </div>
         </div>
     </div>
@@ -463,8 +361,8 @@
                     </div>
                 </div>
                 <div class="hiw-element-placeholder">
-                    <video src="{% static 'public/videos/dummy.mp4' %}" style="width: 100%;" poster="{% static 'images/poster.jpg' %}"
-                        controls></video>
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/step-1.mp4" style="width: 100%;" 
+                        controls autoplay loop muted></video>
                 </div>
                 <div class="sep-border"></div>
             </div>
@@ -479,8 +377,8 @@
                     </div>
                 </div>
                 <div class="hiw-element-placeholder">
-                    <video src="{% static 'public/videos/dummy.mp4' %}" style="width: 100%;" poster="{% static 'images/poster.jpg' %}"
-                        controls></video>
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/step-2.mp4" style="width: 100%;" 
+                        controls autoplay loop muted></video>
                 </div>
                 <div class="sep-border"></div>
             </div>
@@ -494,8 +392,8 @@
                     </div>
                 </div>
                 <div class="hiw-element-placeholder">
-                    <video src="{% static 'public/videos/dummy.mp4' %}" style="width: 100%;" poster="{% static 'images/poster.jpg' %}"
-                        controls></video>
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/step-3.mp4" style="width: 100%;" 
+                        controls autoplay loop muted></video>
                 </div>
                 <div class="sep-border"></div>
             </div>
@@ -509,8 +407,8 @@
                     </div>
                 </div>
                 <div class="hiw-element-placeholder">
-                    <video src="{% static 'public/videos/dummy.mp4' %}" style="width: 100%;" poster="{% static 'images/poster.jpg' %}"
-                        controls></video>
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/step-4.mp4" style="width: 100%;" 
+                        controls autoplay loop muted></video>
                 </div>
                 <div class="sep-border"></div>
             </div>
@@ -524,8 +422,8 @@
                     </div>
                 </div>
                 <div class="hiw-element-placeholder">
-                    <video src="{% static 'public/videos/dummy.mp4' %}" style="width: 100%;" poster="{% static 'images/poster.jpg' %}"
-                        controls></video>
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/step-5.mp4" style="width: 100%;" 
+                        controls autoplay loop muted></video>
                 </div>
                 <div class="sep-border"></div>
             </div>
@@ -539,8 +437,8 @@
                     </div>
                 </div>
                 <div class="hiw-element-placeholder">
-                    <video src="{% static 'public/videos/dummy.mp4' %}" style="width: 100%;" poster="{% static 'images/poster.jpg' %}"
-                        controls></video>
+                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/step-6.mp4" style="width: 100%;" 
+                        controls autoplay loop muted></video>
                 </div>
             </div>
         </div>
@@ -597,7 +495,7 @@
             High-Converting Video Sales Letters With Ease.
         </p>
         <div class="placeholder">
-            <video src="{% static 'public/videos/dummy.mp4' %}" style="width: 100%;" poster="{% static 'images/poster.jpg' %}" controls></video>
+            <video src="{% static 'public/videos/dummy.mp4' %}" style="width: 100%;"  controls></video>
         </div>
     </div>
     <div class="pricing" id="pricing">
@@ -747,7 +645,7 @@
             <button class="cta-button">Get VideoCrafter Now</button>
         </div>
     </div>
-    <div id="earning" class="earning-section">
+    <div id="earning" class="earning-section" style="display: none;">
         <h1 class="earning-title">
             Become a VideoCrafter.io Affiliate And
             <br />

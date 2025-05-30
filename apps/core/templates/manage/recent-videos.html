@@ -168,10 +168,9 @@
                         <div>
                             <div>
                                 <input type="checkbox" name="selectall" id="selectall" style="opacity: 0;">
-                                <div>Text Files</div>
+                                <div style="margin-left:5%">Text Files</div>
                             </div>
-                            <div>Clips</div>
-                            <div>Created At</div>
+                            <div style="margin-right:15%;" >Created At</div>
                         </div>
                         {% for video in videos %}
                         <div class="log-item" data-file-id="{{ video.id }}" onclick="handleRowClick(event, '{% url 'download_video' video.id %}')">

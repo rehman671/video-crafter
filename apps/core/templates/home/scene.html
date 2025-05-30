@@ -75,21 +75,27 @@
     }
 
         /* Draft Save Button and Modal Styling */
-        .save-draft-btn {
-            background-color: #864AF9;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 15px;
-                font-family: 'Montserrat', sans-serif;
-                font-weight: 600;
-
-        }
+        .save-draft-btn{
+    display: inline-block;
+    padding: 10.5px 20px;
+    color: #6c25be;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 15px;
+    border: 2px solid;
+    font-weight: 500;
+    margin: 0px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: relative;
+    left: -26px;
+    top: 0;
+    background-color: #f9f9f9;
+}
 
         .save-draft-btn:hover {
-            background-color: #7038e0;
+            background-color: #f9f9f9;
         }
 
         .draft-modal {
@@ -449,7 +455,7 @@
                         Subtitle +
                     </a>
                 </div>
-                <div id="subtitle-limit-error" style="color: red; margin-top: 10px; display: none;">
+                <div id="subtitle-limit-error" style="color: red; margin-top: 10px; display: none; font-size: 11px;">
                     Free plan users are limited to 10 subtitles. Please upgrade your subscription for unlimited subtitles.
                 </div>
             </div><input type="number" id="no_of_slides" hidden="" readonly="" name="no_of_slides" value="1">
@@ -1779,6 +1785,7 @@ function addNotificationStyles() {
         mark.handlePopupSubmit[data-loading="true"] {
             background-color: rgba(134, 74, 249, 0.3);
             position: relative;
+            
         }
         
         mark.handlePopupSubmit[data-loading="true"]:after {
@@ -1850,7 +1857,7 @@ document.addEventListener('DOMContentLoaded', addNotificationStyles);
                                             <div class="form-group" style="height: 100%;">
                                                 <div class="upload-container">
                                                     <label for="slide_file" class="upload-label">
-                                                        <img src="/images/upload.svg" alt="" class="uploadSvg">
+                                                        <img src="{% static 'images/upload.svg' %}" alt="" class="uploadSvg">
                                                         <span id="upload-text">${popupFile ? popupFile.name.slice(0, 7) + (popupFile.name.includes('.') ? popupFile.name.slice(popupFile.name.lastIndexOf('.')) : '') : 'Choose File'}</span>
                                                     </label>
                                                     <i id="clear-file" style="display: ${popupFile ? 'inline' : 'none'};" onclick="clearPopupFile()" class="ri-close-circle-line"></i>

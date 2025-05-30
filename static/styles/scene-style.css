@@ -842,6 +842,7 @@ select::-webkit-dropdown-arrow {
     margin: 2px;
     font-weight: bold;
     cursor: pointer;
+    font-size: 15px;
 }
 
 

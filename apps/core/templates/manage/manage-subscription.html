@@ -95,8 +95,8 @@
             document.getElementById('modalMessage').textContent = message;
             document.getElementById('confirmationModal').style.display = 'block';
             document.getElementById('confirmButton').onclick = () => {
-                closeModal();
                 callback();
+                closeModal();
             };
         }
 
@@ -118,25 +118,28 @@
             return false;
         }
         
-        function confirmDowngrade(link, event) {
-            event.preventDefault();
-            currentLink = link;
-            showModal(
-                'Downgrade Subscription',
-                'Are you sure you want to downgrade your subscription? This may affect your available features.',
-                () => {
-                    if (currentLink) window.location.href = currentLink.href;
-                }
-            );
-            return false;
+  function confirmDowngrade(link, event) {
+    event.preventDefault();
+    console.log("Downgrade link clicked:", link.href);
+    const targetUrl = link.href; // Capture the URL immediately
+    showModal(
+        'Downgrade Subscription',
+        'Are you sure you want to downgrade your subscription? This may affect your available features.',
+        () => {
+            console.log("Confirmed downgrade, redirecting to:", targetUrl);
+            window.location.href = targetUrl;
         }
+    );
+    return false;
+}
 
         // Close modal when clicking outside
-        document.getElementById('confirmationModal').addEventListener('click', function(event) {
+        {% comment %} document.getElementById('confirmationModal').addEventListener('click', function(event) {
             if (event.target === this) {
                 closeModal();
             }
-        });
+        }
+        ); {% endcomment %}
     </script>
 
     <header class="header">
@@ -257,20 +260,20 @@
             {% for plan in plans %}
             {% if not plan.name|lower == 'free' %}
             <div class="box">
-                <p class="box-head">{{ plan.name }} Plan</p>
-                {% if plan.name == "Growth" %}
+                <p class="box-head">{{ plan.name }}</p>
+                {% if plan.name == "Growth Plan" %}
                 <p id="p">Perfect for scaling your video advertising campaigns</p>
-                {% elif plan.name == "Pro" %}
+                {% elif plan.name == "Pro Plan" %}
                 <p id="p">Ideal for high-volume marketers and agencies</p>  
                 {% else %}
                 <p id="p">{{ plan.description }}</p>
                 {% endif %}
                 <br>
                 <div class="price">
-                    <h1>${{ plan.price_per_month }}.00</h1>
-                    <span>/Month</span>
+                    <h1>${{ plan.price_per_month }} </h1>
+                    <span> /Month</span>
                 </div>
-                <p id="p">Just ${{ plan.price_per_month|floatformat:2|default:"0.00" }} per Video</p>
+                <p id="p">Just ${{ plan.credits_price }} per Video</p>
                 <p id="p" style="min-height: 70px;">
                     <img
                         src="{% static 'images/check.svg' %}"
@@ -289,9 +292,9 @@
                         {% if user_subscription.status == 'active' and plan.price_per_month < user_subscription.plan.price_per_month %}
                             onclick="return confirmDowngrade(this, event);"
                         {% endif %}>
-                        {% if user_subscription.status == 'canceled' and user_subscription.plan.id == plan.id %}
+                        {% if user_subscription.status != 'active' and user_subscription.plan.id == plan.id %}
                             Resubscribe
-                        {% elif user_subscription.status == 'canceled' %}
+                        {% elif user_subscription.status != 'active' %}
                         Subscribe
                         {% elif user_subscription.status == 'active' and plan.price_per_month > user_subscription.plan.price_per_month %}
                             Upgrade Subscription
@@ -308,46 +311,6 @@
                 {% endif %}
             </div>
             {% endif %}
-            {% empty %}
-            <div class="box">
-                <p class="box-head">Growth Plan</p>
-                <p id="p">Perfect for scaling your video advertising campaigns</p>
-                <br>
-                <div class="price">
-                    <h1>$497.00</h1>
-                    <span>/Month</span>
-                </div>
-                <p id="p">Just $19.88 per Video</p>
-                <p id="p" style="min-height: 70px;">
-                    <img
-                        src="{% static 'images/check.svg' %}"
-                        alt="Check icon"
-                        class="check-icon"
-                        style="padding-left: 5px;"
-                    > Create up to 25 Videos per month
-                </p>
-                <a href="#" class="link-tag">Upgrade Subscription</a>
-            </div>
-
-            <div class="box">
-                <p class="box-head">Pro Plan</p>
-                <p id="p">Ideal for high-volume marketers and agencies</p>
-                <br>
-                <div class="price">
-                    <h1>$997.00</h1>
-                    <span>/Month</span>
-                </div>
-                <p id="p">Just $16.62 per Video</p>
-                <p id="p" style="min-height: 70px;">
-                    <img
-                        src="{% static 'images/check.svg' %}"
-                        alt="Check icon"
-                        class="check-icon"
-                        style="padding-left: 5px;"
-                    > Create up to 60 Videos per month
-                </p>
-                <a href="#" class="link-tag">Upgrade Subscription</a>
-            </div>
             {% endfor %}
         </div>
     </div>

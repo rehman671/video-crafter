@@ -250,7 +250,7 @@
                             Size: 22)</span></div><span id="SliderValue">22</span>
                 </div>
                 <div class="Font-Size-Slider" style="display: block;">
-                    <input type="range" min="0" max="25" class="slider" id="mySlider" name="font_size1" value="22">
+                    <input type="range" min="16" max="25" class="slider" id="mySlider" name="font_size1" value="22">
                     <input type="number" hidden="" id="font_size" readonly="" name="font_size" value="44">
                 </div>
                 <div class="slider-container" style="display: block;">
@@ -522,7 +522,7 @@
     const slider = document.getElementById('mySlider');
     if (slider) {
         slider.value = newFontSize;
-        updateSliderBackground('mySlider', newFontSize, 0, 25);
+        updateSliderBackground('mySlider', newFontSize, 16, 25);
     }
     document.getElementById('SliderValue').textContent = newFontSize;
     document.getElementById('recommended-font-size').textContent = `(Recommended Font Size: ${newFontSize})`;

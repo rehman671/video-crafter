@@ -1,4 +1,5 @@
 import functools
+from datetime import timedelta
 from django.utils import timezone
 from .models import Subscription
 
@@ -22,25 +23,40 @@ def check_subscription_credits(view_func):
                     
                     # Check if we've passed the expiration date
                     if now > subscription.current_period_end:
-                        # We're in a new billing period but haven't been updated by Stripe yet
                         old_credits = subscription.unused_credits
                         
-                        # Reset credits to plan default
-                        subscription.unused_credits = subscription.plan.ad_variations_per_month
-                        
-                        # If this is a canceling subscription that's now expired, mark as canceled
-                        if subscription.status == 'canceling':
+                        # Handle different subscription statuses
+                        if subscription.status == 'active':
+                            # Active subscription: reset credits for new billing period
+                            subscription.unused_credits = subscription.plan.ad_variations_per_month
+                            # Update period end to next billing cycle (assuming monthly)
+                            subscription.current_period_end = subscription.current_period_end + timedelta(days=30)
+                            
+                            print(f"Reset credits for active subscription {request.user.username} from {old_credits} to {subscription.unused_credits}")
+                            print(f"Updated period end to: {subscription.current_period_end}")
+                            
+                        elif subscription.status == 'canceling':
+                            # Canceling subscription that's now expired: mark as canceled and zero credits
                             subscription.status = 'canceled'
+                            subscription.unused_credits = 0
+                            
+                            print(f"Subscription expired for {request.user.username}, status changed to canceled, credits set to 0")
+                            
+                        elif subscription.status == 'canceled':
+                            # Already canceled: ensure credits are zero
+                            if subscription.unused_credits > 0:
+                                subscription.unused_credits = 0
+                                print(f"Zeroed credits for canceled subscription {request.user.username}")
                         
                         subscription.save()
-                        
-                        print(f"Reset expired credits for {request.user.username} from {old_credits} to {subscription.unused_credits}")
-            
+                
             # Call the original view function
             return view_func(request, *args, **kwargs)
+            
         except Exception as e:
             # Handle any exceptions that occur during the process
             print(f"Error in check_subscription_credits decorator: {e}")
-            # Optionally, you can redirect to an error page or return an error response
-            # return redirect('error_page')
+            # Still call the original view function to avoid breaking the request
+            return view_func(request, *args, **kwargs)
+            
     return wrapper
