@@ -5,7 +5,8 @@ import re
 import datetime
 import boto3
 from django.core.files.base import ContentFile
-from .services.text_alignment_service import TextAudioAligner
+# from .services.text_alignment_service import TextAudioAligner
+from .services.elevenlabs_text_alignment import ElevenLabsTextAlignment
 from .handler.elevenlabs import ElevenLabsHandler
 from .services.video_processor import VideoProcessorService
 from .models import Clips, Video, ProcessingStatus, Subclip, BackgroundMusic
@@ -243,7 +244,7 @@ def generate_audio_file(video, user_id):
         else:
             text_content = ""
             for clip in clips.order_by("sequence"):
-                text_content += clip.text + '. '
+                text_content += clip.text + ' '
 
         # Generate a temp file for ElevenLabs
         import tempfile
@@ -402,7 +403,7 @@ def generate_srt_file(video, user_id):
         json_path = tmp_json.name
         
         # Generate SRT file from text and audio
-        aligner = TextAudioAligner()
+        aligner = ElevenLabsTextAlignment(video.elevenlabs_api_key )
         srt_path = aligner.align_text_with_audio(
             script=text_one_word_per_line,
             output_json_path=json_path,

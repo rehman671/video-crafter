@@ -211,13 +211,14 @@ SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'localhost:8000')
 # Add additional response headers
 
 # Email settings
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-EMAIL_USE_TLS = bool(int(os.environ.get('EMAIL_USE_TLS', 1)))
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'devidcsit0949@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'momx rkcc uruj jrke')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@videocrafter.com')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.office365.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'support@videocrafter.io')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'khwjhxknjycdgdtv')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'support@videocrafter.io')
 
 # Frontend URL for email links
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')

@@ -125,9 +125,10 @@ class TextAudioAligner:
                     "task_adjust_boundary_no_zero=true|"
                     "is_audio_file_detect_head=true|"
                     "is_audio_file_detect_tail=true|"
-                    "task_adjust_boundary_rate_value=21.000|"
+                    "task_adjust_boundary_rate_value=12.000|"
                     # Word level mapping
                     "is_text_mapping=word"
+                    
                 )
             
             task = Task(config_string=config_string)
@@ -297,13 +298,18 @@ class TextAudioAligner:
                     # Boundary detection parameters
                     "task_adjust_boundary_algorithm=percent|"
                     "task_adjust_boundary_percent_value=50|"
-                    "task_adjust_boundary_nonspeech_min=0.050|"
+                    # "task_adjust_boundary_nonspeech_min=0.050|"
+
                     "task_adjust_boundary_nonspeech_string=REMOVE|"
                     # Improved head/tail detection for start time precision
-                    "is_audio_file_detect_head_max=0.500|"
-                    "is_audio_file_detect_head_min=0.050|"
-                    "is_audio_file_detect_tail_max=0.500|"
-                    "is_audio_file_detect_tail_min=0.050|"
+                    # "is_audio_file_detect_head_max=0.500|"
+                    # "is_audio_file_detect_head_min=0.050|"
+                    # "is_audio_file_detect_tail_max=0.500|"
+                    # "is_audio_file_detect_tail_min=0.050|"
+                    "is_audio_file_detect_head_max=1.500|"
+                    "is_audio_file_detect_head_min=0.300|"
+                    "is_audio_file_detect_tail_max=1.500|"
+                    "is_audio_file_detect_tail_min=0.300|"
                     # Additional optimizations
                     "task_max_audio_length=0|"
                     "task_adjust_boundary_no_zero=true|"

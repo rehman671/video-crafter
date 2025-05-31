@@ -192,67 +192,7 @@
         </div>
     </header>
     <div class="main-sub">
-        <div class="outer">
-            <div class="info-header">
-                <h3>Subscription Details</h3>
-                <a href="{% url 'billing_portal' %}" class="link-tag">Manage Billing Info</a>
-            </div>
-
-            <div class="inner">
-                <div class="section">
-                    <p>Current Plan:</p>
-                    <p class="btn">{{ user_subscription.plan.name|default:"Cancelled" }}</p>
-                </div>
-
-                <div class="section">
-                    <p>Subscription Status:</p>
-                    <p class="btn">{{ user_subscription.status|title|default:"Not Active" }}</p>
-                </div>
-
-                <div class="section">
-                    <p class="credit-header">Credit Usage</p>
-                    <div class="credit-info">
-                        {% if user_subscription.status == 'active' %}
-                            <p>You have {{ user_subscription.unused_credits }} credits remaining on your {{ user_subscription.plan.name }} plan.</p>
-                        {% else %}
-                            <p>You currently do not have an active plan.</p>
-                        {% endif %}
-                        <p>Unused credits will expire in {{ user_subscription.days_until_expiry|default:"0" }} Days</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="second-main">
-            <div class="heading">Need More Credits?</div>
-            <p>
-                Out of Videos edits? No worries! Add more edits to your account
-                instantly. Choose the number of extra edits you need, with a
-                minimum of 5, and keep creating high-converting Videos without
-                delays.
-            </p>
-        </div>
-
-        <div class="credit-box">
-            <div class="box-cont">
-                <form action="/accounts/add-credits" method="post">
-                    {% csrf_token %}
-                    <p class="cr">Buy More Credits</p>
-                    <p>${{ user_subscription.plan.credits_price|default:"0.00" }} Each</p>
-                    <input
-                        type="number"
-                        min="1"
-                        name="credits_number"
-                        id="credit"
-                        required
-                        placeholder="Enter the amount of credits"
-                    >
-                    <button type="submit" {% if not user_subscription.status == 'active' or 'free' in user_subscription.plan.name|lower %}disabled{% endif %}>Buy</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="main-head">
+                <div class="main-head">
             <h1>Plans that scale with your business</h1>
         </div>
 
@@ -313,6 +253,67 @@
             {% endif %}
             {% endfor %}
         </div>
+        <div class="outer">
+            <div class="info-header">
+                <h3>Subscription Details</h3>
+                <a href="{% url 'billing_portal' %}" class="link-tag">Manage Billing Info</a>
+            </div>
+
+            <div class="inner">
+                <div class="section">
+                    <p>Current Plan:</p>
+                    <p class="btn">{{ user_subscription.plan.name|default:"Cancelled" }}</p>
+                </div>
+
+                <div class="section">
+                    <p>Subscription Status:</p>
+                    <p class="btn">{{ user_subscription.status|title|default:"Not Active" }}</p>
+                </div>
+
+                <div class="section">
+                    <p class="credit-header">Credit Usage</p>
+                    <div class="credit-info">
+                        {% if user_subscription.status == 'active' %}
+                            <p>You have {{ user_subscription.unused_credits }} credits remaining on your {{ user_subscription.plan.name }} plan.</p>
+                        {% else %}
+                            <p>You currently do not have an active plan.</p>
+                        {% endif %}
+                        <p>Unused credits will expire in {{ user_subscription.days_until_expiry|default:"0" }} Days</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="second-main">
+            <div class="heading">Need More Credits?</div>
+            <p>
+                Out of Videos edits? No worries! Add more edits to your account
+                instantly. Choose the number of extra edits you need, with a
+                minimum of 5, and keep creating high-converting Videos without
+                delays.
+            </p>
+        </div>
+
+        <div class="credit-box">
+            <div class="box-cont">
+                <form action="/accounts/add-credits" method="post">
+                    {% csrf_token %}
+                    <p class="cr">Buy More Credits</p>
+                    <p>${{ user_subscription.plan.credits_price|default:"0.00" }} Each</p>
+                    <input
+                        type="number"
+                        min="1"
+                        name="credits_number"
+                        id="credit"
+                        required
+                        placeholder="Enter the amount of credits"
+                    >
+                    <button type="submit" {% if not user_subscription.status == 'active' or 'free' in user_subscription.plan.name|lower %}disabled{% endif %}>Buy</button>
+                </form>
+            </div>
+        </div>
+
+
     </div>
 
     <!-- Add the modal HTML structure -->

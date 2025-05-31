@@ -368,6 +368,7 @@ logger = logging.getLogger(__name__)
 #             instance.end_time = instance.start_time + 0.5
 #             print(f"Adjusted end time to ensure duration > 0: {instance.start_time} -> {instance.end_time}")
 
+
 @receiver(pre_save, sender=Subclip)
 def configure_subclip(sender, instance:Subclip, **kwargs):
     """
@@ -435,6 +436,7 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
         # Convert threshold to float if needed
         threshold = 0 if threshold is None else threshold
         threshold = float(threshold)
+
         # Filter fragments after the threshold
         filtered_fragments = [
             fragment for fragment in srt_data['fragments']
@@ -553,6 +555,8 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
                 print(f"Partial match: no next fragment, using last fragment end: {instance.end_time}")
     except (json.JSONDecodeError, IOError, ValueError) as e:
         logger.error(f"Error processing SRT file: {e}")
+
+
 # @receiver(post_save, sender=Clips)
 # def assign_black_video_to_clip(sender, instance:Clips, created, **__):
 #     """
@@ -741,9 +745,11 @@ def configure_subclip_from_clips(sender, instance: Clips, **kwargs):
         print(f"Threshold for clip: {threshold}")
         
         # Convert threshold to float if needed
-        threshold = 0 if threshold is None else threshold
-        threshold = float(threshold)
-        
+        if threshold is None:
+            threshold = 0.0
+        else:
+            threshold = float(threshold)
+                
         # Filter fragments after the threshold
         filtered_fragments = [
             fragment for fragment in srt_data['fragments']
