@@ -71,7 +71,7 @@ class ElevenLabsHandler:
         print(self.get_remaining_credits())
         print(f"Remaining credits: {remaining}")
         print(f"Text length: {text_length}")
-        return remaining >= text_length
+        return remaining >= (text_length*2.5)
         
     def generate_voiceover(self, 
                           text: str, 

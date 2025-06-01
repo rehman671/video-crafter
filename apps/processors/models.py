@@ -75,6 +75,14 @@ class Subclip(models.Model):
     class Meta:
         ordering = ["start_time"]
 
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        # Remove single quotes from text field if present
+        if self.text:
+            self.text = self.text.replace("'", "")
+        
+        # Call the parent save method
+        super().save(force_insert, force_update, using, update_fields)
+
 class BackgroundMusic(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
     audio_file = models.FileField(upload_to="bg_music/")

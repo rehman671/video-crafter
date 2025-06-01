@@ -1773,7 +1773,7 @@ function handlePopupFileChange(e) {
             // Reset UI
             const uploadText = document.getElementById("upload-text");
             if (uploadText) {
-                uploadText.textContent = "Choose File";
+                uploadText.textContent = "Choose or Drag File";
             }
 
             const clearFileBtn = document.getElementById("clear-file");
@@ -1833,7 +1833,7 @@ function handlePopupFileChange(e) {
         // Reset UI
         const uploadText = document.getElementById("upload-text");
         if (uploadText) {
-            uploadText.textContent = "Choose File";
+            uploadText.textContent = "Choose or Drag File";
         }
         
         // Hide clear file button
@@ -1854,7 +1854,7 @@ function handlePopupFileChange(e) {
 function clearPopupFile() {
     popupFile = null;
     popupErrorMessage = "";
-    document.getElementById("upload-text").textContent = "Choose File";
+    document.getElementById("upload-text").textContent = "Choose or Drag File";
     document.getElementById("clear-file").style.display = "none";
     const submitButton = document.getElementById("submit-clip");
     submitButton.disabled = !popupVideoClip;
@@ -1875,7 +1875,7 @@ function handleTopicChange(event) {
         // Reset file upload UI
         const uploadText = document.getElementById("upload-text");
         if (uploadText) {
-            uploadText.textContent = "Choose File";
+            uploadText.textContent = "Choose or Drag File";
         }
 
         const clearFileBtn = document.getElementById("clear-file");
@@ -1926,7 +1926,7 @@ function handleVideoClipChange(e) {
     popupVideoClip = e.target.value;
     popupFile = null;
     popupErrorMessage = "";
-    document.getElementById("upload-text").textContent = "Choose File";
+    document.getElementById("upload-text").textContent = "Choose or Drag File";
     document.getElementById("clear-file").style.display = "none";
     const submitButton = document.getElementById("submit-clip");
     submitButton.disabled = !popupVideoClip;

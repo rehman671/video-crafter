@@ -17,6 +17,27 @@
     <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
     <title>VideoCrafter.io</title>
     <style>
+        .upload-container.drag-over {
+    background-color: #f3f0ff;
+    border-color: #864AF9;
+}
+
+.upload-input {
+    display: none;
+}
+
+#clear-file {
+    display: none;
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 5px;
+    color: red;
+    font-size: 20px;
+}
+.popup-container{
+    max-width: 635px;
+}
         
         /* Free user overlay styling */
 #freeUserOverlay {
@@ -846,7 +867,7 @@ function handleTopicChange(event) {
         // Reset file upload UI
         const uploadText = document.getElementById("upload-text");
         if (uploadText) {
-            uploadText.textContent = "Choose File";
+            uploadText.textContent = "Choose or Drag File";
         }
         
         const clearFileBtn = document.getElementById("clear-file");
@@ -911,7 +932,7 @@ function handleTopicChange(event) {
                 // Reset file upload UI
                 const uploadText = document.getElementById("upload-text");
                 if (uploadText) {
-                    uploadText.textContent = "Choose File";
+                    uploadText.textContent = "Choose or Drag File";
                 }
                 
                 const clearFileBtn = document.getElementById("clear-file");
@@ -946,7 +967,7 @@ function handleTopicChange(event) {
             // Reset UI
             const uploadText = document.getElementById("upload-text");
             if (uploadText) {
-                uploadText.textContent = "Choose File";
+                uploadText.textContent = "Choose or Drag File";
             }
 
             const clearFileBtn = document.getElementById("clear-file");
@@ -1006,7 +1027,7 @@ function handleTopicChange(event) {
         // Reset UI
         const uploadText = document.getElementById("upload-text");
         if (uploadText) {
-            uploadText.textContent = "Choose File";
+            uploadText.textContent = "Choose or Drag File";
         }
         
         // Hide clear file button
@@ -1037,7 +1058,7 @@ function handleTopicChange(event) {
             // Reset UI
             const uploadText = document.getElementById("upload-text");
             if (uploadText) {
-                uploadText.textContent = "Choose File";
+                uploadText.textContent = "Choose or Drag File";
             }
             
             const clearFileBtn = document.getElementById("clear-file");
@@ -1855,10 +1876,10 @@ document.addEventListener('DOMContentLoaded', addNotificationStyles);
                                         </div>
                                         <div class="form-grid-item main-item">
                                             <div class="form-group" style="height: 100%;">
-                                                <div class="upload-container">
+                                                <div class="upload-container" id="drop-zone">
                                                     <label for="slide_file" class="upload-label">
                                                         <img src="{% static 'images/upload.svg' %}" alt="" class="uploadSvg">
-                                                        <span id="upload-text">${popupFile ? popupFile.name.slice(0, 7) + (popupFile.name.includes('.') ? popupFile.name.slice(popupFile.name.lastIndexOf('.')) : '') : 'Choose File'}</span>
+                                                        <span id="upload-text">${popupFile ? popupFile.name.slice(0, 7) + (popupFile.name.includes('.') ? popupFile.name.slice(popupFile.name.lastIndexOf('.')) : '') : 'Choose or Drag File'}</span>
                                                     </label>
                                                     <i id="clear-file" style="display: ${popupFile ? 'inline' : 'none'};" onclick="clearPopupFile()" class="ri-close-circle-line"></i>
                                                     <input type="file" id="slide_file" name="slide_file" class="upload-input" accept="video/*" onchange="handlePopupFileChange(event)">
@@ -1911,6 +1932,36 @@ document.addEventListener('DOMContentLoaded', addNotificationStyles);
                     </div>
                 `;
             }
+
+            const dropZone = document.getElementById('drop-zone');
+                if (dropZone) {
+                    ['dragenter', 'dragover'].forEach(event => {
+                        dropZone.addEventListener(event, e => {
+                            e.preventDefault();
+                            dropZone.classList.add('drag-over');
+                        });
+                    });
+
+                    ['dragleave', 'dragend', 'drop'].forEach(event => {
+                        dropZone.addEventListener(event, e => {
+                            e.preventDefault();
+                            dropZone.classList.remove('drag-over');
+                        });
+                    });
+
+                    dropZone.addEventListener('drop', e => {
+                        e.preventDefault();
+                        const files = e.dataTransfer.files;
+                        if (files.length > 0 && files[0].type.startsWith('video/')) {
+                            const fileInput = document.getElementById('slide_file');
+                            fileInput.files = files;
+                            handlePopupFileChange({ target: fileInput });
+                        } else {
+                            showNotification("Only video files are allowed.", "error");
+                        }
+                    });
+                }
+
         }
         // Function to handle AI scene suggestions button click
 function handleAISceneSuggestions() {

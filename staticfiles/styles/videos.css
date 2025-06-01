@@ -67,7 +67,7 @@
 .slider-videos {
   display: flex;
   transition: transform 0.3s ease;
-  width: 100%;
+  width: 50%;
 }
 
 .slider-video {

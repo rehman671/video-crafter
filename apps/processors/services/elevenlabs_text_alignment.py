@@ -114,12 +114,14 @@ class ElevenLabsTextAlignment:
             else:
                 # ElevenLabs failed - fall back to Aeneas
                 print("⚠️ ElevenLabs alignment failed, trying Aeneas fallback...")
-                return self._create_fallback_alignment(script, audio_path, output_json_path)
+                raise Exception("ElevenLabs alignment failed, falling back to Aeneas")
+                # return self._create_fallback_alignment(script, audio_path, output_json_path)
             
         except Exception as e:
             print(f"❌ Error in ElevenLabs alignment: {e}")
+            raise Exception("ElevenLabs alignment failed, falling back to Aeneas")
             # Fall back to Aeneas
-            return self._create_fallback_alignment(script, audio_path, output_json_path)
+            # return self._create_fallback_alignment(script, audio_path, output_json_path)
     
     def _perform_elevenlabs_alignment(self, audio_path: str, text: str) -> Optional[List[Dict]]:
         """
