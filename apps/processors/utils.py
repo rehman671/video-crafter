@@ -644,8 +644,9 @@ def generate_clips_from_text_file(video: Video):
         raise
 
     # Split text into sentences (basic split by periods, question marks, exclamation marks)
-    sentences = re.split(r"(?<=[.])\s+|\n+", text_content.strip())
-    sentences = [s.strip() for s in sentences if s.strip()]
+    # sentences = re.split(r"(?<=[.])\s+|\n+", text_content.strip())
+    sentences = re.split(r"\n", text_content.strip())
+
 
     # Create clips for each sentence
     clips_created = 0
@@ -1433,3 +1434,20 @@ def process_video_watermarks(video_id, bg_music=False):
     except subprocess.CalledProcessError as e:
         print(f"FFmpeg error: {e.stderr.decode()}")
         return None
+
+
+
+
+def clean_text_for_alignment(text: str) -> str:
+    # Remove symbols surrounded by spaces (e.g. " ? ")
+    text = re.sub(r'\s[^\w\s]+\s', ' ', text)
+    # Remove symbols preceded by space at end (e.g. "word !")
+    text = re.sub(r'\s[^\w\s]+$', '', text)
+    # Remove symbols followed by space at start (optional, e.g. "! hello")
+    text = re.sub(r'^[^\w\s]+\s', '', text)
+    text = text.replace("-", " ")  # Replace double hyphens with space
+
+    # Normalize whitespace and lowercase
+    return ' '.join(text.lower().split())
+
+

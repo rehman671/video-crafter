@@ -1358,8 +1358,441 @@ function handleTopicChange(event) {
         //     }
         // }
     
-    
     function handlePopupSubmit(e) {
+    e.preventDefault();
+    console.log("Submitting popup form...");
+    
+    // Check for free plan restrictions
+    if(isFreePlan) {
+        const subtitleCount = slides ? slides.length : 0;
+        if(subtitleCount > 10) {
+            popupErrorMessage = "Free plan users are limited to 10 subtitles. Please upgrade your subscription.";
+            renderPopup();
+            return;
+        }
+        
+        // Ensure free users can't use asset selection even if they try to bypass UI
+        const selectedTopic = document.getElementById('selected_topic')?.value;
+        const selectedVideo = document.getElementById('videoSelect')?.value;
+        const hasVideoSelection = selectedTopic && selectedVideo;
+        
+        if(hasVideoSelection) {
+            popupErrorMessage = "Asset selection requires a premium subscription. Please upload a file instead.";
+            renderPopup();
+            return;
+        }
+    }
+    
+    // Check if file is selected
+    const fileInput = document.getElementById('slide_file');
+    const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+    
+    // Check if asset is selected
+    const selectedTopic = document.getElementById('selected_topic')?.value;
+    const selectedVideo = document.getElementById('videoSelect')?.value;
+    const hasVideoSelection = selectedTopic && selectedVideo;
+    
+    // Validate that we have either a file or an asset selected
+    if (!hasFile && !hasVideoSelection) {
+        popupErrorMessage = "Please select a video file or choose a video from your assets.";
+        renderPopup();
+        return;
+    }
+    
+    // Store values before closing popup
+    const savedSlideId = selectedSlideId;
+    const savedText = selectedText;
+    const savedFile = hasFile ? fileInput.files[0] : null;
+    const savedTopic = selectedTopic;
+    const savedVideo = selectedVideo;
+    
+    // Close popup immediately after validation
+    popupOpen = false;
+    popupFile = null;
+    popupTopic = "";
+    popupVideoClip = "";
+    selectedText = "";
+    selectedSlideId = null;
+    
+    // Render the popup closed and update UI
+    closePopup();
+    
+    // Get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    
+    // Process file upload
+    if (hasFile) {
+        console.log("Processing file upload in background");
+        
+        // Create a unique highlight ID for this upload
+        const highlightId = `highlight_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        
+        // Add to pending uploads
+        pendingUploads.add(highlightId);
+        updateProceedButtonState();
+        
+        // Optimistically update the UI immediately - assume success
+        slides = slides.map(slide => {
+            if (slide.id === savedSlideId) {
+                let newMarkedText = slide.markedText || slide.text || "";
+                
+                // Check if this text is already highlighted
+                const isAlreadyHighlighted = newMarkedText.includes(`<mark class="handlePopupSubmit">${savedText}</mark>`) || 
+                                           new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i').test(newMarkedText);
+                
+                // If it's already highlighted, remove the existing highlight first
+                if (isAlreadyHighlighted) {
+                    const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                    newMarkedText = newMarkedText.replace(regex, savedText);
+                }
+                
+                // Create a temporary URL for the file for immediate display
+                const tempFileUrl = URL.createObjectURL(savedFile);
+                
+                // Now add the new highlight with temporary file reference
+                const regex = new RegExp(`(${escapeRegExp(savedText)})(?![^<]*>)`, "i");
+                newMarkedText = newMarkedText.replace(
+                    regex,
+                    `<mark class="handlePopupSubmit" data-highlight-id="${highlightId}" data-video-file="${tempFileUrl}" data-loading="true">${savedText}</mark>`
+                );
+                
+                return {
+                    ...slide,
+                    markedText: newMarkedText,
+                    isEditing: false
+                };
+            }
+            return slide;
+        });
+        
+        // Store file in window object for later processing
+        if (!window.videoFiles) window.videoFiles = {};
+        window.videoFiles[highlightId] = savedFile;
+        
+        // Update UI immediately
+        renderSlides();
+        
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('slide_file', savedFile);
+        formData.append('slide_text', savedText);
+        formData.append('clipId', savedSlideId);
+        
+        // Send API request in the background
+        const uploadPromise = fetch('/handle-clip-assignment/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("File upload successful:", data);
+                
+                // Update with the real server URL if provided
+                if (data.file_url) {
+                    slides = slides.map(slide => {
+                        if (slide.id === savedSlideId) {
+                            let newMarkedText = slide.markedText || "";
+                            
+                            // Replace the temporary URL with the permanent one
+                            newMarkedText = newMarkedText.replace(
+                                new RegExp(`data-highlight-id="${highlightId}"[^>]*data-loading="true"`, 'i'),
+                                `data-highlight-id="${highlightId}" data-video-file="${data.file_url}"`
+                            );
+                            
+                            return {
+                                ...slide,
+                                markedText: newMarkedText
+                            };
+                        }
+                        return slide;
+                    });
+                    
+                    // Update UI with permanent URL
+                    renderSlides(false);
+                }
+            } else {
+                console.error("File upload failed:", data.error);
+                
+                // If the upload failed, revert the highlight
+                slides = slides.map(slide => {
+                    if (slide.id === savedSlideId) {
+                        let newMarkedText = slide.markedText || "";
+                        
+                        // Find and remove the temporary highlight
+                        const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*data-highlight-id="${highlightId}"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                        newMarkedText = newMarkedText.replace(regex, savedText);
+                        
+                        return {
+                            ...slide,
+                            markedText: newMarkedText
+                        };
+                    }
+                    return slide;
+                });
+                
+                // Remove the file from storage
+                if (window.videoFiles && window.videoFiles[highlightId]) {
+                    delete window.videoFiles[highlightId];
+                }
+                
+                // Update UI
+                renderSlides();
+                
+                // Show error notification
+                showNotification("Upload failed: " + (data.error || "Unknown error"), "error");
+            }
+        })
+        .catch(error => {
+            console.error("API error:", error);
+            
+            // If the API call fails, revert the highlight
+            slides = slides.map(slide => {
+                if (slide.id === savedSlideId) {
+                    let newMarkedText = slide.markedText || "";
+                    
+                    // Find and remove the temporary highlight
+                    const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*data-highlight-id="${highlightId}"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                    newMarkedText = newMarkedText.replace(regex, savedText);
+                    
+                    return {
+                        ...slide,
+                        markedText: newMarkedText
+                    };
+                }
+                return slide;
+            });
+            
+            // Remove the file from storage
+            if (window.videoFiles && window.videoFiles[highlightId]) {
+                delete window.videoFiles[highlightId];
+            }
+            
+            // Update UI
+            renderSlides();
+            
+            // Show error notification
+            showNotification("Upload failed: Network error", "error");
+        })
+        .finally(() => {
+            // Remove from pending uploads and update button state
+            pendingUploads.delete(highlightId);
+            updateProceedButtonState();
+        });
+        
+        // Store the promise for potential cancellation
+        uploadQueue.set(highlightId, uploadPromise);
+    } 
+    // Process asset selection
+    else if (hasVideoSelection) {
+        console.log("Processing asset selection in background");
+        
+        // Create a unique highlight ID for this selection
+        const highlightId = `highlight_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        
+        // Add to pending uploads (even though it's not a file upload, it's still processing)
+        pendingUploads.add(highlightId);
+        updateProceedButtonState();
+        
+        // Get the URL from the selected option's data-url attribute
+        let fileUrl = "";
+        const videoSelectElement = document.getElementById('videoSelect');
+        if (videoSelectElement && videoSelectElement.selectedIndex >= 0) {
+            const selectedOption = videoSelectElement.options[videoSelectElement.selectedIndex];
+            fileUrl = selectedOption.dataset.url || "";
+        }
+        
+        // Optimistically update the UI immediately - assume success
+        slides = slides.map(slide => {
+            if (slide.id === savedSlideId) {
+                let newMarkedText = slide.markedText || slide.text || "";
+                
+                // Check if this text is already highlighted
+                const isAlreadyHighlighted = newMarkedText.includes(`<mark class="handlePopupSubmit">${savedText}</mark>`) || 
+                                           new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i').test(newMarkedText);
+                
+                // If it's already highlighted, remove the existing highlight first
+                if (isAlreadyHighlighted) {
+                    const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                    newMarkedText = newMarkedText.replace(regex, savedText);
+                }
+                
+                // Now add the new highlight with asset reference
+                const regex = new RegExp(`(${escapeRegExp(savedText)})(?![^<]*>)`, "i");
+                newMarkedText = newMarkedText.replace(
+                    regex,
+                    `<mark class="handlePopupSubmit" data-highlight-id="${highlightId}" data-topic="${savedTopic}" data-video-key="${savedVideo}" data-video-file="${fileUrl}" data-loading="true">${savedText}</mark>`
+                );
+                
+                return {
+                    ...slide,
+                    markedText: newMarkedText,
+                    isEditing: false
+                };
+            }
+            return slide;
+        });
+        
+        // Update UI immediately
+        renderSlides();
+        
+        // Prepare data for the API request
+        const data = {
+            slide_text: savedText,
+            clipId: savedSlideId,
+            selected_topic: savedTopic,
+            selected_video: savedVideo
+        };
+        
+        // Send API request in background
+        const uploadPromise = fetch('/handle-clip-assignment/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("Asset selection successful:", data);
+                
+                // Update with the real server URL if provided
+                if (data.file_url) {
+                    slides = slides.map(slide => {
+                        if (slide.id === savedSlideId) {
+                            let newMarkedText = slide.markedText || "";
+                            
+                            // Replace the temporary loading attribute
+                            newMarkedText = newMarkedText.replace(
+                                new RegExp(`data-highlight-id="${highlightId}"[^>]*data-loading="true"`, 'i'),
+                                `data-highlight-id="${highlightId}" data-topic="${savedTopic}" data-video-key="${savedVideo}" data-video-file="${data.file_url}"`
+                            );
+                            
+                            return {
+                                ...slide,
+                                markedText: newMarkedText
+                            };
+                        }
+                        return slide;
+                    });
+                    
+                    // Update UI
+                    renderSlides(false);
+                }
+            } else {
+                console.error("Asset selection failed:", data.error);
+                
+                // If the selection failed, revert the highlight
+                slides = slides.map(slide => {
+                    if (slide.id === savedSlideId) {
+                        let newMarkedText = slide.markedText || "";
+                        
+                        // Find and remove the temporary highlight
+                        const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*data-highlight-id="${highlightId}"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                        newMarkedText = newMarkedText.replace(regex, savedText);
+                        
+                        return {
+                            ...slide,
+                            markedText: newMarkedText
+                        };
+                    }
+                    return slide;
+                });
+                
+                // Update UI
+                renderSlides();
+                
+                // Show error notification
+                showNotification("Asset selection failed: " + (data.error || "Unknown error"), "error");
+            }
+        })
+        .catch(error => {
+            console.error("API error:", error);
+            
+            // If the API call fails, revert the highlight
+            slides = slides.map(slide => {
+                if (slide.id === savedSlideId) {
+                    let newMarkedText = slide.markedText || "";
+                    
+                    // Find and remove the temporary highlight
+                    const regex = new RegExp(`<mark class="handlePopupSubmit"[^>]*data-highlight-id="${highlightId}"[^>]*>${escapeRegExp(savedText)}</mark>`, 'i');
+                    newMarkedText = newMarkedText.replace(regex, savedText);
+                    
+                    return {
+                        ...slide,
+                        markedText: newMarkedText
+                    };
+                }
+                return slide;
+            });
+            
+            // Update UI
+            renderSlides();
+            
+            // Show error notification
+            showNotification("Asset selection failed: Network error", "error");
+        })
+        .finally(() => {
+            // Remove from pending uploads and update button state
+            pendingUploads.delete(highlightId);
+            updateProceedButtonState();
+        });
+        
+        // Store the promise for potential cancellation
+        uploadQueue.set(highlightId, uploadPromise);
+    }
+}
+
+// Add this new function
+function updateProceedButtonState() {
+    const btn = document.querySelector('.button-container-btn');
+    const buttonText = document.getElementById('button-text');
+    
+    if (!btn || !buttonText) return;
+    
+    const shouldEnable = shouldEnableProceedButton();
+    
+    if (shouldEnable) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        buttonText.textContent = "Proceed To Background Music Selection";
+    } else {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        
+        // Show appropriate message based on state
+        if (pendingUploads.size > 0) {
+            buttonText.textContent = `Uploading...`;
+        } else if (!areAllTextareasHidden()) {
+            buttonText.textContent = "Save your edits first";
+        } else {
+            buttonText.textContent = "Proceed To Background Music Selection";
+        }
+    }
+}
+    {% comment %} function handlePopupSubmit(e) {
     e.preventDefault();
     console.log("Submitting popup form...");
     
@@ -1738,7 +2171,7 @@ function handleTopicChange(event) {
             showNotification("Asset selection failed: Network error", "error");
         });
     }
-}
+} {% endcomment %}
 
 // Helper function to show notifications
 function showNotification(message, type = "info") {

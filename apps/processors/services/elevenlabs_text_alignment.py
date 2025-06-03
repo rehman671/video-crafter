@@ -4,6 +4,8 @@ import tempfile
 import requests
 import io
 from typing import Dict, Any, List, Optional
+import re
+
 
 class ElevenLabsTextAlignment:
     """
@@ -23,26 +25,53 @@ class ElevenLabsTextAlignment:
         self.base_url = base_url
         self.headers = {"xi-api-key": api_key}
     
+    # def preprocess_text(self, text: str) -> str:
+    #     """
+    #     Preprocess text similar to original Aeneas function
+        
+    #     Args:
+    #         text (str): Raw text to preprocess
+            
+    #     Returns:
+    #         str: Preprocessed text
+    #     """
+    #     # Basic text preprocessing
+    #     # Remove extra whitespace
+    #     text = ' '.join(text.split())
+        
+    #     # Ensure text ends with punctuation for better alignment
+    #     if text and text[-1] not in '.!?':
+    #         text += '.'
+        
+    #     return text
+    
+
     def preprocess_text(self, text: str) -> str:
         """
         Preprocess text similar to original Aeneas function
-        
+
         Args:
             text (str): Raw text to preprocess
-            
+
         Returns:
             str: Preprocessed text
         """
-        # Basic text preprocessing
+
+        text = re.sub(r'\s[^\w\s]+\s', ' ', text)
+        # Remove symbols preceded by space at end (e.g. "word !")
+        text = re.sub(r'\s[^\w\s]+$', '', text)
+        # Remove symbols followed by space at start (optional, e.g. "! hello")
+        text = re.sub(r'^[^\w\s]+\s', '', text)
+        text = text.replace("-", " ")  # Replace double hyphens with space
         # Remove extra whitespace
-        text = ' '.join(text.split())
-        
+        text = ' '.join(text.lower().split())
+
         # Ensure text ends with punctuation for better alignment
-        if text and text[-1] not in '.!?':
-            text += '.'
-        
+        # if text and text[-1] not in '.!?':
+        #     text += '.'
+
         return text
-    
+
     def _get_audio_duration(self, audio_path: str) -> Optional[float]:
         """
         Get audio duration using FFprobe (if available)

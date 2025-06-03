@@ -66,7 +66,7 @@ class RunPodVideoProcessor:
                 "id": clip.id,
                 "start_time": clip.start_time,
                 "end_time": clip.end_time,
-                "text": clip.text,
+                "text": clip.text.replace("'", "").replace('"',''),  # Remove single quotes from text
                 "sequence": clip.sequence,
                 "is_changed": True,  # This is always True for these clips
             }
@@ -80,7 +80,7 @@ class RunPodVideoProcessor:
                         "id": subclip.id,
                         "start_time": subclip.start_time,
                         "end_time": subclip.end_time,
-                        "text": subclip.text,
+                        "text": subclip.text.replace("'", "").replace('"',''),  # Remove single quotes from text
                     }
                     if subclip.video_file:
                         subclip_info["video_file"] = subclip.video_file.name
@@ -199,7 +199,7 @@ class RunPodVideoProcessor:
                 "id": clip.id,
                 "start_time": clip.start_time,
                 "end_time": clip.end_time,
-                "text": clip.text,
+                "text": clip.text.replace("'", "").replace('"',''),  # Remove single quotes from text
                 "sequence": clip.sequence,
                 "is_changed": clip.is_changed,
             }
@@ -216,7 +216,7 @@ class RunPodVideoProcessor:
                         "id": subclip.id,
                         "start_time": subclip.start_time,
                         "end_time": subclip.end_time,
-                        "text": subclip.text,
+                        "text": subclip.text.replace("'", "").replace('"',''),  # Remove single quotes from text
                     }
                     if subclip.video_file:
                         subclip_info["video_file"] = subclip.video_file.name

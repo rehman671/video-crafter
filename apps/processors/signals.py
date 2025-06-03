@@ -9,6 +9,7 @@ import subprocess  # Add this import
 
 from apps.processors.models import Subclip, Clips, BackgroundMusic, Video, ProcessingStatus
 from apps.processors.services.video_processor import VideoProcessorService, Video
+from apps.processors.utils import clean_text_for_alignment
 import time
 import traceback
 
@@ -380,29 +381,30 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
     is_first_subclip = False
     if instance.clip.sequence == 1:
         try:
-            # Get all subclips for this clip, ordered by start_time
-            existing_subclips = Subclip.objects.filter(clip=instance.clip).order_by('start_time')
+            # Get the first word from the clip's text/content
+            clip_first_word = instance.clip.text.strip().split()[0] if instance.clip.text else ""
             
-            # If this is a new subclip (no pk) and there are no other subclips, it's the first one
-            if not instance.pk and not existing_subclips.exists():
-                is_first_subclip = True
-            # If this is updating an existing subclip, check if it was the first one
-            elif instance.pk and existing_subclips.first() and existing_subclips.first().pk == instance.pk:
-                is_first_subclip = True
-        except:
-            # If any error occurs during this check, we'll proceed with regular processing
-            pass
+            # Get the first word from this subclip's text/content
+            subclip_first_word = instance.text.strip().split()[0] if instance.text else ""
             
-    # Check if this is an existing instance being updated
-    if instance.pk:
-        try:
-            original = Subclip.objects.get(pk=instance.pk)
-            # If text changed, reset timings to recalculate
-            if original.text != instance.text:
-                instance.start_time = None
-                instance.end_time = None
-        except Subclip.DoesNotExist:
-            pass
+            # Check if the first words match
+            if clip_first_word and subclip_first_word and clip_first_word.lower() == subclip_first_word.lower():
+                is_first_subclip = True
+                
+        except (IndexError, AttributeError):
+            # Handle cases where text might be empty or None
+            is_first_subclip = False
+                
+        # Check if this is an existing instance being updated
+        if instance.pk:
+            try:
+                original = Subclip.objects.get(pk=instance.pk)
+                # If text changed, reset timings to recalculate
+                if original.text != instance.text:
+                    instance.start_time = None
+                    instance.end_time = None
+            except Subclip.DoesNotExist:
+                pass
     
     # Set start_time to 0 for first subclip and skip SRT processing for start_time
     if is_first_subclip is True:
@@ -416,7 +418,6 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
     
     try:
         # Load the SRT JSON content
-        print(video.id)
         with video.srt_file.open('r') as srt_file:
             srt_data = json.load(srt_file)
         threshold = (
@@ -425,14 +426,9 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
             .order_by('clip__sequence')
             .last()
             .end_time
-            if Subclip.objects.filter(clip__sequence__lt=instance.clip.sequence).exists()
+            if Subclip.objects.filter(clip__sequence__lt=instance.clip.sequence, clip__video=instance.clip.video).exists()
             else 0
         )
-        print(f"Threshold for subclip: {threshold}")
-        print(Subclip.objects
-            .filter(clip__sequence__lt=instance.clip.sequence)
-            .order_by('clip__sequence')
-            .last())
         # Convert threshold to float if needed
         threshold = 0 if threshold is None else threshold
         threshold = float(threshold)
@@ -441,7 +437,7 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
         filtered_fragments = [
             fragment for fragment in srt_data['fragments']
             if float(fragment['begin']) >= threshold
-]
+    ]
 
         # Get all fragments sorted by begin time
         all_fragments = sorted(filtered_fragments, key=lambda x: float(x.get('begin', 0)))
@@ -449,7 +445,8 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
         print(f"Total fragments in SRT: {len(all_fragments)}")
         
         # Get subclip text in lowercase for comparison
-        subclip_text = instance.text.lower().strip()
+        subclip_text = clean_text_for_alignment(instance.text)
+        # subclip_text = instance.text.lower().strip()
         
         # Concatenate all fragment texts to form a transcript
         full_transcript = ""
@@ -466,11 +463,7 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
         if len(fragment_positions) > len(full_transcript):
             fragment_positions = fragment_positions[:len(full_transcript)]
         
-        print(f"Full transcript: '{full_transcript}'")
-        print(f"Searching for: '{subclip_text}'")
-        print("-----------------------------------")
-        print(filtered_fragments)
-        print("-----------------------------------")
+
         # Find the subclip text in the transcript
         if subclip_text in full_transcript:
             # Find the start and end positions
@@ -762,7 +755,8 @@ def configure_subclip_from_clips(sender, instance: Clips, **kwargs):
         print(f"Total fragments in SRT after threshold: {len(all_fragments)}")
         
         # Get clip text in lowercase for comparison
-        clip_text = instance.text.lower().strip()
+        clip_text = clean_text_for_alignment(instance.text)
+        # clip_text = instance.text.lower().strip()
         
         # Concatenate all fragment texts to form a transcript
         full_transcript = ""
@@ -778,13 +772,7 @@ def configure_subclip_from_clips(sender, instance: Clips, **kwargs):
         # If transcript is longer than our positions mapping, trim the positions
         if len(fragment_positions) > len(full_transcript):
             fragment_positions = fragment_positions[:len(full_transcript)]
-        
-        print(f"Full transcript: '{full_transcript}'")
-        print(f"Searching for: '{clip_text}'")
-        print("-----------------------------------")
-        print(f"Filtered fragments count: {len(filtered_fragments)}")
-        print("-----------------------------------")
-        
+
         # Find the clip text in the transcript
         if clip_text in full_transcript:
             # Find the start and end positions

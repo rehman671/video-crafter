@@ -53,8 +53,8 @@ class Clips(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         # Remove single quotes from text field if present
-        if self.text:
-            self.text = self.text.replace("'", "")
+        # if self.text:
+        #     self.text = self.text.replace("'", "")
         
         # Ensure start_time has a default value if it's None - this is crucial
         if self.start_time is None:
@@ -77,8 +77,8 @@ class Subclip(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         # Remove single quotes from text field if present
-        if self.text:
-            self.text = self.text.replace("'", "")
+        # if self.text:
+        #     self.text = self.text.replace("'", "")
         
         # Call the parent save method
         super().save(force_insert, force_update, using, update_fields)

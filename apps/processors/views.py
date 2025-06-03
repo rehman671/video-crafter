@@ -24,6 +24,7 @@ from django.views.decorators.http import require_http_methods
 import traceback
 from apps.core.models import UserAsset
 from apps.core.services.s3_service import get_s3_client
+from django.db.models import Count, Min
 
 import tempfile
 from django.core.files import File
@@ -1171,6 +1172,36 @@ def _process_video_background(video: Video, user_id, status_obj):
 
         for subclip in Subclip.objects.filter(clip__video=video).order_by('clip__sequence', 'start_time'):
             subclip.save()
+
+        # Find subclips with duplicate start_time, delete those with lower IDs
+        duplicate_start_times = (
+            Subclip.objects.filter(clip__video=video)
+            .values('start_time')
+            .annotate(count=Count('id'), min_id=Min('id'))
+            .filter(count__gt=1)
+        )
+
+        for item in duplicate_start_times:
+            Subclip.objects.filter(
+                clip__video=video,
+                start_time=item['start_time']
+            ).exclude(id=item['min_id']).delete()
+
+        # Find subclips with duplicate end_time, delete those with lower IDs
+        duplicate_end_times = (
+            Subclip.objects.filter(clip__video=video)
+            .values('end_time')
+            .annotate(count=Count('id'), min_id=Min('id'))
+            .filter(count__gt=1)
+        )
+
+        for item in duplicate_end_times:
+            Subclip.objects.filter(
+                clip__video=video,
+                end_time=item['end_time']
+            ).exclude(id=item['min_id']).delete()
+
+
         # Submit job to RunPod
         if is_text_changed is False and video.output:
             result = processor.replace_subclips(video)

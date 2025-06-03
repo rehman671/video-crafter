@@ -1,4 +1,7 @@
+let pendingUploads = new Set(); // Track highlights that are still uploading
+let uploadQueue = new Map(); // Track upload promises
 let scriptFile = null;
+// Add these after the existing variables at the top
 let scriptFileName = "No file chosen";
 let folderFiles = null;
 
@@ -795,6 +798,7 @@ function addSlide(e) {
 
     // Send the new slide to the backend to create a clip
     updateClipOnServer(newId, "");
+    updateProceedButtonState();
 }
 
 function deleteSlide(id) {
@@ -813,6 +817,7 @@ function deleteSlide(id) {
     if(isFreePlan){
         checkSubtitleLimit()
     }
+    updateProceedButtonState();
 }
 
 function toggleEdit(slideId) {
@@ -837,6 +842,7 @@ function toggleEdit(slideId) {
         activeSlideIds.delete(slideId);
     }
     renderSlides();
+    updateProceedButtonState();
 }
 
 function handleKeyPress(e, slideId) {
@@ -1043,6 +1049,7 @@ function handleUndo(slideId) {
         activeSlideIds.delete(slideId);
         renderSlides();
     }
+    updateProceedButtonState();
 }
 
 // function handleUndo(slideId) {
@@ -1542,51 +1549,52 @@ async function fetchNoSubclipIds() {
 
 async function handleProceedWithValidation(event) {
     event.preventDefault(); // Prevent default navigation
-    startProcessing();
-
+    
+    // First check critical issues that prevent proceeding
     if (!areAllTextareasHidden()) {
         alert("You Need To Save or Delete The Current Text");
-        stopProcessing();
         return;
     }
-
-    // Check for excessive character counts
-    const exceededLimitSlides = slides.filter(slide =>
+    
+    if (pendingUploads.size > 0) {
+        return; // Still uploading
+    }
+    
+    // Check for excessive character counts and show them with shake animation
+    const exceededLimitSlides = slides.filter(slide => 
         slide.text && slide.text.length > MAX_SUBTITLE_LENGTH
     );
-
+    
     if (exceededLimitSlides.length > 0) {
-        // Show error messages and exit
-        exceededLimitSlides.forEach(slide => {
-            const errorMessage = document.querySelector(`#error-message_${slide.id}`);
-            if (errorMessage) {
-                errorMessage.textContent = `Subtitle text cannot exceed ${MAX_SUBTITLE_LENGTH} characters (current: ${slide.text.length})`;
-                errorMessage.style.display = "block";
-            }
-        });
-
+        // Scroll to the first slide with exceeded limit and shake it
+        const firstExceededSlide = exceededLimitSlides[0];
+        scrollToSlideWithShake(firstExceededSlide.id, 
+            `Subtitle text cannot exceed ${MAX_SUBTITLE_LENGTH} characters (current: ${firstExceededSlide.text.length})`);
+        
+        // Show alert with count
         alert(`${exceededLimitSlides.length} subtitle(s) exceed the ${MAX_SUBTITLE_LENGTH} character limit. Please edit them before proceeding.`);
-        stopProcessing();
         return;
     }
-
-    const idsWithoutClips = await fetchNoSubclipIds();
-    if (idsWithoutClips.length > 0) {
-        // Show error messages for unassigned text
-        idsWithoutClips.forEach(id => {
-            const errorMessage = document.querySelector(`#error-message_${id}`);
-            if (errorMessage) {
-                const slide = slides.find(s => s.id === id);
-                errorMessage.textContent = !slide.markedText || slide.markedText.trim() === ""
-                    ? "Please Enter Subtitle Text"
-                    : "Assign Clips To All Of The Subtitle Text";
-                errorMessage.style.display = "block";
-            }
-        });
-        stopProcessing();
+    
+    // Check for unassigned text and show with shake animation
+    const unassignedSlides = findUnassignedSlides();
+    if (unassignedSlides.length > 0) {
+        // Scroll to the first unassigned slide and shake it
+        const firstUnassignedSlide = unassignedSlides[0];
+        const errorMessage = !firstUnassignedSlide.markedText || firstUnassignedSlide.markedText.trim() === ""
+            ? "Please Enter Subtitle Text"
+            : "Assign Clips To All Of The Subtitle Text";
+            
+        scrollToSlideWithShake(firstUnassignedSlide.id, errorMessage);
+        
+        // Show alert with count
+        alert(`${unassignedSlides.length} subtitle(s) have unassigned text. Please assign video clips to all text before proceeding.`);
         return;
     }
-
+    
+    // If we get here, everything is valid - proceed with the original logic
+    startProcessing();
+    
     console.log("Updating backend order with slides:", slides);
 
     // Get video ID from the URL
@@ -1749,6 +1757,215 @@ async function handleProceedWithValidation(event) {
         stopProcessing();
     }
 }
+// async function handleProceedWithValidation(event) {
+//     event.preventDefault(); // Prevent default navigation
+//     startProcessing();
+
+//     if (!areAllTextareasHidden()) {
+//         alert("You Need To Save or Delete The Current Text");
+//         stopProcessing();
+//         return;
+//     }
+
+//     // Check for excessive character counts
+//     const exceededLimitSlides = slides.filter(slide =>
+//         slide.text && slide.text.length > MAX_SUBTITLE_LENGTH
+//     );
+
+//     if (exceededLimitSlides.length > 0) {
+//         // Show error messages and exit
+//         exceededLimitSlides.forEach(slide => {
+//             const errorMessage = document.querySelector(`#error-message_${slide.id}`);
+//             if (errorMessage) {
+//                 errorMessage.textContent = `Subtitle text cannot exceed ${MAX_SUBTITLE_LENGTH} characters (current: ${slide.text.length})`;
+//                 errorMessage.style.display = "block";
+//             }
+//         });
+
+//         alert(`${exceededLimitSlides.length} subtitle(s) exceed the ${MAX_SUBTITLE_LENGTH} character limit. Please edit them before proceeding.`);
+//         stopProcessing();
+//         return;
+//     }
+
+//     const idsWithoutClips = await fetchNoSubclipIds();
+//     if (idsWithoutClips.length > 0) {
+//         // Show error messages for unassigned text
+//         idsWithoutClips.forEach(id => {
+//             const errorMessage = document.querySelector(`#error-message_${id}`);
+//             if (errorMessage) {
+//                 const slide = slides.find(s => s.id === id);
+//                 errorMessage.textContent = !slide.markedText || slide.markedText.trim() === ""
+//                     ? "Please Enter Subtitle Text"
+//                     : "Assign Clips To All Of The Subtitle Text";
+//                 errorMessage.style.display = "block";
+//             }
+//         });
+//         stopProcessing();
+//         return;
+//     }
+
+//     console.log("Updating backend order with slides:", slides);
+
+//     // Get video ID from the URL
+//     const path = window.location.pathname;
+//     const videoId = path.split('/')[2];
+
+//     // Get CSRF token from cookie
+//     function getCookie(name) {
+//         let cookieValue = null;
+//         if (document.cookie && document.cookie !== '') {
+//             const cookies = document.cookie.split(';');
+//             for (let i = 0; i < cookies.length; i++) {
+//                 const cookie = cookies[i].trim();
+//                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
+//                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                     break;
+//                 }
+//             }
+//         }
+//         return cookieValue;
+//     }
+
+//     const csrftoken = getCookie('csrftoken');
+
+//     // Create FormData to send all data including files
+//     const formData = new FormData();
+//     formData.append('video_id', videoId);
+
+//     // Check if we're using assets or uploading new files
+//     const hasAssetSelections = slides.some(slide =>
+//         slide.markedText && slide.markedText.includes('data-topic=') && slide.markedText.includes('data-video-key=')
+//     );
+
+//     const newFiles = window.videoFiles ? Object.keys(window.videoFiles).length : 0;
+
+//     // Add a flag to indicate whether we're processing assets or new files or both
+//     formData.append('processing_assets', hasAssetSelections ? 'true' : 'false');
+//     formData.append('new_files_only', newFiles > 0 ? 'true' : 'false');
+
+//     // Process slides and extract file data
+//     const processedSlides = slides.map(slide => {
+//         const slideData = {
+//             id: slide.id,
+//             text: slide.text,
+//             markedText: slide.markedText,
+//             sequence: slide.sequence,
+//             highlights: []
+//         };
+
+//         // Extract highlight information if exists in markedText
+//         if (slide.markedText) {
+//             // Match all mark elements with their attributes and content
+//             const markRegex = /<mark class="handlePopupSubmit"([^>]*)>([^<]+)<\/mark>/g;
+//             let match;
+
+//             // Iterate through all matches in the marked text
+//             while ((match = markRegex.exec(slide.markedText)) !== null) {
+//                 const attributes = match[1]; // All attributes inside the mark tag
+//                 const text = match[2]; // The text content of the mark
+
+//                 // Extract highlight attributes
+//                 const highlightIdMatch = attributes.match(/data-highlight-id="([^"]*)"/);
+//                 const highlightId = highlightIdMatch ? highlightIdMatch[1] : null;
+
+//                 const videoFileMatch = attributes.match(/data-video-file="([^"]*)"/);
+//                 const videoFile = videoFileMatch ? videoFileMatch[1] : null;
+
+//                 const topicMatch = attributes.match(/data-topic="([^"]*)"/);
+//                 const videoKeyMatch = attributes.match(/data-video-key="([^"]*)"/);
+//                 const topic = topicMatch ? topicMatch[1] : null;
+//                 const videoKey = videoKeyMatch ? videoKeyMatch[1] : null;
+
+//                 console.log(`Extracted highlight: ID=${highlightId}, text=${text}, topic=${topic}, videoKey=${videoKey}, videoFile=${videoFile}`);
+
+//                 // Store highlight information
+//                 if (highlightId) {
+//                     const highlightData = {
+//                         text: text,
+//                         highlightId: highlightId
+//                     };
+
+//                     // Add videoFile if available
+//                     if (videoFile) {
+//                         highlightData.videoFile = videoFile;
+//                     }
+
+//                     // Add topic and videoKey if available (for asset selection)
+//                     if (topic && videoKey) {
+//                         highlightData.topic = topic;
+//                         highlightData.videoKey = videoKey;
+//                     }
+
+//                     slideData.highlights.push(highlightData);
+//                 }
+//             }
+//         }
+
+//         return slideData;
+//     });
+
+//     // Add processed slides to FormData
+//     formData.append('slides_data', JSON.stringify(processedSlides));
+
+//     // Add only new files from window.videoFiles
+//     if (window.videoFiles) {
+//         Object.entries(window.videoFiles).forEach(([highlightId, file]) => {
+//             formData.append(`file_${highlightId}`, file);
+//             console.log(`Adding file: ${highlightId} = ${file.name}`);
+//         });
+//     }
+
+//     // Log the request data to console for debugging
+//     console.log("Sending slides data:", processedSlides);
+
+//     // Add waiting status
+//     document.getElementById('button-text').textContent = "Processing assets...";
+
+//     // Send data to server
+//     try {
+//         const response = await fetch('/save-slides-data/', {
+//             method: 'POST',
+//             headers: {
+//                 'X-CSRFToken': csrftoken,
+//             },
+//             body: formData
+//         });
+
+//         console.log("Response status:", response.status);
+
+//         // Check if the response is a redirect
+//         if (response.redirected) {
+//             console.log('Server redirected to:', response.url);
+//             window.location.href = response.url;
+//             return;
+//         }
+
+//         const data = await response.json();
+//         console.log("Response data:", data);
+
+//         if (data.success) {
+//             console.log('Slides data saved successfully');
+//             // If the server didn't redirect us, manually go to background music page
+//             // Wait a little longer if asset processing was needed
+//             if (hasAssetSelections) {
+//                 document.getElementById('button-text').textContent = "Asset processing complete!";
+//                 setTimeout(() => {
+//                     window.location.href = `/background-music/${videoId}/`;
+//                 }, 1000);
+//             } else {
+//                 window.location.href = `/background-music/${videoId}/`;
+//             }
+//         } else {
+//             console.error('Error saving slides data:', data.error);
+//             alert('Error saving slides data: ' + (data.error || 'Unknown error'));
+//             stopProcessing();
+//         }
+//     } catch (error) {
+//         console.error('Error:', error);
+//         alert('An error occurred. Please try again.');
+//         stopProcessing();
+//     }
+// }
 
 
 function validateSubtitleLength(text) {
@@ -2472,6 +2689,8 @@ function renderSlides(send_update = true) {
     if (window.$ && $('#leadsTable tbody').length) {
         initializeDragAndMove();
     }
+    updateProceedButtonState();
+
 }
 
 
@@ -3589,3 +3808,89 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// Function to scroll to a slide and show shake animation
+function scrollToSlideWithShake(slideId, errorMessage) {
+    const slideElement = document.querySelector(`tr[data-id="${slideId}"]`);
+    if (slideElement) {
+        // Scroll to the slide
+        slideElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+        
+        // Add shake animation to the entire row
+        slideElement.style.animation = 'shake 0.6s ease-in-out';
+        slideElement.style.backgroundColor = '#ffebee';
+        
+        // Show error message
+        const errorMessageElement = document.getElementById(`error-message_${slideId}`);
+        if (errorMessageElement) {
+            errorMessageElement.textContent = errorMessage;
+            errorMessageElement.style.display = 'block';
+            errorMessageElement.style.animation = 'shake 0.6s ease-in-out';
+        }
+        
+        // Remove animations after they complete
+        setTimeout(() => {
+            slideElement.style.animation = '';
+            slideElement.style.backgroundColor = '';
+            if (errorMessageElement) {
+                errorMessageElement.style.animation = '';
+            }
+        }, 600);
+    }
+}
+
+// Function to find unassigned slides
+function findUnassignedSlides() {
+    return slides.filter(slide => {
+        // Skip empty slides
+        if (!slide.text || slide.text.trim() === "") {
+            return false;
+        }
+
+        // Extract all highlighted text from the marked text
+        const markedText = slide.markedText || slide.text || "";
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = markedText;
+        
+        // Get all mark elements
+        const markElements = tempDiv.querySelectorAll('mark.handlePopupSubmit');
+        
+        // If there are no mark elements but there is text, it means no text is assigned
+        if (markElements.length === 0) {
+            return true;
+        }
+        
+        // Get the raw text without any HTML
+        const fullText = tempDiv.textContent.trim();
+        
+        // Collect all the highlighted text
+        let highlightedText = '';
+        markElements.forEach(mark => {
+            highlightedText += mark.textContent;
+        });
+        
+        // Remove all spaces from both strings for comparison
+        const normalizedFullText = fullText.replace(/\s+/g, '');
+        const normalizedHighlightedText = highlightedText.replace(/\s+/g, '');
+        
+        // Check if all text is highlighted
+        return normalizedHighlightedText !== normalizedFullText;
+    });
+}
+
+function shouldEnableProceedButton() {
+    // Check if all textareas are hidden (not in editing mode)
+    if (!areAllTextareasHidden()) {
+        return false;
+    }
+    
+    // Check if there are any pending uploads
+    if (pendingUploads.size > 0) {
+        return false;
+    }
+    
+    // Always enable the button - we'll handle validation in the click handler
+    return true;
+}
