@@ -157,15 +157,19 @@ def register_after_payment(request):
                 stripe_subscription = stripe.Subscription.retrieve(subscription_id)
 
                 # Calculate period end date from Stripe subscription
-                if stripe_subscription and stripe_subscription.current_period_end:
-                    # Convert Stripe timestamp to Django datetime
-                    period_end = timezone.datetime.fromtimestamp(
-                        stripe_subscription.current_period_end, 
-                        tz=timezone.utc
-                    )
-                    print(f"Period end from Stripe: {period_end}")
-                else:
-                    # Fallback: 30 days from now if Stripe data is unavailable
+                try:
+                    if stripe_subscription and stripe_subscription.current_period_end:
+                        # Convert Stripe timestamp to Django datetime
+                        period_end = timezone.datetime.fromtimestamp(
+                            stripe_subscription.current_period_end, 
+                            tz=timezone.utc
+                        )
+                        print(f"Period end from Stripe: {period_end}")
+                    else:
+                        # Fallback: 30 days from now if Stripe data is unavailable
+                        period_end = timezone.now() + timedelta(days=30)
+                        print(f"Fallback period end: {period_end}")
+                except:
                     period_end = timezone.now() + timedelta(days=30)
                     print(f"Fallback period end: {period_end}")
 

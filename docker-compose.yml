@@ -21,30 +21,28 @@ services:
     #           count: all
     #           capabilities: [gpu, utility, compute, video]
     depends_on:
-      - db
+      # - db
       - redis
     command: >
       bash -c "./check_gpu.sh  && python3.10 manage.py makemigrations && python3.10 manage.py migrate && python3.10 manage.py runserver 0.0.0.0:8000"
 
-  db:
-    image: postgres:14-alpine
-    restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file:
-      - .env
-    environment:
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_DB=${DB_NAME:-videocrafter}
-    ports:
-      - "5432:5432"
+  # db:
+  #   image: postgres:14-alpine
+  #   restart: always
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data/
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+  #     - POSTGRES_USER=${DB_USER:-postgres}
+  #     - POSTGRES_DB=${DB_NAME:-videocrafter}
+  #   ports:
+  #     - "5432:5432"
 
   redis:
     image: redis:alpine
     restart: always
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
 
@@ -66,7 +64,7 @@ services:
     #           count: all
     #           capabilities: [gpu, utility, compute, video]
     depends_on:
-      - db
+      # - db
       - redis
       - web
     command: bash -c "./check_gpu.sh && celery -A config.celery_app worker -l INFO -n worker1@%h"
@@ -89,7 +87,7 @@ services:
     #           count: all
     #           capabilities: [gpu, utility, compute, video]
     depends_on:
-      - db
+      # - db
       - redis
       - web
     command: bash -c "./check_gpu.sh && celery -A config.celery_app worker -l INFO -n worker2@%h"
@@ -102,7 +100,7 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
+      # - db
       - redis
       - celery-worker1
       - celery-worker2

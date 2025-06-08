@@ -432,13 +432,13 @@
 
 #highlightable {
     padding: 12px 12px;
-}
+}   
 
 .highlight-sub {
     display: flex;
     width: 100%;
     flex-direction: column;
-    /* line-height: 20px; */
+    line-height: 40px;
 }
 
 .textarea-class {

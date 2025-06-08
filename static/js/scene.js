@@ -2515,7 +2515,7 @@ function renderSlides(send_update = true) {
                             class="textarea-class"
                             id="slide_text_${slide.id}"
                             name="slide_text"
-                            placeholder="Type Your Script Here (max ${MAX_SUBTITLE_LENGTH} characters)"
+                            placeholder="Type Your Script Here And Press Enter (Max ${MAX_SUBTITLE_LENGTH} Characters)"
                             onkeydown="handleKeyPress(event, ${slide.id})"
                             ${charCount > MAX_SUBTITLE_LENGTH ? 'style="border: 1px solid red;"' : ''}
                         >${getCleanTextContent(slide.text)}</textarea>

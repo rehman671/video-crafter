@@ -715,7 +715,7 @@ body {
 .popup-container {
     position: relative;
     background: #fff;
-    max-width: 615px;
+    max-width: 685px;
     padding: 20px;
     border-radius: 10px;
     width: 90%;
@@ -827,7 +827,7 @@ select::-webkit-dropdown-arrow {
     border-radius: 8px;
     padding: 30px 30px;
     width: 100%;
-    max-width: 615px;
+    max-width: 685px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     animation: slide-down 0.3s ease-in-out;
 }
@@ -839,10 +839,10 @@ select::-webkit-dropdown-arrow {
     font-size: 1.2rem;
     border: 1px solid #864AF9;
     border-radius: 5px;
-    margin: 2px;
+    margin: -1px;
     font-weight: bold;
     cursor: pointer;
-    font-size: 15px;
+    /* font-size: 15px; */
 }
 
 
