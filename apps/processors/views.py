@@ -20,6 +20,7 @@ from .utils import add_background_music, generate_audio_file, generate_srt_file,
 from apps.processors.services.video_processor import VideoProcessorService
 from apps.core.models import Subscription
 from django.views.decorators.http import require_http_methods
+from apps.processors.handler.elevenlabs import ElevenLabsHandler
 
 import traceback
 from apps.core.models import UserAsset
@@ -1386,7 +1387,6 @@ def save_draft(request):
 @require_http_methods(["POST"])
 @login_required(login_url='login')
 def update_video_credentials(request, video_id):
-    from apps.processors.handler.elevenlabs import ElevenLabsHandler
 
     """
     API endpoint to update video ElevenLabs credentials
@@ -1493,3 +1493,156 @@ def get_processing_status_with_credentials(request, video_id):
             })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@login_required(login_url='login')
+def get_elevenlabs_voices(request, video_id):
+    """
+    API endpoint to get available ElevenLabs voices for the current user
+    """
+    try:
+        video = get_object_or_404(Video, id=video_id, user=request.user)
+        
+        if not video.elevenlabs_api_key:
+            return JsonResponse({'success': False, 'error': 'API key is required to fetch voices'}, status=400)
+        
+        
+        handler = ElevenLabsHandler(api_key=video.elevenlabs_api_key)
+        voices = handler.get_available_voices()
+        
+        return JsonResponse({
+            'success': True,
+            'voices': voices
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required(login_url='login')
+def get_voiceover_history(request, video_id):
+    """
+    API endpoint to get voiceover history for a video
+    """
+    try:
+        print("Fetching voiceover history for video ID:", video_id)
+        print("User:", request.user)
+        video = get_object_or_404(Video, id=video_id)
+        if not video.elevenlabs_api_key:
+            return JsonResponse({'success': False, 'error': 'API key is required to fetch voiceover history'}, status=400)
+        
+        handler = ElevenLabsHandler(api_key=video.elevenlabs_api_key)  
+        return JsonResponse({'success': False, 'history': handler.get_history().get('history')}, status=200)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required(login_url='login')
+def get_saved_history(request, video_id):
+    """
+    API endpoint to get voiceover history for a video with saved HTML
+    """
+    try:
+        print("Fetching voiceover history from history ID for video ID:", video_id)
+        print("User:", request.user)
+        video = get_object_or_404(Video, id=video_id)
+
+        if not video.elevenlabs_api_key:
+            return JsonResponse({'success': False, 'error': 'API key is required to fetch voiceover history'}, status=400)
+        
+        handler = ElevenLabsHandler(api_key=video.elevenlabs_api_key)
+        history_item = handler.get_history_by_id(video.history_id)
+        
+        # ADD: Include saved HTML and split data
+        response_data = {
+            'success': False, 
+            'history': [history_item],
+            'saved_preview_html': getattr(video, 'history_preview_html', ''),
+            'saved_split_positions': json.loads(getattr(video, 'split_positions', '[]')),
+            'saved_preview_text': getattr(video, 'preview_text', '')
+        }
+        
+        return JsonResponse(response_data, status=200)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='login')
+def update_video_history(request):
+    """
+    Update video history_id and save preview HTML
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            video_id = data.get('video_id')
+            history_id = data.get('history_id')
+            preview_html = data.get('preview_html', '')
+            split_positions = data.get('split_positions', [])
+            preview_text = data.get('preview_text', '')
+            
+            video = get_object_or_404(Video, id=video_id)
+            video.history_id = history_id
+            video.history_preview_html = preview_html  # ADD this field to your Video model
+            video.split_positions = json.dumps(split_positions)  # ADD this field
+            video.preview_text = preview_text  # ADD this field
+            video.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Video history_id and preview HTML updated successfully'
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
+
+@csrf_exempt
+@require_POST
+@login_required(login_url='login')
+def delete_all_clips(request):
+    """
+    Delete all clips and subclips for a specific video
+    """
+    try:
+        data = json.loads(request.body)
+        video_id = data.get('video_id')
+        
+        # Validate input
+        if not video_id:
+            return JsonResponse({'success': False, 'error': 'Video ID is required'}, status=400)
+        
+        # Get the video object
+        try:
+            video = Video.objects.get(id=video_id, user=request.user)
+        except Video.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Video not found'}, status=404)
+        
+        # Get all clips for this video
+        clips = Clips.objects.filter(video=video)
+        clips_count = clips.count()
+        
+        # Get all subclips for these clips
+        subclips = Subclip.objects.filter(clip__video=video)
+        subclips_count = subclips.count()
+        
+        # Delete all subclips first (due to foreign key constraints)
+        subclips.delete()
+        
+        # Delete all clips
+        clips.delete()
+        
+        # Reset video content to empty
+        video.content = ""
+        video.save(update_fields=['content'])
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f'Successfully deleted all clips and subclips for video {video_id}',
+            'video_id': video_id,
+            'deleted_count': clips_count,
+            'subclips_deleted_count': subclips_count
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

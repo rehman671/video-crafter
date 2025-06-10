@@ -36,7 +36,7 @@
     font-size: 20px;
 }
 .popup-container{
-    max-width: 635px;
+    max-width: 635px;
 }
         
         /* Free user overlay styling */
@@ -193,6 +193,374 @@
         .sub-div3{
             background-color: #9662f9 !important;
         }
+        .script-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+    background-color: #fafafa;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 16px 20px;
+    background: #fafafa;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.tab-button.active {
+    color: #864AF9;
+    background-color: white;
+    border-bottom-color: #864AF9;
+    font-weight: 600;
+}
+
+.tab-button:hover:not(.active) {
+    background-color: #f0f0f0;
+    color: #555;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* History Dropdown Styles */
+.history-dropdown-container {
+    margin: 20px 0;
+}
+
+.history-select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: white;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.history-select:focus {
+    outline: none;
+    border-color: #864AF9;
+    box-shadow: 0 0 0 3px rgba(134, 74, 249, 0.1);
+}
+
+.history-select:hover {
+    border-color: #ccc;
+}
+
+.history-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    color: #666;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #864AF9;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 12px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.history-error {
+    text-align: center;
+    padding: 25px 20px;
+    background-color: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.error-text {
+    color: #e53e3e;
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.retry-button {
+    background-color: #864AF9;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.retry-button:hover {
+    background-color: #7038e0;
+}
+
+/* History Preview Styles */
+.history-preview {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.preview-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.voice-name {
+    background: linear-gradient(135deg, #864AF9 0%, #9c7afc 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.preview-text {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 140px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.history-preview {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    max-width: 100%;
+    overflow: hidden;
+}
+.preview-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    font-size: 12px;
+    color: #666;
+}
+
+.preview-details > span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    background-color: white;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.character-count::before {
+    content: "📝";
+    margin-bottom: 4px;
+}
+
+.date::before {
+    content: "📅";
+    margin-bottom: 4px;
+}
+
+.subtitle-count::before {
+    content: "🔢";
+    margin-bottom: 4px;
+}
+
+.preview-details .character-count {
+    font-weight: 600;
+    color: #495057;
+}
+
+.preview-details .date {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.preview-details .subtitle-count {
+    font-weight: 600;
+    color: #864AF9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tab-button {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+    
+    .tab-button img {
+        width: 14px !important;
+        height: 14px !important;
+        margin-right: 6px !important;
+    }
+    
+    .preview-details {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .history-preview {
+        padding: 15px;
+    }
+}
+
+/* Enhanced file button styles for history */
+#historyLoadButton:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+#historyLoadButton:not(:disabled) {
+    /* background: linear-gradient(135deg, #864AF9 0%, #9c7afc 100%); */
+    transform: translateY(0);
+    transition: all 0.3s ease;
+}
+
+#historyLoadButton:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(134, 74, 249, 0.3);
+}
+
+/* Enhanced preview styles for splitting functionality */
+.preview-text-container {
+    margin-bottom: 15px;
+}
+
+.preview-text {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    cursor: text;
+    position: relative;
+}
+
+.preview-text.splitting-mode {
+    background-color: #f8f9ff;
+    border-color: #864AF9;
+    cursor: crosshair;
+}
+
+.preview-instructions {
+    margin-top: 8px;
+    padding: 8px;
+    background-color: #f0f4ff;
+    border: 1px solid #d1d9ff;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #4a5568;
+    text-align: center;
+}
+
+.subtitle-segment {
+    display: inline-block;
+    padding: 2px 4px;
+    margin: 1px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.subtitle-segment:hover {
+    background-color: #e8f0fe;
+    border-color: #864AF9;
+}
+
+.subtitle-segment.exceeds-limit {
+    background-color: #fff5f5;
+    border-color: #feb2b2;
+    color: #c53030;
+}
+
+.subtitle-segment.exceeds-limit:hover {
+    background-color: #fed7d7;
+}
+
+.split-point {
+    display: inline-block;
+    width: 2px;
+    height: 1.2em;
+    background-color: #864AF9;
+    margin: 0 1px;
+    vertical-align: middle;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+.subtitle-count-info {
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.subtitle-count-warning {
+    color: #e53e3e;
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -275,7 +643,7 @@
     <div class="body-container">
         <div id="pfp"></div>
         <div id="pfpdropdown" class="not-present"></div>
-        <div class="card-container">
+     <div class="card-container">
             <div class="card">
                 <div class="card-header">
                     <div id="previousButton">
@@ -283,40 +651,126 @@
                             <img src="{% static 'images/back.svg' %}" alt="Back">
                         </a>
                     </div>
-                    <span class="card-header-span">Upload Your Script</span>
+                    <span class="card-header-span">Select Your Script</span>
                 </div>
                 <div class="card-body">
-                    <div class="Script-text-file-text">
-                        <div class="Script-text-file-text-sub">
-                            <div class="script-text">Script Text File:</div>
-                            <div class="vh-parent">
-                                <div class="vh-child">
-                                    <span class="text3">Please Make Sure Your Script Is On Txt File</span>
-                                    <span class="text3" style="display: block; color: #FF5050; margin-top: 5px;">Each line should be no more than 100 characters</span>
-                                </div>?
-                            </div>
-                        </div><a href="{% static 'dummy/template.txt' %}" download="" class="download-btn">Click Here To Download An
-                            Empty Template</a>
-                    </div>
-                </div>
-                <form method="post" enctype="multipart/form-data">    
-                    {% csrf_token %}
-
-                    <div class="Script-text-file-Upload">
-                        <div class="script-upload-sub">
-                            <img src="{% static 'images/choose-icon.svg' %}" alt="Choose file">
-                            <span class="text2 choosefile-heading">Choose file</span>
-                            <input required="" type="file" id="fileUpload" accept=".txt" name="videotextfile">
-                        </div>
-                        <div class="text2" id="fileName" style="color:#00000080">No file chosen</div>
-                    </div>
-                    <div class="center-container">
-                        <button type="submit" id="scriptUploadButton" class="file-button">
-                            Load Script
+                    <!-- Tab Navigation -->
+                    <div class="script-tabs">
+                        <button class="tab-button active" id="history-tab" onclick="showTab('history')">
+                            <img src="{% static 'images/iconlogo.svg' %}" alt="" style="width: 16px; height: 16px; margin-right: 8px;">
+                            ElevenLabs Voiceovers
                         </button>
                     </div>
-                </form>
+
+                    <!-- Upload Tab Content -->
+                    <!-- <div id="upload-content" class="tab-content">
+                        <div class="Script-text-file-text">
+                            <div class="Script-text-file-text-sub">
+                                <div class="script-text">Script Text File:</div>
+                                <div class="vh-parent">
+                                    <div class="vh-child">
+                                        <span class="text3">Please Make Sure Your Script Is On Txt File</span>
+                                        <span class="text3" style="display: block; color: #FF5050; margin-top: 5px;">Each line should be no more than {{ MAX_SUBTITLE_LENGTH|default:100 }} characters</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="{% static 'dummy/template.txt' %}" download="" class="download-btn">
+                                Click Here To Download An Empty Template
+                            </a>
+                        </div>
+                        <form method="post" enctype="multipart/form-data" id="file-upload-form">    
+                            {% csrf_token %}
+                            <div class="Script-text-file-Upload">
+                                <div class="script-upload-sub">
+                                    <img src="{% static 'images/choose-icon.svg' %}" alt="Choose file">
+                                    <span class="text2 choosefile-heading">Choose file</span>
+                                    <input required="" type="file" id="fileUpload" accept=".txt" name="videotextfile">
+                                </div>
+                                <div class="text2" id="fileName" style="color:#00000080">No file chosen</div>
+                            </div>
+                            <div class="center-container">
+                                <button type="submit" id="scriptUploadButton" class="file-button">
+                                    Load Script
+                                </button>
+                            </div>
+                        </form>
+                    </div> -->
+
+                    <!-- History Tab Content -->
+                    <div id="history-content" class="tab-content active">
+                        <div class="Script-text-file-text">
+                            <div class="Script-text-file-text-sub">
+                                <div class="script-text">ElevenLabs Voiceover:</div>
+                                    <div class="vh-child">
+                                        <span class="text3">Select from your previous ElevenLabs voiceovers</span>
+                                        <span class="text3" style="display: block; color: #864AF9; margin-top: 5px;">Text will be automatically split into subtitles</span>
+                                    </div>
+                            </div>
+                        </div>
+                        
+                        <div class="history-dropdown-container">
+                            <!-- <div class="script-upload-sub">
+                                <img src="{% static 'images/iconlogo.svg' %}" alt="Select history">
+                                <span class="text2 choosefile-heading">Select Voiceover History</span>
+                            </div> -->
+                            
+                            <!-- Loading State -->
+                            <div id="history-loading" class="history-loading" style="display: none;">
+                                <div class="loading-spinner"></div>
+                                <span>Loading voiceovers ...</span>
+                            </div>
+                            
+                            <!-- Error State -->
+                            <div id="history-error" class="history-error" style="display: none;">
+                                <span class="error-text">Failed to load voiceovers. Please try again.</span>
+                                <button onclick="loadVoiceoverHistory()" class="retry-button">Retry</button>
+                            </div>
+                            
+                            <!-- Dropdown -->
+                            <select id="voiceover-history-select" class="history-select" style="display: none;">
+                                <option value="">Select a voiceover...</option>
+                            </select>
+                            
+                            <!-- Selected History Preview -->
+<div id="selected-history-preview" class="history-preview" style="display: none;">
+    <div class="preview-header">
+        <strong>Selected Voiceover:</strong>
+        <span class="voice-name" id="preview-voice-name"></span>
+    </div>
+    <div class="preview-text-container">
+        <div class="preview-text" id="preview-text" contenteditable="false"></div>
+        <div class="preview-controls">
+          <div class="preview-instructions">
+    <small>💡 <strong>Ctrl+Click</strong> (or <strong>Cmd+Click</strong> on Mac) to split at word boundaries • <strong>Double-click</strong> segment to merge with next • <strong>Shift+Click</strong> segment to merge with previous</small>
+</div>
+            <div class="preview-actions">
+                <button type="button" class="preview-btn reset-btn" onclick="resetAllSplits()">
+                    <i class="ri-refresh-line"></i> Reset All
+                </button>
+                <button type="button" class="preview-btn undo-btn" onclick="undoLastSplit()" id="undoSplitBtn" disabled>
+                    <i class="ri-arrow-go-back-line"></i> Undo Last
+                </button>
             </div>
+        </div>
+    </div>
+    <div class="preview-details">
+        <span class="character-count" id="preview-char-count"></span>
+        <span class="date" id="preview-date"></span>
+        <span class="subtitle-count" id="preview-subtitle-count"></span>
+    </div>
+</div>
+                        </div>
+                        
+                        <div class="center-container">
+                            <button type="button" id="historyLoadButton" class="file-button" disabled onclick="loadSelectedHistory()">
+                                Load Selected Script
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Keep the second card as is -->
             <div class="card" id="uploadCard" style="position:relative">
                 <div class="card-header">
                     <span class="card-header-span">Upload To Your Asset Folder</span>
@@ -378,16 +832,16 @@
                     <div class="section-header">Instructions <span>▶</span></div>
                     <div class="section-content" id="instructions">
                         <div class="bor" style="border:1px solid #cccccc"></div>
-                        <h3>Step 1: Upload Your Script</h3>
-                        <p>Each line of your script represents a subtitle box in the video. For example:</p>
-                        <div class="highlight">
-                            <p>If your script says, "Hello, my name is Steve," on the first line of your text file, the
-                                first subtitle box will display Hello, my name is Steve.</p>
-                        </div>
-                        <h3>Step 2: Highlight And Assign Clips</h3>
-                        <p class="highlight-words">Highlight words:</p>
-                        <p>Simply highlight the words in your script that you want to match with a video clip and assign
-                            a video clip.</p><a href="{% static 'public/videos/dummy.mp4' %}">Watch Video Tutorial</a>
+                      <h3>Step 1: Select Your ElevenLabs Voiceover</h3>
+<p>Choose from your previously generated ElevenLabs voiceovers. The text will be automatically split into subtitle boxes. For example:</p>
+<div class="highlight">
+    <p>If your voiceover says, "Hello, my name is Steve," this will be automatically converted into
+        subtitle boxes that you can then assign video clips to.</p>
+</div>
+<h3>Step 2: Highlight And Assign Clips</h3>
+<p class="highlight-words">Highlight words:</p>
+<p>Simply highlight the words in your script that you want to match with a video clip and assign
+    a video clip.</p><a href="{% static 'public/videos/dummy.mp4' %}">Watch Video Tutorial</a>
                     </div>
                 </div>
                 <div class="section">
@@ -433,14 +887,13 @@
                     <tr style="height:fit-content">
                         <th class="slide-first" style="font-size:1.4rem">Subtitle</th>
                         <th style="font-size:1.4rem">Subtitle Text</th>
-                        <th class="slide-last">Edit</th>
+                        <!-- <th class="slide-last">Edit</th> -->
                         <th class="slide-last">Undo</th>
-                        <th class="slide-last">Delete</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr data-id="-1" style="height:5rem">
-                        <td class="slide-first" style="font-size:1.4rem;position:relative;cursor:grab"
+                        <td class="slide-first" style="font-size:1.4rem;position:relative;"
                             title="Drag to move">Subtitle 1</td>
                         <td id="highlightable_-1">
                             <div class="highlight-sub">
@@ -452,25 +905,20 @@
                                     Unassigned Word Of The Sentence.</div>
                             </div>
                         </td>
-                        <td class="slide-last active"><a href="#" class="above-del"><i id="icon"
+                        <!-- <td class="slide-last active"><a href="#" class="above-del"><i id="icon"
                                     class="ri-edit-box-line fa-sync-alt icon"
                                     style="margin:0 auto;font-size:20px;font-weight:600;cursor:pointer;vertical-align:middle"></i></a>
-                        </td>
+                        </td> -->
                         <td class="slide-last active">
                             <a href="#" class="above-del">
                                 <img src="{% static 'images/undo.svg' %}" alt="Undo" style="width:1.2rem;height:3rem;cursor:pointer">
                             </a>
                         </td>
-                        <td class="slide-last" id="action_-1">
-                            <a href="#" class="delete-row-btn">
-                                <img src="{% static 'images/delete-icn.svg' %}" alt="delete"
-                                    style="width:1.5rem;height:3rem;cursor:pointer">
-                            </a>
-                        </td>
+       
                     </tr>
                 </tbody>
             </table>
-            <div class="add-new-sub">
+            <div class="add-new-sub" style="display: none;">
                 <div class="d-flex justify-content-start">
                     <a href="#" id="createLeadBtn" class="btn proceed-btn">Add New
                         Subtitle +
@@ -479,7 +927,8 @@
                 <div id="subtitle-limit-error" style="color: red; margin-top: 10px; display: none; font-size: 11px;">
                     Free plan users are limited to 10 subtitles. Please upgrade your subscription for unlimited subtitles.
                 </div>
-            </div><input type="number" id="no_of_slides" hidden="" readonly="" name="no_of_slides" value="1">
+            </div>
+            <input type="number" id="no_of_slides" hidden="" readonly="" name="no_of_slides" value="1">
             <div class="button-container">
                 <button id="saveDraftBtn" class="save-draft-btn">Save Draft</button>
 
@@ -585,6 +1034,256 @@
             border-radius: 4px;
             cursor: pointer;
         }
+        /* Enhanced preview controls */
+.preview-controls {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.preview-instructions {
+    padding: 8px;
+    background-color: #f0f4ff;
+    border: 1px solid #d1d9ff;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #4a5568;
+    text-align: center;
+}
+
+.preview-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.preview-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.preview-btn:hover:not(:disabled) {
+    background-color: #f8f9fa;
+    border-color: #bbb;
+}
+
+.preview-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+}
+
+.reset-btn:hover:not(:disabled) {
+    background-color: #fff5f5;
+    border-color: #feb2b2;
+    color: #c53030;
+}
+
+.undo-btn:hover:not(:disabled) {
+    background-color: #f0f4ff;
+    border-color: #864AF9;
+    color: #864AF9;
+}
+
+/* Enhanced segment styling */
+.subtitle-segment {
+    display: inline-block;
+    padding: 2px 4px;
+    margin: 1px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.subtitle-segment:hover {
+    background-color: #e8f0fe;
+    border-color: #864AF9;
+}
+
+.subtitle-segment.exceeds-limit {
+    background-color: #fff5f5;
+    border-color: #feb2b2;
+    color: #c53030;
+}
+
+.subtitle-segment.exceeds-limit:hover {
+    background-color: #fed7d7;
+}
+
+.subtitle-segment.mergeable-next {
+    border-right: 2px dashed #28a745;
+}
+
+.subtitle-segment.mergeable-prev {
+    border-left: 2px dashed #28a745;
+}
+
+.subtitle-segment.merge-preview {
+    background-color: #e8f5e8;
+    border-color: #28a745;
+}
+
+.split-point {
+    display: inline-block;
+    width: 2px;
+    height: 1.2em;
+    background-color: #864AF9;
+    margin: 0 1px;
+    vertical-align: middle;
+    animation: blink 1s infinite;
+    cursor: pointer;
+    position: relative;
+}
+
+.split-point:hover {
+    background-color: #c53030;
+    width: 3px;
+}
+
+.split-point::before {
+    content: '×';
+    position: absolute;
+    top: -8px;
+    left: -4px;
+    font-size: 10px;
+    color: #864AF9;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.split-point:hover::before {
+    opacity: 1;
+    color: #c53030;
+}
+
+/* Segment numbering on hover */
+.subtitle-segment::before {
+    content: attr(data-segment-number);
+    position: absolute;
+    top: -12px;
+    left: 2px;
+    font-size: 9px;
+    color: #666;
+    background: white;
+    padding: 1px 3px;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.subtitle-segment:hover::before {
+    opacity: 1;
+}
+
+/* Warning message for clip replacement */
+.replacement-warning {
+    margin-bottom: 15px;
+}
+
+.replacement-warning div {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.replacement-warning strong {
+    color: #856404;
+}
+
+
+/* Enhanced styles for word boundary splitting */
+.word-boundary-mode {
+    cursor: text;
+}
+
+.word-boundary-mode:hover {
+    cursor: crosshair;
+}
+
+.preview-text.splitting-mode {
+    background-color: #f8f9ff;
+    border-color: #864AF9;
+    cursor: crosshair;
+}
+
+/* Word boundary indicators */
+.subtitle-segment.word-splittable {
+    background: linear-gradient(to right, transparent 0%, rgba(134, 74, 249, 0.1) 50%, transparent 100%);
+}
+
+.subtitle-segment.word-splittable:hover {
+    background: linear-gradient(to right, rgba(134, 74, 249, 0.1) 0%, rgba(134, 74, 249, 0.2) 50%, rgba(134, 74, 249, 0.1) 100%);
+}
+
+/* Enhanced split point styling */
+.split-point {
+    display: inline-block;
+    width: 3px;
+    height: 1.2em;
+    background: linear-gradient(to bottom, #864AF9 0%, #9c7afc 100%);
+    margin: 0 2px;
+    vertical-align: middle;
+    animation: pulse 2s infinite;
+    cursor: pointer;
+    position: relative;
+    border-radius: 1px;
+}
+
+.split-point:hover {
+    background: linear-gradient(to bottom, #c53030 0%, #e53e3e 100%);
+    width: 4px;
+    animation: none;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scaleY(1); }
+    50% { opacity: 0.7; transform: scaleY(0.8); }
+}
+
+.split-point::before {
+    content: '×';
+    position: absolute;
+    top: -10px;
+    left: -3px;
+    font-size: 10px;
+    color: #864AF9;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    font-weight: bold;
+}
+
+.split-point:hover::before {
+    opacity: 1;
+    color: #c53030;
+}
+
+/* Improved segment styling for word boundaries */
+.subtitle-segment::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: transparent;
+    transition: background 0.2s ease;
+}
+
+.subtitle-segment:hover::after {
+    background: linear-gradient(to right, transparent 0%, #864AF9 20%, #864AF9 80%, transparent 100%);
+}
     </style>
 <script>        const video_type = "{{ video.dimensions }}";
         console.log("Video type:", video_type);
@@ -598,7 +1297,18 @@
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
 
     <script>
+const videoHistoryId = "{{ video.history_id|default:'' }}";
 
+// Add these new variables for enhanced splitting
+let isLoadingHistory = false;
+
+let selectedHistoryId = null;
+let splitHistory = []; // Track split history for undo functionality
+let maxHistorySize = 20; // Maximum undo history
+let splittingMode = false;
+let splitPositions = [];
+let previewText = '';
+let currentHistoryItem = null;
         // Add subscription plan check variable
         const userSubscriptionPlan = "{{ user_subscription.plan.name|default:'Free Plan'|lower }}";
         const isFreePlan = userSubscriptionPlan.toLowerCase().includes('free');
@@ -795,7 +1505,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             console.log("Clip: {{ clip.id|default:'0' }} - {{ clip.text|escapejs }}");
         {% endfor %}
-        loadScript(clips);
+        loadScript(clips, true); // true indicates we want to replace existing clips
+
 
         // Pass subclips data directly from Django to JavaScript
         let initialSubclips = [];
@@ -2858,6 +3569,1860 @@ window.onclick = function(event) {
         modal.style.display = 'none';
     }
 };
+
+
+
+// #####################################
+// Add these variables to your existing scene.js file
+let voiceoverHistory = [];
+let selectedHistoryItem = null;
+let isHistoryLoaded = false;
+
+async function loadVoiceoverHistory() {
+    // Prevent duplicate calls
+    if (isLoadingHistory || isHistoryLoaded) {
+        console.log('History already loading or loaded, skipping duplicate call');
+        return;
+    }
+    
+    isLoadingHistory = true;
+    console.log('Starting to load voiceover history...');
+    
+    const loadingElement = document.getElementById('history-loading');
+    const errorElement = document.getElementById('history-error');
+    const selectElement = document.getElementById('voiceover-history-select');
+    
+    // Show loading state
+    loadingElement.style.display = 'flex';
+    errorElement.style.display = 'none';
+    selectElement.style.display = 'none';
+    
+    try {
+        // Get video ID from URL
+        const path = window.location.pathname;
+        const videoId = path.split('/')[2];
+        
+        // Get CSRF token
+        const csrftoken = getCookie('csrftoken');
+        
+        console.log('Loading voiceover history for video:', videoId);
+        console.log('Video history_id to auto-select:', videoHistoryId);
+        
+        const response = await fetch(`/videos/${videoId}/voiceover-history/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        console.log('Voiceover history response:', data);
+        
+        if (data.history && Array.isArray(data.history) && data.history.length > 0) {
+            voiceoverHistory = data.history;
+            console.log('Voiceover history loaded:', voiceoverHistory);
+            populateHistoryDropdown(data.history);
+            
+            // Auto-select if video has history_id
+            if (videoHistoryId && videoHistoryId.trim() !== '') {
+                autoSelectHistoryItem(videoHistoryId);
+            }
+            
+            isHistoryLoaded = true;
+            
+            // Hide loading, show dropdown
+            loadingElement.style.display = 'none';
+            selectElement.style.display = 'block';
+            
+            console.log(`Loaded ${data.history.length} voiceover history items`);
+        } else {
+            // No history found
+            const message = data.error || 'No voiceover history found. Create some voiceovers in ElevenLabs first.';
+            showHistoryError(message);
+            console.log('No voiceover history:', message);
+        }
+    } catch (error) {
+        console.error('Error loading voiceover history:', error);
+        showHistoryError('Failed to load voiceover history. Please check your internet connection and try again.');
+    } finally {
+        isLoadingHistory = false; // Reset the loading flag
+    }
+}
+// New function to auto-select history item based on history_id
+async function autoSelectHistoryItem(historyId) {
+    const selectElement = document.getElementById('voiceover-history-select');
+    console.log('Attempting to fetch from saved history endpoint...');
+    
+    try {
+        // Try to fetch from saved history endpoint
+        const savedHistoryItem = await fetchSavedHistory(historyId);
+        
+        if (savedHistoryItem) {
+            console.log('Successfully fetched saved history item:', savedHistoryItem);
+            
+            // Add the fetched item to the voiceoverHistory array
+            voiceoverHistory.push(savedHistoryItem);
+            
+            // Add option to dropdown
+            const option = document.createElement('option');
+            const newIndex = voiceoverHistory.length - 1;
+            option.value = newIndex;
+            
+            // Format the option text similar to other options
+            console.log('Formatting option text for saved history item:', savedHistoryItem);
+            const truncatedText = savedHistoryItem.text ? 
+            (savedHistoryItem.text.length > 60 ? savedHistoryItem.text.substring(0, 60) + '...' : savedHistoryItem.text) :
+            (savedHistoryItem.dialogue?.[0]?.text ? 
+            (savedHistoryItem.dialogue[0].text.length > 60 ? savedHistoryItem.dialogue[0].text.substring(0, 60) + '...' : savedHistoryItem.dialogue[0].text) :
+            'No text available');
+        
+            
+            option.textContent = `${truncatedText}`;
+            option.style.fontWeight = 'bold';
+            option.style.backgroundColor = '#f0f8ff';
+            option.dataset.historyItem = JSON.stringify(savedHistoryItem);
+            
+            selectElement.appendChild(option);
+            
+            // Auto-select the newly added item
+            await selectHistoryItemAtIndex(newIndex, true);
+            
+            console.log('Auto-selected saved history item');
+        }
+    } catch (error) {
+        console.error('Failed to fetch saved history:', error);
+        
+        // Show error message
+        const errorElement = document.getElementById('history-error');
+        if (errorElement) {
+            errorElement.innerHTML = `
+                <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 10px; margin-top: 15px;">
+                    <span style="color: #856404; font-weight: 500;">⚠️ Notice:</span>
+                    <span style="color: #856404;"> The previously linked voiceover (ID: ${historyId}) could not be loaded. It may have been deleted from ElevenLabs.</span>
+                </div>
+            `;
+            errorElement.style.display = 'block';
+        }
+//     }
+}
+}
+// Modified populateHistoryDropdown to support auto-selection
+function populateHistoryDropdown(history) {
+    const selectElement = document.getElementById('voiceover-history-select');
+    
+    // Clear existing options except the first one
+    selectElement.innerHTML = '<option value="">Select a voiceover...</option>';
+    
+    history.forEach((item, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        
+        // Format the option text
+        const truncatedText = item.text ? 
+            (item.text.length > 60 ? item.text.substring(0, 60) + '...' : item.text) :
+            (item.dialogue?.[0]?.text ? 
+            (item.dialogue[0].text.length > 60 ? item.dialogue[0].text.substring(0, 60) + '...' : item.dialogue[0].text) :
+            'No text available');
+        
+        // Calculate relative time
+        const now = Math.floor(Date.now() / 1000);
+        const diff = now - item.date_unix;
+        
+        let timeAgo;
+        if (diff < 60) {
+            timeAgo = `${diff} seconds ago`;
+        } else if (diff < 3600) {
+            const mins = Math.floor(diff / 60);
+            timeAgo = `${mins} ${mins === 1 ? 'minute' : 'minutes'} ago`;
+        } else if (diff < 86400) {
+            const hours = Math.floor(diff / 3600);
+            const mins = Math.floor((diff % 3600) / 60);
+            timeAgo = `${hours} ${hours === 1 ? 'hour' : 'hours'}${mins > 0 ? ` ${mins} min` : ''} ago`;
+        } else if (diff < 2592000) {
+            const days = Math.floor(diff / 86400);
+            const hours = Math.floor((diff % 86400) / 3600);
+            timeAgo = `${days} ${days === 1 ? 'day' : 'days'}${hours > 0 ? ` ${hours} hr` : ''} ago`;
+        } else {
+            const months = Math.floor(diff / 2592000);
+            const days = Math.floor((diff % 2592000) / 86400);
+            timeAgo = `${months} ${months === 1 ? 'month' : 'months'}${days > 0 ? ` ${days} d` : ''} ago`;
+        }
+        
+        option.textContent = `${truncatedText} (${timeAgo})`;
+        option.dataset.historyItem = JSON.stringify(item);
+        
+        // Add visual indicator if this is the linked voiceover
+        const itemId = item.history_item_id || item.id || '';
+        // if (videoHistoryId && itemId.toString() === videoHistoryId.toString()) {
+        //     option.textContent += ' ★'; // Add star to indicate linked voiceover
+        //     option.style.fontWeight = 'bold';
+        //     option.style.backgroundColor = '#f0f8ff';
+        // }
+        
+        selectElement.appendChild(option);
+    });
+    
+    // Add event listener for selection change (remove existing listener first)
+    selectElement.removeEventListener('change', handleHistorySelection);
+    selectElement.addEventListener('change', handleHistorySelection);
+}
+
+// Enhanced showTab function to check for auto-selection
+function showTab(tabName) {
+    // Hide all tab contents first
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    document.getElementById(`${tabName}-content`).classList.add('active');
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+    
+    // Load voiceover history when history tab is selected for the first time
+    // But only if it hasn't been loaded yet
+    if (tabName === 'history' && !isHistoryLoaded) {
+        console.log('Loading voiceover history from showTab function');
+        loadVoiceoverHistory();
+    }
+}
+// Also update the DOMContentLoaded event to handle auto-selection if starting on history tab
+// Update the DOMContentLoaded event to prevent double loading
+document.addEventListener('DOMContentLoaded', () => {
+    // Log the video history_id for debugging
+    if (videoHistoryId && videoHistoryId.trim() !== '') {
+        console.log('Video has linked history_id:', videoHistoryId);
+    } else {
+        console.log('Video has no linked history_id');
+    }
+    
+    // Set the active tab class but DON'T call showTab to prevent double loading
+    document.getElementById('history-content').classList.add('active');
+    document.getElementById('history-tab').classList.add('active');
+    
+    // Load voiceover history only once here
+    if (!isHistoryLoaded) {
+        loadVoiceoverHistory();
+    }
+    
+    // Add event listeners for tab functionality
+    const historyTab = document.getElementById('history-tab');
+    if (historyTab) {
+        historyTab.addEventListener('click', () => showTab('history'));
+    }
+    
+    // Rest of your existing initialization code...
+});
+
+// Handle history selection from dropdown
+function handleHistorySelection(event) {
+    const selectedIndex = event.target.value;
+    const loadButton = document.getElementById('historyLoadButton');
+    const previewElement = document.getElementById('selected-history-preview');
+    
+    if (selectedIndex === '') {
+        // No selection
+        selectedHistoryItem = null;
+        selectedHistoryId = null;
+        loadButton.disabled = true;
+        previewElement.style.display = 'none';
+        return;
+    }
+    
+    // Get selected history item
+    selectedHistoryItem = voiceoverHistory[selectedIndex];
+    selectedHistoryId = selectedHistoryItem.history_item_id || selectedHistoryItem.id || null;
+    
+    console.log('Selected history item:', selectedHistoryItem);
+    console.log('Selected history ID:', selectedHistoryId);
+    
+    // Enable load button
+    loadButton.disabled = false;
+    
+    // Show preview
+    showHistoryPreview(selectedHistoryItem);
+}
+
+// Enhanced preview function with text cleaning
+function showHistoryPreview(historyItem) {
+    const previewElement = document.getElementById('selected-history-preview');
+    const voiceNameElement = document.getElementById('preview-voice-name');
+    const textElement = document.getElementById('preview-text');
+    const charCountElement = document.getElementById('preview-char-count');
+    const dateElement = document.getElementById('preview-date');
+    const subtitleCountElement = document.getElementById('preview-subtitle-count');
+    
+    // Store current history item for splitting
+    currentHistoryItem = historyItem;
+    
+    // Get voice name with fallback
+    const voiceName = historyItem.voice_name ||  (historyItem.dialogue?.[0]?.voice_name) || `Voice ${historyItem.voice_id || 'Unknown'}`;
+    // Get text content, checking both text and dialogue properties
+    const rawText = historyItem.text || 
+                   (historyItem.dialogue?.[0]?.text) || 
+                   'No text available';
+    
+    // Clean the text before processing
+    const cleanedText = cleanPreviewText(rawText);
+    
+    // Store the cleaned preview text and reset state
+    previewText = cleanedText;
+    splitPositions = [];
+    splitHistory = [];
+    
+    // Populate preview elements
+    voiceNameElement.textContent = voiceName;
+    
+    // Initialize text with splitting functionality using cleaned text
+    setupTextSplitting(textElement, cleanedText);
+    
+    // Show both original and cleaned character counts
+    const originalLength = rawText.length;
+    const cleanedLength = cleanedText.length;
+    const reductionPercent = originalLength > 0 ? Math.round((1 - cleanedLength / originalLength) * 100) : 0;
+    
+    charCountElement.innerHTML = `
+        ${cleanedLength} chars
+        ${reductionPercent > 0 ? `<small style="color: #666;"> (cleaned: -${reductionPercent}%)</small>` : ''}
+    `;
+    
+    // Format date
+    const date = new Date(historyItem.date_unix * 1000);
+    dateElement.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    // Calculate initial subtitle count (single subtitle)
+    updateSubtitleCount();
+    updateUndoButtonState();
+    
+    // Add warning if there are existing slides
+    const existingClipsCount = slides.filter(slide => slide.text && slide.text.trim() !== '').length;
+    const existingWarning = previewElement.querySelector('.replacement-warning');
+        if (existingWarning) {
+            existingWarning.remove();
+        }
+    if (existingClipsCount > 0) {
+        // Add warning message to preview
+        const warningDiv = document.createElement('div');
+        warningDiv.className = 'replacement-warning';
+        warningDiv.innerHTML = `
+            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 8px; margin-bottom: 10px;">
+                <strong>⚠️ Warning:</strong> Loading this script will replace all existing ${existingClipsCount} subtitle(s).
+            </div>
+        `;
+        
+        // Insert warning before preview details
+        const previewDetails = previewElement.querySelector('.preview-details');
+        previewDetails.parentNode.insertBefore(warningDiv, previewDetails);
+    } 
+    
+    // Show cleaning info if significant changes were made
+    if (reductionPercent > 10) {
+        const cleaningInfo = document.createElement('div');
+        cleaningInfo.className = 'cleaning-info';
+        cleaningInfo.innerHTML = `
+            <div style="background-color: #e8f5e8; border: 1px solid #b8e6b8; border-radius: 4px; padding: 6px; margin-bottom: 8px; font-size: 12px;">
+                <strong>📝 Text Cleaned:</strong> Removed empty lines and normalized formatting (${reductionPercent}% reduction)
+            </div>
+        `;
+        
+        // Insert before preview details
+        const previewDetails = previewElement.querySelector('.preview-details');
+        previewDetails.parentNode.insertBefore(cleaningInfo, previewDetails);
+    } else {
+        // Remove any existing cleaning info
+        const existingInfo = previewElement.querySelector('.cleaning-info');
+        if (existingInfo) {
+            existingInfo.remove();
+        }
+    }
+    
+    // Show preview
+    previewElement.style.display = 'block';
+    
+    console.log('Showing enhanced preview for:', voiceName);
+    console.log('Text cleaning applied - original:', originalLength, 'chars, cleaned:', cleanedLength, 'chars');
+    console.log('Existing clips will be replaced:', existingClipsCount);
+}
+
+function estimateSubtitleCount(text) {
+    if (!text) return 0;
+    
+    const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+    
+    // Simple estimation: split by sentences first, then by length
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    let estimatedCount = 0;
+    
+    for (let sentence of sentences) {
+        sentence = sentence.trim();
+        if (sentence.length === 0) continue;
+        
+        if (sentence.length <= maxLength) {
+            estimatedCount += 1;
+        } else {
+            // Estimate how many subtitles this sentence would create
+            estimatedCount += Math.ceil(sentence.length / maxLength);
+        }
+    }
+    
+    return Math.max(1, estimatedCount);
+}
+
+// Show error state for history loading
+function showHistoryError(message) {
+    const loadingElement = document.getElementById('history-loading');
+    const errorElement = document.getElementById('history-error');
+    const selectElement = document.getElementById('voiceover-history-select');
+    
+    loadingElement.style.display = 'none';
+    selectElement.style.display = 'none';
+    errorElement.style.display = 'block';
+    
+    errorElement.querySelector('.error-text').textContent = message;
+}
+
+
+// Function to restore saved preview HTML and splits
+function restoreSavedPreview(savedHtml, savedSplitPositions, savedPreviewText) {
+    const previewElement = document.getElementById('preview-text');
+    
+    if (!previewElement || !savedHtml) {
+        console.log('Cannot restore preview: missing elements or HTML');
+        return false;
+    }
+    
+    try {
+        // Restore the HTML
+        previewElement.innerHTML = savedHtml;
+        
+        // Restore split positions and preview text if available
+        if (savedSplitPositions && Array.isArray(savedSplitPositions)) {
+            splitPositions = [...savedSplitPositions];
+            console.log('Restored split positions:', splitPositions);
+        }
+        
+        if (savedPreviewText) {
+            previewText = savedPreviewText;
+            console.log('Restored preview text');
+        }
+        
+        // Restore event listeners
+        setupPreviewEventListeners();
+        
+        // Update subtitle count
+        updateSubtitleCount();
+        updateUndoButtonState();
+        
+        console.log('Successfully restored saved preview with splits');
+        return true;
+    } catch (error) {
+        console.error('Error restoring saved preview:', error);
+        return false;
+    }
+}
+
+// Helper function to set up event listeners after restoring HTML
+function setupPreviewEventListeners() {
+    const textElement = document.getElementById('preview-text');
+    
+    if (!textElement) return;
+    
+    // Re-add click event listener for splitting
+    textElement.removeEventListener('click', handleTextSplit);
+    textElement.addEventListener('click', handleTextSplit);
+    
+    // Re-add hover effects
+    textElement.addEventListener('mouseenter', () => {
+        if (!splittingMode) {
+            textElement.classList.add('splitting-mode');
+        }
+    });
+    
+    textElement.addEventListener('mouseleave', () => {
+        textElement.classList.remove('splitting-mode');
+    });
+    
+    // Re-add event listeners to segments
+    textElement.querySelectorAll('.subtitle-segment').forEach((segment, index) => {
+        segment.addEventListener('mouseenter', () => showMergeIndicators(segment, index));
+        segment.addEventListener('mouseleave', () => hideMergeIndicators(segment));
+    });
+}
+
+// Enhanced function to update video history_id and save preview HTML
+function updateVideoHistoryIdWithHtml(historyId, previewHtml = '') {
+    return new Promise((resolve, reject) => {
+        // Get video ID from the URL
+        const path = window.location.pathname;
+        const videoId = path.split('/')[2];
+        
+        // Get CSRF token from cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        const csrftoken = getCookie('csrftoken');
+        
+        // Prepare data for the request - ADD preview_html
+        const data = {
+            video_id: videoId,
+            history_id: historyId,
+            preview_html: previewHtml,
+            split_positions: splitPositions, // Also save split positions for reconstruction
+            preview_text: previewText // Save the original cleaned text
+        };
+        
+        console.log('Updating video history_id with HTML:', data);
+        
+        // Send AJAX request to update history_id and save HTML
+        fetch('/update-video-history/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Video history_id and HTML updated successfully:', data);
+                resolve(data);
+            } else {
+                console.error('Error updating video history_id and HTML:', data.error);
+                reject(new Error(data.error || 'Failed to update history_id and HTML'));
+            }
+        })
+        .catch(error => {
+            console.error('Network error updating history_id and HTML:', error);
+            reject(error);
+        });
+    });
+}
+// Enhanced loadSelectedHistory function with clip deletion and history_id update
+function loadSelectedHistory() {
+    if (!selectedHistoryItem) {
+        alert('Please select a voiceover from history first.');
+        return;
+    }
+    
+    const loadButton = document.getElementById('historyLoadButton');
+    const originalText = loadButton.textContent;
+    loadButton.textContent = 'Loading...';
+    loadButton.disabled = true;
+    
+    try {
+        console.log('Loading selected history with splits:', selectedHistoryItem.voice_name || selectedHistoryItem.voice_id);
+        console.log('History ID to save:', selectedHistoryId);
+        
+        // Get the segments based on user-defined splits
+        const segments = getTextSegments();
+        
+        if (segments.length === 0) {
+            alert('No text content to load.');
+            loadButton.textContent = originalText;
+            loadButton.disabled = false;
+            return;
+        }
+        
+        // Validate all segments
+        const maxLength = window.MAX_SUBTITLE_LENGTH || 80;
+        const longSegments = segments.filter(segment => segment.trim().length > maxLength);
+        
+        if (longSegments.length > 0) {
+            alert(`${longSegments.length} subtitle(s) still exceed the ${maxLength} character limit. Please split them further before loading.`);
+            loadButton.textContent = originalText;
+            loadButton.disabled = false;
+            return;
+        }
+        
+        // Check free plan restrictions
+        if (typeof isFreePlan !== 'undefined' && isFreePlan && segments.length > 10) {
+            alert(`Free plan users are limited to 10 subtitles. This voiceover would create ${segments.length} subtitles. Please upgrade your subscription or split less.`);
+            loadButton.textContent = originalText;
+            loadButton.disabled = false;
+            return;
+        }
+        
+        // Show confirmation dialog if there are existing clips
+        if (slides.length > 0 && slides.some(slide => slide.text && slide.text.trim() !== '')) {
+            const confirmReplace = confirm(
+                `This will replace all existing ${slides.length} subtitle(s) with ${segments.length} new subtitle(s) from the selected voiceover history.\n\n` +
+                `Are you sure you want to continue? This action cannot be undone.`
+            );
+            
+            if (!confirmReplace) {
+                loadButton.textContent = originalText;
+                loadButton.disabled = false;
+                return;
+            }
+        }
+        
+        // ADD THIS: Get the current preview HTML to save
+        const previewElement = document.getElementById('preview-text');
+        const previewHtml = previewElement ? previewElement.innerHTML : '';
+        
+        // Update loading text to show deletion progress
+        loadButton.textContent = 'Clearing existing clips...';
+        
+        // Delete all existing clips first, then update history_id with HTML, then load new clips
+        deleteAllClips()
+            .then(() => {
+                loadButton.textContent = 'Saving splits and updating history...';
+                return updateVideoHistoryIdWithHtml(selectedHistoryId, previewHtml); // MODIFIED THIS LINE
+            })
+            .then(() => {
+                loadButton.textContent = 'Loading new subtitles...';
+                
+                // Create clips array from segments
+                const clips = segments.map((segment, index) => ({
+                    id: -(index + 1), // Use negative IDs for new clips
+                    text: segment.trim(),
+                    sequence: index + 1
+                }));
+                
+                console.log('Created clips from segments:', clips);
+                
+                // Clear local slides array and reset state
+                slides = [];
+                slideCount = 0;
+                activeSlideIds.clear();
+                
+                // Clear any existing video files from previous sessions
+                if (window.videoFiles) {
+                    window.videoFiles = {};
+                }
+                
+                // Use existing loadScript function to load the clips
+                loadScript(clips, true); // true indicates we want to replace existing clips
+
+                
+                // Reset button
+                loadButton.textContent = originalText;
+                loadButton.disabled = false;
+                
+                // Show success message
+                console.log(`Successfully replaced all clips with ${segments.length} user-defined subtitles from history`);
+                
+                // Optional: Switch back to upload tab to show the loaded content
+                setTimeout(() => {
+                    showTab('upload');
+                    
+                    // Scroll to the editing area
+                    const editingArea = document.getElementById('leadsTable');
+                    if (editingArea) {
+                        editingArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 500);
+            })
+            .catch(error => {
+                console.error('Error in loading process:', error);
+                loadButton.textContent = originalText;
+                loadButton.disabled = false;
+                
+                alert('Failed to load the selected voiceover. Please try again.\n\nError: ' + error.message);
+            });
+        
+    } catch (error) {
+        console.error('Error loading selected history:', error);
+        alert('Failed to load the selected voiceover. Please try again.');
+        
+        loadButton.textContent = originalText;
+        loadButton.disabled = false;
+    }
+    const existingWarning = previewElement.querySelector('.replacement-warning');
+    existingWarning?.remove(); // Remove any existing warning if present
+    
+}
+
+
+
+// Split text into appropriate subtitle chunks (word boundaries only)
+function splitTextIntoSubtitles(text) {
+    const maxLength = window.MAX_SUBTITLE_LENGTH || 80;
+    
+    // Clean the text first
+    text = text.trim();
+    
+    // Split by sentences first, but ensure word boundaries
+    const sentenceRegex = /[.!?]+\s+/;
+    const sentences = text.split(sentenceRegex);
+    const lines = [];
+    
+    for (let sentence of sentences) {
+        sentence = sentence.trim();
+        if (sentence.length === 0) continue;
+        
+        // If sentence is short enough, use it as is
+        if (sentence.length <= maxLength) {
+            lines.push(sentence);
+        } else {
+            // Split long sentences by word boundaries
+            const words = sentence.split(/\s+/);
+            let currentLine = '';
+            
+            for (let word of words) {
+                // Check if adding this word would exceed the limit
+                const potentialLine = currentLine ? currentLine + ' ' + word : word;
+                
+                if (potentialLine.length <= maxLength) {
+                    currentLine = potentialLine;
+                } else {
+                    // Save current line if it exists
+                    if (currentLine.length > 0) {
+                        lines.push(currentLine);
+                    }
+                    
+                    // Start new line with current word
+                    if (word.length <= maxLength) {
+                        currentLine = word;
+                    } else {
+                        // Handle extremely long words by keeping them as single lines
+                        // but warn the user
+                        lines.push(word);
+                        currentLine = '';
+                        console.warn(`Word "${word}" exceeds character limit but cannot be split`);
+                    }
+                }
+            }
+            
+            // Add remaining current line
+            if (currentLine.length > 0) {
+                lines.push(currentLine);
+            }
+        }
+    }
+    
+    // Final cleanup and validation
+    return lines
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+}
+
+// Helper function to split text by words
+function splitByWords(text, maxLength) {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+    
+    for (let word of words) {
+        const potentialLine = currentLine ? currentLine + ' ' + word : word;
+        
+        if (potentialLine.length <= maxLength) {
+            currentLine = potentialLine;
+        } else {
+            if (currentLine.length > 0) {
+                lines.push(currentLine);
+            }
+            
+            // Handle very long single words
+            if (word.length > maxLength) {
+                // Force split the word
+                let remainingWord = word;
+                while (remainingWord.length > maxLength) {
+                    lines.push(remainingWord.substring(0, maxLength));
+                    remainingWord = remainingWord.substring(maxLength);
+                }
+                currentLine = remainingWord;
+            } else {
+                currentLine = word;
+            }
+        }
+    }
+    
+    if (currentLine.length > 0) {
+        lines.push(currentLine);
+    }
+    
+    return lines;
+}
+
+// Update the existing DOMContentLoaded event listener to include tab functionality
+document.addEventListener('DOMContentLoaded', () => {
+    // Existing initialization code...
+    
+    // Initialize tabs - default to upload tab
+    showTab('history');
+    
+    // Add event listeners for tab functionality
+    const historyTab = document.getElementById('history-tab');
+    
+
+    if (historyTab) {
+        historyTab.addEventListener('click', () => showTab('history'));
+    }
+    
+    // Rest of your existing initialization code...
+    // Keep all the existing code from the original DOMContentLoaded
+});
+
+// Ensure getCookie function exists (add this if it's not already in your code)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Add this function to handle API errors gracefully
+function handleApiError(error, context = 'API call') {
+    console.error(`${context} failed:`, error);
+    
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        return 'Network error. Please check your internet connection.';
+    }
+    
+    if (error.name === 'SyntaxError') {
+        return 'Server response error. Please try again.';
+    }
+    
+    return error.message || 'An unexpected error occurred.';
+}
+
+// Enhanced error handling for the API call
+async function loadVoiceoverHistoryWithRetry(maxRetries = 2) {
+    let lastError;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            await loadVoiceoverHistory();
+            return; // Success, exit the retry loop
+        } catch (error) {
+            lastError = error;
+            console.warn(`Attempt ${attempt} failed:`, error);
+            
+            if (attempt < maxRetries) {
+                // Wait before retrying (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
+        }
+    }
+    
+    // All retries failed
+    const errorMessage = handleApiError(lastError, 'Loading voiceover history');
+    showHistoryError(errorMessage);
+}
+
+// Add keyboard navigation for the dropdown
+document.addEventListener('keydown', (event) => {
+    const activeElement = document.activeElement;
+    
+    if (activeElement && activeElement.id === 'voiceover-history-select') {
+        // Enter key to load selected history
+        if (event.key === 'Enter' && selectedHistoryItem) {
+            event.preventDefault();
+            loadSelectedHistory();
+        }
+        
+        // Escape key to clear selection
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            activeElement.value = '';
+            handleHistorySelection({ target: activeElement });
+        }
+    }
+});
+
+// Add tooltips for better UX
+function addTooltips() {
+    const elements = [
+        { id: 'upload-tab', text: 'Upload a text file with your script' },
+        { id: 'history-tab', text: 'Select from your ElevenLabs voiceover history' },
+        { id: 'voiceover-history-select', text: 'Choose a previously generated voiceover' },
+        { id: 'historyLoadButton', text: 'Load the selected voiceover as subtitles' }
+    ];
+    
+    elements.forEach(({ id, text }) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.title = text;
+        }
+    });
+}
+
+// Call addTooltips after DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // ... existing code ...
+    addTooltips();
+});
+
+// Add analytics/tracking for tab usage (optional)
+function trackTabUsage(tabName) {
+    // Add your analytics tracking here if needed
+    console.log(`User switched to ${tabName} tab`);
+    
+    // Example: Google Analytics event
+    // if (typeof gtag !== 'undefined') {
+    //     gtag('event', 'tab_switch', {
+    //         'tab_name': tabName,
+    //         'page_title': 'Script Selection'
+    //     });
+    // }
+}
+
+// Update showTab function to include tracking
+const originalShowTab = showTab;
+showTab = function(tabName) {
+    originalShowTab(tabName);
+    trackTabUsage(tabName);
+};
+// Enhanced setup text splitting functionality
+function setupTextSplitting(textElement, text) {
+    textElement.innerHTML = `<span class="subtitle-segment" data-segment="0">${text}</span>`;
+    
+    // Clear split history when setting up new text
+    splitHistory = [];
+    splitPositions = [];
+    updateUndoButtonState();
+    
+    // Add click event listener for splitting
+    textElement.addEventListener('click', handleTextSplit);
+    
+    // Add hover effects
+    textElement.addEventListener('mouseenter', () => {
+        if (!splittingMode) {
+            textElement.classList.add('splitting-mode');
+        }
+    });
+    
+    textElement.addEventListener('mouseleave', () => {
+        textElement.classList.remove('splitting-mode');
+    });
+    
+    // Update subtitle display
+    updateSubtitleDisplay();
+}
+
+// Enhanced text splitting handler with merge functionality
+function handleTextSplit(event) {
+    const target = event.target;
+    
+    // Handle split point removal
+    if (target.classList.contains('split-point')) {
+        event.preventDefault();
+        removeSplitPoint(target);
+        return;
+    }
+    
+    // Handle segment interactions
+    if (target.classList.contains('subtitle-segment')) {
+        const segmentIndex = parseInt(target.dataset.segment);
+        
+        // Shift+Click: Merge with previous segment
+        if (event.shiftKey && segmentIndex > 0) {
+            event.preventDefault();
+            mergeWithPrevious(segmentIndex);
+            return;
+        }
+        
+        // Double-click: Merge with next segment
+        if (event.detail === 2) {
+            event.preventDefault();
+            mergeWithNext(segmentIndex);
+            return;
+        }
+        
+        // Ctrl+Click or Cmd+Click: Split within segment
+        if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+            splitWithinSegment(event, segmentIndex);
+            return;
+        }
+    }
+    
+    // Default Ctrl+Click or Cmd+Click behavior for new splits
+    if ((event.ctrlKey || event.metaKey) && !target.classList.contains('subtitle-segment')) {
+        event.preventDefault();
+        addSplitAtPosition(event);
+    }
+}
+
+// Add split at clicked position (word boundaries only)
+function addSplitAtPosition(event) {
+    const selection = window.getSelection();
+    const range = document.caretRangeFromPoint(event.clientX, event.clientY);
+    
+    if (!range) return;
+    
+    const clickPosition = getCharacterPosition(range);
+    
+    if (clickPosition !== -1 && clickPosition > 0 && clickPosition < previewText.length) {
+        // Find the nearest word boundary
+        const wordBoundaryPosition = findNearestWordBoundary(clickPosition);
+        
+        if (wordBoundaryPosition === -1) {
+            console.log('No valid word boundary found near click position');
+            return;
+        }
+        
+        // Check if position is not too close to existing splits
+        const minDistance = 3; // Minimum characters between splits
+        const tooClose = splitPositions.some(pos => Math.abs(pos - wordBoundaryPosition) < minDistance);
+        
+        if (!tooClose && !splitPositions.includes(wordBoundaryPosition)) {
+            // Save current state to history
+            saveToHistory();
+            
+            splitPositions.push(wordBoundaryPosition);
+            splitPositions.sort((a, b) => a - b);
+            
+            console.log('Added split at word boundary position:', wordBoundaryPosition);
+            
+            updateSubtitleDisplay();
+            updateSubtitleCount();
+            updateUndoButtonState();
+        } else if (splitPositions.includes(wordBoundaryPosition)) {
+            console.log('Split already exists at this word boundary');
+        } else {
+            console.log('Split position too close to existing split');
+        }
+    }
+}
+
+// Split within a specific segment (word boundaries only)
+function splitWithinSegment(event, segmentIndex) {
+    const segments = getTextSegments();
+    if (segmentIndex >= segments.length) return;
+    
+    // Calculate the position within the full text for this segment
+    let segmentStart = 0;
+    for (let i = 0; i < segmentIndex; i++) {
+        segmentStart += segments[i].length;
+    }
+    
+    // Get click position relative to the segment
+    const range = document.caretRangeFromPoint(event.clientX, event.clientY);
+    if (!range) return;
+    
+    const relativePosition = getRelativePositionInSegment(range, segmentIndex);
+    if (relativePosition > 0 && relativePosition < segments[segmentIndex].length) {
+        const absolutePosition = segmentStart + relativePosition;
+        
+        // Find the nearest word boundary within this segment
+        const segmentText = segments[segmentIndex];
+        const wordBoundaryPosition = findNearestWordBoundaryInSegment(
+            relativePosition, 
+            segmentText, 
+            segmentStart
+        );
+        
+        if (wordBoundaryPosition === -1) {
+            console.log('No valid word boundary found in segment');
+            return;
+        }
+        
+        // Save current state to history
+        saveToHistory();
+        
+        splitPositions.push(wordBoundaryPosition);
+        splitPositions.sort((a, b) => a - b);
+        
+        console.log('Split within segment', segmentIndex, 'at word boundary position:', wordBoundaryPosition);
+        
+        updateSubtitleDisplay();
+        updateSubtitleCount();
+        updateUndoButtonState();
+    }
+}
+
+// Get relative position within a segment
+function getRelativePositionInSegment(range, segmentIndex) {
+    const textElement = document.getElementById('preview-text');
+    const segments = textElement.querySelectorAll('.subtitle-segment');
+    
+    if (segmentIndex >= segments.length) return -1;
+    
+    const segment = segments[segmentIndex];
+    const textNode = segment.firstChild;
+    
+    if (range.startContainer === textNode) {
+        return range.startOffset;
+    }
+    
+    return -1;
+}
+
+// Merge segment with next segment
+function mergeWithNext(segmentIndex) {
+    const segments = getTextSegments();
+    
+    if (segmentIndex >= segments.length - 1) {
+        console.log('Cannot merge: this is the last segment');
+        return;
+    }
+    
+    // Save current state to history
+    saveToHistory();
+    
+    // Find the split position to remove (between current and next segment)
+    let currentPos = 0;
+    for (let i = 0; i < segmentIndex; i++) {
+        currentPos += segments[i].length;
+    }
+    
+    // The split position we want to remove is at currentPos + current segment length
+    const splitToRemove = currentPos + segments[segmentIndex].length;
+    
+    // Remove this split position
+    const splitIndex = splitPositions.indexOf(splitToRemove);
+    if (splitIndex !== -1) {
+        splitPositions.splice(splitIndex, 1);
+        
+        console.log('Merged segment', segmentIndex, 'with next segment');
+        
+        updateSubtitleDisplay();
+        updateSubtitleCount();
+        updateUndoButtonState();
+    }
+}
+
+// Merge segment with previous segment
+function mergeWithPrevious(segmentIndex) {
+    if (segmentIndex <= 0) {
+        console.log('Cannot merge: this is the first segment');
+        return;
+    }
+    
+    // Save current state to history
+    saveToHistory();
+    
+    // Find the split position to remove (between previous and current segment)
+    const segments = getTextSegments();
+    let currentPos = 0;
+    for (let i = 0; i < segmentIndex - 1; i++) {
+        currentPos += segments[i].length;
+    }
+    
+    // The split position we want to remove is at currentPos + previous segment length
+    const splitToRemove = currentPos + segments[segmentIndex - 1].length;
+    
+    // Remove this split position
+    const splitIndex = splitPositions.indexOf(splitToRemove);
+    if (splitIndex !== -1) {
+        splitPositions.splice(splitIndex, 1);
+        
+        console.log('Merged segment', segmentIndex, 'with previous segment');
+        
+        updateSubtitleDisplay();
+        updateSubtitleCount();
+        updateUndoButtonState();
+    }
+}
+
+// Remove split point by clicking on it
+function removeSplitPoint(splitElement) {
+    const textElement = document.getElementById('preview-text');
+    const splitPoints = Array.from(textElement.querySelectorAll('.split-point'));
+    const splitIndex = splitPoints.indexOf(splitElement);
+    
+    if (splitIndex !== -1 && splitIndex < splitPositions.length) {
+        // Save current state to history
+        saveToHistory();
+        
+        splitPositions.splice(splitIndex, 1);
+        
+        console.log('Removed split point at index:', splitIndex);
+        
+        updateSubtitleDisplay();
+        updateSubtitleCount();
+        updateUndoButtonState();
+    }
+}
+
+// Save current state to history for undo functionality
+function saveToHistory() {
+    const currentState = {
+        splitPositions: [...splitPositions],
+        timestamp: Date.now()
+    };
+    
+    splitHistory.push(currentState);
+    
+    // Limit history size
+    if (splitHistory.length > maxHistorySize) {
+        splitHistory.shift();
+    }
+}
+
+// Undo last split action
+function undoLastSplit() {
+    if (splitHistory.length === 0) {
+        console.log('No more actions to undo');
+        return;
+    }
+    
+    const lastState = splitHistory.pop();
+    splitPositions = [...lastState.splitPositions];
+    
+    console.log('Undid last action, restored split positions:', splitPositions);
+    
+    updateSubtitleDisplay();
+    updateSubtitleCount();
+    updateUndoButtonState();
+}
+
+// Reset all splits
+function resetAllSplits() {
+    if (splitPositions.length === 0) {
+        console.log('No splits to reset');
+        return;
+    }
+    
+    if (confirm('Are you sure you want to reset all splits? This will create a single subtitle with all the text.')) {
+        // Save current state to history
+        saveToHistory();
+        
+        splitPositions = [];
+        
+        console.log('Reset all splits');
+        
+        updateSubtitleDisplay();
+        updateSubtitleCount();
+        updateUndoButtonState();
+    }
+}
+
+// Update undo button state
+function updateUndoButtonState() {
+    const undoBtn = document.getElementById('undoSplitBtn');
+    if (undoBtn) {
+        undoBtn.disabled = splitHistory.length === 0;
+        undoBtn.title = splitHistory.length === 0 ? 'No actions to undo' : `Undo last action (${splitHistory.length} actions available)`;
+    }
+}
+
+// Enhanced subtitle display with word boundary indicators
+function updateSubtitleDisplay() {
+    const textElement = document.getElementById('preview-text');
+    const maxLength = window.MAX_SUBTITLE_LENGTH || 80;
+    
+    if (splitPositions.length === 0) {
+        // Single subtitle with word boundary hints
+        const segment = createSubtitleSegmentWithBoundaries(previewText, 0, maxLength);
+        textElement.innerHTML = segment;
+    } else {
+        // Multiple subtitles
+        let html = '';
+        let lastPosition = 0;
+        
+        splitPositions.forEach((position, index) => {
+            const segmentText = previewText.substring(lastPosition, position);
+            if (segmentText) {
+                html += createSubtitleSegmentWithBoundaries(segmentText, index, maxLength);
+                html += '<span class="split-point" title="Click to remove this split | Split at word boundary"></span>';
+            }
+            lastPosition = position;
+        });
+        
+        // Add the final segment
+        const finalSegmentText = previewText.substring(lastPosition);
+        if (finalSegmentText) {
+            html += createSubtitleSegmentWithBoundaries(finalSegmentText, splitPositions.length, maxLength);
+        }
+        
+        textElement.innerHTML = html;
+    }
+    
+    // Add word boundary visual hints
+    addWordBoundaryHints(textElement);
+    
+    // Re-add event listeners after updating HTML
+    textElement.querySelectorAll('.subtitle-segment').forEach((segment, index) => {
+        // Add merge indicators on hover
+        segment.addEventListener('mouseenter', () => showMergeIndicators(segment, index));
+        segment.addEventListener('mouseleave', () => hideMergeIndicators(segment));
+    });
+}
+
+
+
+// Create subtitle segment with word boundary awareness
+function createSubtitleSegmentWithBoundaries(text, index, maxLength) {
+    const exceeds = text.length > maxLength;
+    const className = exceeds ? 'subtitle-segment exceeds-limit' : 'subtitle-segment';
+    
+    let title = `Subtitle ${index + 1}: ${text.length}/${maxLength} characters\n`;
+    title += `• Double-click to merge with next\n`;
+    title += `• Shift+click to merge with previous\n`;
+    title += `• Ctrl+click to split at word boundary within this segment`;
+    
+    if (exceeds) {
+        title += `\n⚠️ Exceeds character limit! Try splitting at word boundaries.`;
+    }
+    
+    return `<div><span class="${className}" data-segment="${index}" data-segment-number="${index + 1}" title="${title}">${text}</span></div>`;
+}
+
+// Add visual hints for word boundaries
+function addWordBoundaryHints(textElement) {
+    // Add CSS class to show word boundary cursor
+    textElement.classList.add('word-boundary-mode');
+    
+    // Optional: Add subtle visual indicators for potential split points
+    // This is subtle and only shows on hover
+}
+
+// Enhanced subtitle segment creation with numbering
+function createSubtitleSegment(text, index, maxLength) {
+    const exceeds = text.length > maxLength;
+    const className = exceeds ? 'subtitle-segment exceeds-limit' : 'subtitle-segment';
+    
+    let title = `Subtitle ${index + 1}: ${text.length}/${maxLength} characters\n`;
+    title += `• Double-click to merge with next\n`;
+    title += `• Shift+click to merge with previous\n`;
+    title += `• Ctrl+click to split within this segment`;
+    
+    if (exceeds) {
+        title += `\n⚠️ Exceeds character limit!`;
+    }
+    
+    return `<div><span class="${className}" data-segment="${index}" data-segment-number="${index + 1}" title="${title}">${text}</span></div>`;
+}
+
+// Show merge indicators
+function showMergeIndicators(segment, index) {
+    const segments = document.querySelectorAll('.subtitle-segment');
+    
+    // Show previous merge indicator
+    if (index > 0) {
+        segment.classList.add('mergeable-prev');
+    }
+    
+    // Show next merge indicator
+    if (index < segments.length - 1) {
+        segment.classList.add('mergeable-next');
+    }
+}
+
+// Hide merge indicators
+function hideMergeIndicators(segment) {
+    segment.classList.remove('mergeable-prev', 'mergeable-next', 'merge-preview');
+}
+// Get character position from range
+function getCharacterPosition(range) {
+    const textElement = document.getElementById('preview-text');
+    const preElement = range.startContainer;
+    
+    if (preElement.nodeType === Node.TEXT_NODE) {
+        // Find the position within the full text
+        let position = 0;
+        const walker = document.createTreeWalker(
+            textElement,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        let node;
+        while (node = walker.nextNode()) {
+            if (node === preElement) {
+                return position + range.startOffset;
+            }
+            position += node.textContent.length;
+        }
+    }
+    
+    return -1;
+}
+
+// Update subtitle display with segments and split points
+function updateSubtitleDisplay() {
+    const textElement = document.getElementById('preview-text');
+    const maxLength = window.MAX_SUBTITLE_LENGTH || 80;
+    
+    if (splitPositions.length === 0) {
+        // Single subtitle
+        const segment = createSubtitleSegment(previewText, 0, maxLength);
+        textElement.innerHTML = segment;
+    } else {
+        // Multiple subtitles
+        let html = '';
+        let lastPosition = 0;
+        
+        splitPositions.forEach((position, index) => {
+            const segmentText = previewText.substring(lastPosition, position);
+            if (segmentText) {
+                html += createSubtitleSegment(segmentText, index, maxLength);
+                html += '';
+            }
+            lastPosition = position;
+        });
+        
+        // Add the final segment
+        const finalSegmentText = previewText.substring(lastPosition);
+        if (finalSegmentText) {
+            html += createSubtitleSegment(finalSegmentText, splitPositions.length, maxLength);
+        }
+        
+        textElement.innerHTML = html;
+    }
+    
+    // Add click handlers to segments for removal
+    textElement.querySelectorAll('.subtitle-segment').forEach(segment => {
+        segment.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            removeSegmentSplit(segment);
+        });
+    });
+}
+
+// Create a subtitle segment with appropriate styling
+function createSubtitleSegment(text, index, maxLength) {
+    const exceeds = text.length > maxLength;
+    const className = exceeds ? 'subtitle-segment exceeds-limit' : 'subtitle-segment';
+    const title = exceeds ? `Exceeds limit: ${text.length}/${maxLength} characters.` : 
+                           `Subtitle ${index + 1}: ${text.length}/${maxLength} characters`;
+    
+    return `<div><span class="${className}" data-segment="${index}" title="${title}">${text}</span><span class="split-point"></span></div>`;
+}
+
+// Remove a split point by double-clicking a segment
+function removeSegmentSplit(segmentElement) {
+    const segmentIndex = parseInt(segmentElement.dataset.segment);
+    
+    if (segmentIndex > 0 && splitPositions.length > 0) {
+        // Remove the split position before this segment
+        splitPositions.splice(segmentIndex - 1, 1);
+        
+        console.log('Removed split, remaining positions:', splitPositions);
+        
+        updateSubtitleDisplay();
+        updateSubtitleCount();
+    }
+}
+
+// Update subtitle count display
+function updateSubtitleCount() {
+    const subtitleCountElement = document.getElementById('preview-subtitle-count');
+    const subtitleCount = splitPositions.length + 1;
+    const maxLength = window.MAX_SUBTITLE_LENGTH || 80;
+    
+    // Check how many subtitles exceed the limit
+    const segments = getTextSegments();
+    const exceedsCount = segments.filter(segment => segment.length > maxLength).length;
+    
+    let countText = `${subtitleCount} subtitle${subtitleCount === 1 ? '' : 's'}`;
+    
+    if (exceedsCount > 0) {
+        countText += ` (${exceedsCount} exceed${exceedsCount === 1 ? 's' : ''} limit)`;
+        subtitleCountElement.className = 'subtitle-count subtitle-count-warning';
+    } else {
+        subtitleCountElement.className = 'subtitle-count';
+    }
+    
+    subtitleCountElement.textContent = countText;
+    
+    // Update load button state
+    updateLoadButtonState(subtitleCount, exceedsCount);
+}
+
+// Get text segments based on current split positions
+function getTextSegments() {
+    if (splitPositions.length === 0) {
+        return [previewText];
+    }
+    
+    const segments = [];
+    let lastPosition = 0;
+    
+    splitPositions.forEach(position => {
+        segments.push(previewText.substring(lastPosition, position));
+        lastPosition = position;
+    });
+    
+    segments.push(previewText.substring(lastPosition));
+    
+    return segments.filter(segment => segment.trim().length > 0);
+}
+
+// Update load button state based on subtitle validation
+function updateLoadButtonState(subtitleCount, exceedsCount) {
+    const loadButton = document.getElementById('historyLoadButton');
+    
+    if (!loadButton) return;
+    
+    let canLoad = true;
+    let disableReason = '';
+    
+    // Check free plan restrictions
+    if (typeof isFreePlan !== 'undefined' && isFreePlan && subtitleCount > 10) {
+        canLoad = false;
+        disableReason = `Free plan limited to 10 subtitles (you have ${subtitleCount})`;
+    }
+    
+    // Check character limit violations
+    if (exceedsCount > 0) {
+        canLoad = false;
+        disableReason = `${exceedsCount} subtitle${exceedsCount === 1 ? '' : 's'} exceed character limit`;
+    }
+    
+    loadButton.disabled = !canLoad;
+    loadButton.title = canLoad ? 'Load selected voiceover' : disableReason;
+    
+    if (!canLoad) {
+        loadButton.style.opacity = '0.5';
+        loadButton.style.cursor = 'not-allowed';
+    } else {
+        loadButton.style.opacity = '1';
+        loadButton.style.cursor = 'pointer';
+    }
+}
+
+
+// Function to delete all existing clips from server and local state
+function deleteAllClips() {
+    return new Promise((resolve, reject) => {
+        // Get video ID from the URL
+        const path = window.location.pathname;
+        const videoId = path.split('/')[2];
+        
+        // Get CSRF token from cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        const csrftoken = getCookie('csrftoken');
+        
+        // Prepare data for the request
+        const data = {
+            video_id: videoId
+        };
+        
+        console.log('Deleting all clips for video:', videoId);
+        console.log('Current slides to be deleted:', slides.map(s => ({ id: s.id, text: s.text.substring(0, 30) + '...' })));
+        
+        // Send AJAX request to delete all clips
+        fetch('/delete-all-clips/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('All clips deleted successfully:', data);
+                console.log(`Deleted ${data.deleted_count} clips and ${data.subclips_deleted_count} subclips`);
+                resolve(data);
+            } else {
+                console.error('Error deleting clips:', data.error);
+                reject(new Error(data.error || 'Failed to delete clips'));
+            }
+        })
+        .catch(error => {
+            console.error('Network error deleting clips:', error);
+            reject(error);
+        });
+    });
+}
+
+
+// Find the nearest word boundary to a given position
+function findNearestWordBoundary(position) {
+    // Word boundary characters: space, punctuation, etc.
+    const wordBoundaryRegex = /[\s\.,!?;:\-\(\)\[\]{}""'']/;
+    
+    // Look for word boundaries before and after the position
+    let beforeBoundary = -1;
+    let afterBoundary = -1;
+    
+    // Search backwards for word boundary
+    for (let i = position - 1; i >= 0; i--) {
+        if (wordBoundaryRegex.test(previewText[i])) {
+            beforeBoundary = i + 1; // Position after the boundary character
+            break;
+        }
+    }
+    
+    // Search forwards for word boundary
+    for (let i = position; i < previewText.length; i++) {
+        if (wordBoundaryRegex.test(previewText[i])) {
+            afterBoundary = i;
+            break;
+        }
+    }
+    
+    // Choose the closest boundary
+    if (beforeBoundary === -1 && afterBoundary === -1) {
+        return -1; // No word boundary found
+    } else if (beforeBoundary === -1) {
+        return afterBoundary;
+    } else if (afterBoundary === -1) {
+        return beforeBoundary;
+    } else {
+        // Choose the closer one
+        const distanceBefore = position - beforeBoundary;
+        const distanceAfter = afterBoundary - position;
+        return distanceBefore <= distanceAfter ? beforeBoundary : afterBoundary;
+    }
+}
+
+// Find word boundary within a specific segment
+function findNearestWordBoundaryInSegment(relativePosition, segmentText, segmentStart) {
+    const wordBoundaryRegex = /[\s\.,!?;:\-\(\)\[\]{}""'']/;
+    
+    let beforeBoundary = -1;
+    let afterBoundary = -1;
+    
+    // Search backwards within segment
+    for (let i = relativePosition - 1; i >= 0; i--) {
+        if (wordBoundaryRegex.test(segmentText[i])) {
+            beforeBoundary = segmentStart + i + 1;
+            break;
+        }
+    }
+    
+    // Search forwards within segment
+    for (let i = relativePosition; i < segmentText.length; i++) {
+        if (wordBoundaryRegex.test(segmentText[i])) {
+            afterBoundary = segmentStart + i;
+            break;
+        }
+    }
+    
+    // Choose the closest boundary
+    if (beforeBoundary === -1 && afterBoundary === -1) {
+        return -1;
+    } else if (beforeBoundary === -1) {
+        return afterBoundary;
+    } else if (afterBoundary === -1) {
+        return beforeBoundary;
+    } else {
+        const absoluteClickPos = segmentStart + relativePosition;
+        const distanceBefore = absoluteClickPos - beforeBoundary;
+        const distanceAfter = afterBoundary - absoluteClickPos;
+        return distanceBefore <= distanceAfter ? beforeBoundary : afterBoundary;
+    }
+}
+
+// Check if a position is at a valid word boundary
+function isValidWordBoundary(position) {
+    if (position <= 0 || position >= previewText.length) {
+        return false;
+    }
+    
+    const wordBoundaryRegex = /[\s\.,!?;:\-\(\)\[\]{}""'']/;
+    
+    // Check if the character before the position is a word boundary
+    // and the character at the position starts a new word
+    const charBefore = previewText[position - 1];
+    const charAt = previewText[position];
+    
+    return wordBoundaryRegex.test(charBefore) && !wordBoundaryRegex.test(charAt);
+}
+
+// Get all possible word boundary positions in the text
+function getAllWordBoundaries() {
+    const boundaries = [];
+    const wordBoundaryRegex = /[\s\.,!?;:\-\(\)\[\]{}""'']/;
+    
+    for (let i = 1; i < previewText.length; i++) {
+        if (wordBoundaryRegex.test(previewText[i - 1]) && !wordBoundaryRegex.test(previewText[i])) {
+            boundaries.push(i);
+        }
+    }
+    
+    return boundaries;
+}
+
+
+// Validate that all splits are at word boundaries
+function validateWordBoundaries() {
+    const invalidSplits = splitPositions.filter(pos => !isValidWordBoundary(pos));
+    
+    if (invalidSplits.length > 0) {
+        console.warn('Found invalid word boundary splits:', invalidSplits);
+        
+        // Auto-correct invalid splits
+        splitPositions = splitPositions
+            .map(pos => isValidWordBoundary(pos) ? pos : findNearestWordBoundary(pos))
+            .filter(pos => pos !== -1)
+            .filter((pos, index, arr) => arr.indexOf(pos) === index) // Remove duplicates
+            .sort((a, b) => a - b);
+        
+        console.log('Corrected split positions:', splitPositions);
+        
+        updateSubtitleDisplay();
+        updateSubtitleCount();
+    }
+    
+    return invalidSplits.length === 0;
+}
+
+// Clean and normalize text before preview
+function cleanPreviewText(rawText) {
+    if (!rawText) return '';
+    
+    // Step 1: Remove extra whitespace and normalize line breaks
+    let cleanedText = rawText
+        // Replace all types of line breaks with standard newlines
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        // Replace multiple consecutive newlines with single newlines
+        .replace(/\n{2,}/g, '\n')
+        // Remove leading and trailing whitespace from each line
+        .split('\n')
+        .map(line => line.trim())
+        // Remove completely empty lines
+        .filter(line => line.length > 0)
+        // Join back with spaces to create one paragraph
+        .join(' ');
+    
+    // Step 2: Clean up spacing issues
+    cleanedText = cleanedText
+        // Replace multiple consecutive spaces with single space
+        .replace(/\s{2,}/g, ' ')
+        // Remove spaces before punctuation
+        .replace(/\s+([,.!?;:])/g, '$1')
+        // Ensure single space after punctuation
+        .replace(/([,.!?;:])\s*/g, '$1 ')
+        // Remove extra spaces around quotes
+        .replace(/\s*([""''"])\s*/g, '$1')
+        // Clean up parentheses spacing
+        .replace(/\s*\(\s*/g, ' (')
+        .replace(/\s*\)\s*/g, ') ')
+        // Clean up hyphen spacing
+        .replace(/\s*-\s*/g, ' - ')
+        // Final trim
+        .trim();
+    
+    // Step 3: Handle special cases
+    cleanedText = cleanedText
+        // Fix spacing after sentence-ending punctuation
+        .replace(/([.!?])\s+/g, '$1 ')
+        // Remove space at the beginning
+        .replace(/^\s+/, '')
+        // Remove space at the end
+        .replace(/\s+$/, '');
+    
+    // Step 4: Validate minimum length
+    if (cleanedText.length < 10) {
+        console.warn('Cleaned text is very short:', cleanedText);
+    }
+    
+    console.log('Text cleaning stats:');
+    console.log('Original length:', rawText.length);
+    console.log('Cleaned length:', cleanedText.length);
+    console.log('Original (first 100 chars):', rawText.substring(0, 100));
+    console.log('Cleaned (first 100 chars):', cleanedText.substring(0, 100));
+    
+    return cleanedText;
+}
+
+
+// Enhanced function to fetch saved history with HTML
+async function fetchSavedHistory(historyId) {
+    try {
+        // Get video ID from URL
+        const path = window.location.pathname;
+        const videoId = path.split('/')[2];
+        
+        // Get CSRF token
+        const csrftoken = getCookie('csrftoken');
+        
+        console.log('Fetching saved history for ID:', historyId);
+        
+        const response = await fetch(`/videos/${videoId}/saved-history/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        console.log('Saved history response:', data);
+        
+        if (data.history && data.history.length > 0) {
+            const historyItem = data.history[0];
+            
+            // ADD THIS: Check if we have saved HTML and restore it
+            if (data.saved_preview_html) {
+                console.log('Found saved preview HTML, attempting to restore...');
+                
+                // Set up the preview with saved HTML after a short delay
+                setTimeout(() => {
+                    restoreSavedPreview(
+                        data.saved_preview_html, 
+                        data.saved_split_positions,
+                        data.saved_preview_text
+                    );
+                }, 200);
+            }
+            
+            return historyItem; // Return the fetched history item
+        } else {
+            throw new Error('No saved history found');
+        }
+    } catch (error) {
+        console.error('Error fetching saved history:', error);
+        throw error;
+    }
+}
+
+
+
+// Helper function to handle history item selection (extracted for reuse)
+async function selectHistoryItemAtIndex(index, isAutoSelected = false) {
+    const selectElement = document.getElementById('voiceover-history-select');
+    
+    // Set the dropdown value
+    selectElement.value = index.toString();
+    
+    // Trigger the selection event
+    const event = new Event('change', { bubbles: true });
+    selectElement.dispatchEvent(event);
+    
+    console.log(`${isAutoSelected ? 'Auto-selected' : 'Selected'} history item at index ${index}`);
+    
+    // Add visual indication if auto-selected
+    if (isAutoSelected) {
+        setTimeout(() => {
+            const previewElement = document.getElementById('selected-history-preview');
+        
+            
+            // Scroll to the preview
+            previewElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+}
     </script>
 </body>
 <!--Start of Tawk.to Script-->

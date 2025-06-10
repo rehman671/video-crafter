@@ -980,10 +980,8 @@ height: 100px;
 }
 
 #leadsTable tbody td:first-child {
-    cursor: grab;
     font-size: 1.4rem;
     position: relative;
-    cursor: grab;
     width: 15.8%;
 }
 

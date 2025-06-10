@@ -23,7 +23,10 @@ class Video(models.Model):
     output_with_bg = models.FileField(upload_to="output_bg/", null=True, blank=True)
     output_with_watermark = models.FileField(upload_to="output_watermark/", null=True, blank=True)
     output_with_bg_watermark = models.FileField(upload_to="output_bg_watermark/", null=True, blank=True)
-
+    history_id = models.CharField(max_length=255, null=True, blank=True)  # For tracking history of edits
+    history_preview_html = models.TextField(null=True, blank=True)  # HTML content for previewing history
+    split_positions = models.TextField(null=True, blank=True)  # JSON string to store split positions
+    preview_text = models.TextField(null=True, blank=True)  # Text content for previewing history
     class Meta:
         ordering = ["-created_at"]
 

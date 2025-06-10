@@ -22,6 +22,7 @@ from urllib.parse import urlparse
 from django.core.files.temp import NamedTemporaryFile
 from apps.core.models import Subscription
 from django.core.files.storage import default_storage
+from apps.core.models import AppVariables
 
 def generate_final_video(video: Video) -> bool:
     """Generate the final video for a Video instance with progress tracking."""
@@ -218,9 +219,9 @@ def generate_audio_file(video, user_id):
     Generate audio file from text using ElevenLabs with better error handling
     """
     try:
-        # Check for required fields
-        if not video.elevenlabs_api_key or not video.voice_id:
-            raise ValueError("ElevenLabs API key and voice ID are required")
+        # # Check for required fields
+        # if not video.elevenlabs_api_key or not video.voice_id:
+        #     raise ValueError("ElevenLabs API key and voice ID are required")
         
         clips = Clips.objects.filter(video=video)
         if not clips.exists():
@@ -258,7 +259,7 @@ def generate_audio_file(video, user_id):
         
         # Generate voiceover using ElevenLabs
         handler = ElevenLabsHandler(
-            api_key=video.elevenlabs_api_key, voice_id=video.voice_id
+            api_key=video.elevenlabs_api_key
         )
         
         # Check credits before attempting generation
@@ -266,8 +267,10 @@ def generate_audio_file(video, user_id):
             # Clean up temp file before raising exception
             os.unlink(temp_audio_path)
             raise Exception("Insufficient credits to generate voiceover")
-        
-        handler.generate_voiceover(text=text_content, output_path=temp_audio_path)
+        if video.history_id:
+            handler.get_history_audio(video.history_id, output_path=temp_audio_path)
+        else:
+            handler.generate_voiceover(text=text_content, output_path=temp_audio_path)
         
         # Save audio file to the video model using Django's File API
         with open(temp_audio_path, "rb") as f:
@@ -403,7 +406,7 @@ def generate_srt_file(video, user_id):
         json_path = tmp_json.name
         
         # Generate SRT file from text and audio
-        aligner = ElevenLabsTextAlignment(video.elevenlabs_api_key )
+        aligner = ElevenLabsTextAlignment(AppVariables.objects.get(key="ELEVENLABS_ALIGNMENT_KEY").value)
         srt_path = aligner.align_text_with_audio(
             script=text_one_word_per_line,
             output_json_path=json_path,

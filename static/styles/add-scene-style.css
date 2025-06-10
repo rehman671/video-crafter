@@ -55,7 +55,7 @@ p {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     /* margin: 0 auto; */
     min-height: 370px;
-    max-height: 400px;
+    max-height: 960px;
     padding: 20px;
     font-size: 14px;
     box-sizing: border-box;

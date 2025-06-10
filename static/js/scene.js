@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.button-container-btn')?.addEventListener('click', handleProceedWithValidation);
 
     // Initialize drag and move functionality
-    initializeDragAndMove();
+    // initializeDragAndMove();
 
     // Initialize instruction sections
     document.querySelectorAll('.section-header').forEach(header => {
@@ -455,83 +455,83 @@ async function createZipFromFolder(files) {
 // }
 
 // Drag and Move with Auto-Scroll Functionality
-function initializeDragAndMove() {
-    if (!window.$ || !$('#leadsTable tbody').length) return;
+// function initializeDragAndMove() {
+//     if (!window.$ || !$('#leadsTable tbody').length) return;
 
-    let scrollSpeed = 50;
-    let scrollInterval;
+//     let scrollSpeed = 50;
+//     let scrollInterval;
 
-    $('#leadsTable tbody').sortable({
-        axis: "y",
-        containment: "parent",
-        handle: "td:first-child",
-        placeholder: "ui-sortable-placeholder",
-        forcePlaceholderSize: true,
-        tolerance: "pointer",
-        cursorAt: { top: 10 },
-        helper: function (e, tr) {
-            const $original = tr.children();
-            const $helper = tr.clone();
-            $helper.children().each(function (index) {
-                $(this).width($original.eq(index).width());
-            });
-            return $helper;
-        },
-        start: function (event, ui) {
-            scrollInterval = setInterval(function () {
-                autoScrollDuringDrag(ui.helper);
-            }, 20);
-            ui.item.data("scrollInterval", scrollInterval);
-        },
-        update: function (event, ui) {
-            const newOrder = $(this).sortable("toArray", { attribute: "data-id" });
-            const updatedSlides = newOrder.map((id, index) => {
-                const slideId = parseInt(id);
-                const slide = slides.find(s => s.id === slideId);
-                return {
-                    ...slide,
-                    subtitle: `Subtitle ${index + 1}`,
-                    sequence: index + 1
-                };
-            });
-            slides = updatedSlides;
-            renderSlides();
+//     $('#leadsTable tbody').sortable({
+//         axis: "y",
+//         containment: "parent",
+//         handle: "td:first-child",
+//         placeholder: "ui-sortable-placeholder",
+//         forcePlaceholderSize: true,
+//         tolerance: "pointer",
+//         cursorAt: { top: 10 },
+//         helper: function (e, tr) {
+//             const $original = tr.children();
+//             const $helper = tr.clone();
+//             $helper.children().each(function (index) {
+//                 $(this).width($original.eq(index).width());
+//             });
+//             return $helper;
+//         },
+//         start: function (event, ui) {
+//             scrollInterval = setInterval(function () {
+//                 autoScrollDuringDrag(ui.helper);
+//             }, 20);
+//             ui.item.data("scrollInterval", scrollInterval);
+//         },
+//         update: function (event, ui) {
+//             const newOrder = $(this).sortable("toArray", { attribute: "data-id" });
+//             const updatedSlides = newOrder.map((id, index) => {
+//                 const slideId = parseInt(id);
+//                 const slide = slides.find(s => s.id === slideId);
+//                 return {
+//                     ...slide,
+//                     subtitle: `Subtitle ${index + 1}`,
+//                     sequence: index + 1
+//                 };
+//             });
+//             slides = updatedSlides;
+//             renderSlides();
 
-        },
-        stop: function (event, ui) {
-            clearInterval(ui.item.data("scrollInterval"));
-            $(this).sortable("refreshPositions");
-        }
-    });
+//         },
+//         stop: function (event, ui) {
+//             clearInterval(ui.item.data("scrollInterval"));
+//             $(this).sortable("refreshPositions");
+//         }
+//     });
 
-    const style = document.createElement('style');
-    style.textContent = `
-        .ui-sortable-placeholder {
-            background: #f0f0f0;
-            border-left: 2px solid purple;
-            visibility: visible !important;
-            height: 50px;
-        }
-        td[title]:hover::after {
-            content: attr(title);
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            white-space: nowrap;
-            z-index: 1000;
-        }
-        .slide-last.active {
-            background-color: rgb(211, 211, 211);
-        }
-    `;
-    document.head.appendChild(style);
-}
+//     const style = document.createElement('style');
+//     style.textContent = `
+//         .ui-sortable-placeholder {
+//             background: #f0f0f0;
+//             border-left: 2px solid purple;
+//             visibility: visible !important;
+//             height: 50px;
+//         }
+//         td[title]:hover::after {
+//             content: attr(title);
+//             position: absolute;
+//             top: -30px;
+//             left: 50%;
+//             transform: translateX(-50%);
+//             background: #333;
+//             color: white;
+//             padding: 4px 8px;
+//             border-radius: 4px;
+//             font-size: 12px;
+//             white-space: nowrap;
+//             z-index: 1000;
+//         }
+//         .slide-last.active {
+//             background-color: rgb(211, 211, 211);
+//         }
+//     `;
+//     document.head.appendChild(style);
+// }
 
 function autoScrollDuringDrag(draggedElement) {  // Fixed parameter name
     const scrollThreshold = 50;
@@ -577,7 +577,7 @@ async function handleScriptFileChange(event) {
     if (file) {
         const text = await file.text();
         // Check file size
-        if (text.length <= 5000) {
+        // if (text.length <= 5000) {
             // Check each line's character count
             const lines = text.split('\n');
             const longLines = lines.filter(line => line.trim().length > MAX_SUBTITLE_LENGTH);
@@ -590,12 +590,13 @@ async function handleScriptFileChange(event) {
             } else {
                 scriptFileName = file.name.slice(0, 15);
             }
-        } else {
-            alert("The text file exceeds the 5000-character limit!");
-            scriptFileName = "No file chosen";
-            scriptFile = null;
-            event.target.value = "";
-        }
+        // } 
+        // else {
+        //     alert("The text file exceeds the 5000-character limit!");
+        //     scriptFileName = "No file chosen";
+        //     scriptFile = null;
+        //     event.target.value = "";
+        // }
     } else {
         scriptFileName = "No file chosen";
     }
@@ -2502,7 +2503,7 @@ function renderSlides(send_update = true) {
         const charCountClass = charCount > MAX_SUBTITLE_LENGTH ? 'char-count-exceeded' : 'char-count';
 
         tr.innerHTML = `
-            <td class="slide-first" style="font-size: 1.4rem; position: relative; cursor: grab;" title="Drag to move">
+            <td class="slide-first" style="font-size: 1.4rem; position: relative;" title="Drag to move">
                 <div style="display: flex; align-items: center;">
                   
                     ${slide.subtitle}
@@ -2528,21 +2529,13 @@ function renderSlides(send_update = true) {
                     </div>
                 </div>
             </td>
-            <td class="slide-last ${activeSlideIds.has(slide.id) ? 'active' : ''}">
-                <a href="#" class="above-del" onclick="toggleEdit(${slide.id}); event.preventDefault();">
-                    <i class="ri-edit-box-line fa-sync-alt icon" style="margin: 0 auto; font-size: 20px; font-weight: 600; cursor: pointer; vertical-align: middle;"></i>
-                </a>
-            </td>
+
             <td class="slide-last ${activeSlideIds.has(slide.id) ? 'active' : ''}">
                 <a href="#" class="above-del" onclick="handleUndo(${slide.id}); event.preventDefault();">
                     <img src="/static/images/undo.svg" alt="Undo" style="width: 1.2rem; height: 3rem; cursor: pointer;">
                 </a>
             </td>
-            <td class="slide-last" id="action_${slide.id}">
-                <a href="#" class="delete-row-btn" onclick="deleteSlide(${slide.id}); event.preventDefault();">
-                    <img src="/static/images/delete-icn.svg" alt="delete" style="width: 1.5rem; height: 3rem; cursor: pointer;">
-                </a>
-            </td>
+
         `;
         tbody.appendChild(tr);
 
@@ -2687,7 +2680,7 @@ function renderSlides(send_update = true) {
 
     // Reinitialize drag functionality after rendering
     if (window.$ && $('#leadsTable tbody').length) {
-        initializeDragAndMove();
+        // initializeDragAndMove();
     }
     updateProceedButtonState();
 

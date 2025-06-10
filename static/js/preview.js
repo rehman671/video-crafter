@@ -41,7 +41,7 @@ function stopProcessingAnimation() {
 function validateForm() {
     let isValid = true;
     const apiKey = document.getElementById('api_key').value.trim();
-    const voiceId = document.getElementById('voice_id').value.trim();
+    // const voiceId = document.getElementById('voice_id').value.trim();
     const fontSelect = document.getElementById('font_select').value;
 
     apiKeyError = '';
@@ -59,12 +59,12 @@ function validateForm() {
         isValid = false;
     }
 
-    if (!voiceId) {
-        voiceIdError = 'Voice ID is required.';
-        document.getElementById('voice_id_error').textContent = voiceIdError;
-        document.getElementById('voice_id').focus();
-        isValid = false;
-    }
+    // if (!voiceId) {
+    //     voiceIdError = 'Voice ID is required.';
+    //     document.getElementById('voice_id_error').textContent = voiceIdError;
+    //     document.getElementById('voice_id').focus();
+    //     isValid = false;
+    // }
 
     if (resolution !== '9:16' && !fontSelect) {
         fontError = 'Please select a font.';

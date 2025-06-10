@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Font, Plan, Subscription, BillingInfo, TempSubscription, UserAsset
+from .models import Font, Plan, Subscription, BillingInfo, TempSubscription, UserAsset, AppVariables
 
 # Register your models here.
 @admin.register(Font)
@@ -43,3 +43,11 @@ class UserAssetAdmin(admin.ModelAdmin):
     list_filter = ('is_folder', 'content_type', 'created_at', 'updated_at')
     raw_id_fields = ('user',)
     readonly_fields = ('file_size_display', 's3_url')
+
+@admin.register(AppVariables)
+class AppVariablesAdmin(admin.ModelAdmin):
+    list_display = ('key', 'value', 'created_at', 'updated_at')
+    search_fields = ('key', 'value')
+    ordering = ('key',)
+    fields = ('key', 'value', 'description')
+    readonly_fields = ('key', )

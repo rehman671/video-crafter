@@ -314,7 +314,7 @@ def preview(request):
         form_data = {
             'resolution': request.POST.get('resolution', '1:1'),
             'elevenlabs_apikey': request.POST.get('elevenlabs_apikey', ''),
-            'voiceid': request.POST.get('voiceid', ''),
+            # 'voiceid': request.POST.get('voiceid', ''),
             'font_select': request.POST.get('font_select', ''),
             'font_color': request.POST.get('font_color', '#ffffff'),
             'subtitle_box_color': request.POST.get('subtitle_box_color', '#000000'),
@@ -325,7 +325,7 @@ def preview(request):
         try:
             resolution = form_data['resolution']
             elevenlabs_api_key = form_data['elevenlabs_apikey']
-            elevenlabs_voice_id = form_data['voiceid']
+            # elevenlabs_voice_id = form_data['voiceid']
             
             # Only get Font if font_select is not empty
             font = None
@@ -339,21 +339,21 @@ def preview(request):
             font_size = int(form_data['font_size1'])
             box_radius = form_data['box_radius']
             
-            elv_handler = ElevenLabsHandler(api_key=elevenlabs_api_key, voice_id=elevenlabs_voice_id)
+            elv_handler = ElevenLabsHandler(api_key=elevenlabs_api_key)
             try:
                 elv_handler._verify_api_key()
             except:
                 raise Exception("Invalid ElevenLabs API Key.")
-            try:
-                elv_handler._verify_voice_id()
-            except:
-                raise Exception("Invalid ElevenLabs Voice ID.")
+            # try:
+            #     elv_handler._verify_voice_id()
+            # except:
+            #     raise Exception("Invalid ElevenLabs Voice ID.")
             
             video = Video.objects.create(
                 user=request.user,
                 dimensions=resolution,
                 elevenlabs_api_key=elevenlabs_api_key,
-                voice_id=elevenlabs_voice_id,
+                # voice_id=elevenlabs_voice_id,
                 subtitle_font=font,
                 font_color=font_color,
                 subtitle_box_color=subtitle_box_color,

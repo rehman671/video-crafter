@@ -139,3 +139,74 @@ class ElevenLabsHandler:
             return response.json()
         else:
             raise Exception(f"Error getting voices: {response.text}")
+
+
+    def get_history(self, voice_id: Optional[str] = None) -> Dict:
+        """Get history of generated voiceovers"""
+        headers = {
+            "Accept": "application/json",
+            "xi-api-key": self.api_key
+        }
+        url = f"{self.base_url}/history?voice_id={voice_id}"
+        if voice_id is None:
+            url = f"{self.base_url}/history?page_size=20&source=TTS"
+        print(f"Requesting history for voice ID: {voice_id}")
+        response = requests.get(url, headers=headers)
+        print(f"Response status code: {response.status_code}")
+        print(f"Response text: {response.text}")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            error_msg = response.text
+            if response.status_code == 401:
+                raise Exception("Invalid ElevenLabs API key")
+            elif response.status_code == 404:
+                raise Exception(f"Voice ID {voice_id} not found in history")
+            else:
+                raise Exception(f"Error getting history: {error_msg}")
+
+    def get_history_by_id(self, history_id) -> Dict:
+        """Get history of generated voiceovers"""
+        headers = {
+            "Accept": "application/json",
+            "xi-api-key": self.api_key
+        }
+
+        url = f"{self.base_url}/history/{history_id}"
+        response = requests.get(url, headers=headers)
+        print(f"Response status code: {response.status_code}")
+        print(f"Response text: {response.text}")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            error_msg = response.text
+            if response.status_code == 401:
+                raise Exception("Invalid ElevenLabs API key")
+            else:
+                raise Exception(f"Error getting history: {error_msg}")
+
+    
+    def get_history_audio(self, history_id: str, output_path: str) -> str:
+        """Download audio from a specific history entry"""
+        print(f"Downloading audio for history ID: {history_id}")
+        headers = {
+            "Accept": "audio/mpeg",
+            "xi-api-key": self.api_key
+        }
+        
+        url = f"{self.base_url}/history/{history_id}/audio"
+        
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            with open(output_path, "wb") as f:
+                f.write(response.content)
+            return output_path
+        else:
+            error_msg = response.text
+            if response.status_code == 401:
+                raise Exception("Invalid ElevenLabs API key")
+            elif response.status_code == 404:
+                raise Exception(f"History ID {history_id} not found")
+            else:
+                raise Exception(f"Error downloading history audio: {error_msg}")

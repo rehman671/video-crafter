@@ -190,7 +190,7 @@
                             name="elevenlabs_apikey">
                         <p id="api_key_error" class="error-message"></p>
                     </div>
-                    <div class="Voice-ID-text">
+                    <div class="Voice-ID-text" style="display: none;">
                         <div class="Voice-ID-text-sub">Voice ID:</div>
                         <div class="vh-parent">
                             <div class="vh-child">
@@ -200,7 +200,7 @@
                             </div>?
                         </div>
                     </div>
-                    <div class="Voice-ID-textarea" style="margin-bottom:24px">
+                    <div class="Voice-ID-textarea" style="margin-bottom:24px;display: None;">
                         <input type="text" id="voice_id" class="text3 text3-input" placeholder="Enter Voice ID"
                             name="voiceid">
                         <p id="voice_id_error" class="error-message"></p>
@@ -301,9 +301,9 @@
             if (document.getElementById('api_key')) {
                 document.getElementById('api_key').value = "{{ form_data.elevenlabs_apikey }}";
             }
-            if (document.getElementById('voice_id')) {
-                document.getElementById('voice_id').value = "{{ form_data.voiceid }}";
-            }
+            // if (document.getElementById('voice_id')) {
+            //     document.getElementById('voice_id').value = "{{ form_data.voiceid }}";
+            // }
             
             // Set resolution
             if ("{{ form_data.resolution }}") {

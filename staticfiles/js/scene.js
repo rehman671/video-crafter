@@ -262,8 +262,10 @@ function escapeRegExp(string) {
 }
 
 // Load script into slides
-async function loadScript(clips) {
-    console.log(clips);
+// Enhanced load script into slides with replacement capability
+async function loadScript(clips, replaceExisting = false) {
+    console.log('Loading script with clips:', clips);
+    console.log('Replace existing:', replaceExisting);
     
     if (clips && clips.length > 0) {
         // Validate all clips for character limits
@@ -275,9 +277,10 @@ async function loadScript(clips) {
             alert(`${excessiveLengthClips.length} subtitle(s) exceed the ${MAX_SUBTITLE_LENGTH} character limit. These will be highlighted in red.`);
         }
         
+        // Check if we should replace existing slides or add to them
         const isDefaultUnchanged = slides.length === 1 && slides[0].id === 1 &&
             (slides[0].text === "" || slides[0].text === "Type Your Script Here");
-
+        
         let newSlides = clips.map((clip, index) => ({
             id: clip.id,
             subtitle: `Subtitle ${index + 1}`,
@@ -290,12 +293,21 @@ async function loadScript(clips) {
         }));
         
         slideCount = clips.length;
-        slides = isDefaultUnchanged ? newSlides : [...slides, ...newSlides];
+        
+        // Always replace when loading from history (replaceExisting will be true)
+        // or when default slide is unchanged
+        if (replaceExisting || isDefaultUnchanged) {
+            slides = newSlides;
+        } else {
+            slides = [...slides, ...newSlides];
+        }
+        
         activeSlideIds = new Set();
         renderSlides();
+        
+        console.log(`Loaded ${clips.length} clips, total slides now: ${slides.length}`);
     }
 }
-
 // Folder upload
 function handleFolderFileChange(event) {
     folderFiles = event.target.files;
@@ -1315,9 +1327,8 @@ function renderSlides(send_update=true) {
         const charCountClass = charCount > MAX_SUBTITLE_LENGTH ? 'char-count-exceeded' : 'char-count';
         
         tr.innerHTML = `
-            <td class="slide-first" style="font-size: 1.4rem; position: relative; cursor: grab;" title="Drag to move">
+            <td class="slide-first" style="font-size: 1.4rem; position: relative;">
                 <div style="display: flex; align-items: center;">
-                  
                     ${slide.subtitle}
                 </div>
             </td>
@@ -1536,3 +1547,5 @@ function renderModals() {
         `;
     }
 }
+
+
