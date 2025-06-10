@@ -1646,3 +1646,380 @@ def delete_all_clips(request):
         return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+# Add these new views to your existing views.py file
+# Add these new views to your existing views.py file
+
+@csrf_exempt
+@require_POST
+@login_required(login_url='login')
+def split_subtitle(request):
+    """
+    Split a subtitle into two subtitles at the specified position
+    Remove highlights/subclips for text that crosses the split boundary
+    """
+    try:
+        data = json.loads(request.body)
+        clip_id = data.get('clip_id')
+        split_position = data.get('split_position')
+        first_part_text = data.get('first_part_text')
+        second_part_text = data.get('second_part_text')
+        first_part_marked = data.get('first_part_marked', '')
+        second_part_marked = data.get('second_part_marked', '')
+        
+        # Validate input
+        if not all([clip_id, first_part_text, second_part_text]):
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+        
+        try:
+            # Get the clip to split
+            clip = Clips.objects.get(id=clip_id, video__user=request.user)
+            original_sequence = clip.sequence
+            original_text = getCleanTextContent(clip.text)
+            
+            # Get all existing subclips for this clip BEFORE any changes
+            existing_subclips = list(Subclip.objects.filter(clip=clip))
+            
+            # Update the original clip with first part
+            clip.text = first_part_text
+            clip.is_changed = True
+            clip.save()
+            
+            # Get clips that need sequence adjustment (those after current clip)
+            clips_to_update = Clips.objects.filter(
+                video=clip.video,
+                sequence__gt=original_sequence
+            ).order_by('sequence')
+            
+            # Increment sequence numbers for clips after the split point
+            for clip_to_update in clips_to_update:
+                clip_to_update.sequence += 1
+                clip_to_update.save()
+            
+            # Create new clip for second part
+            new_clip = Clips.objects.create(
+                video=clip.video,
+                text=second_part_text,
+                start_time=0.0,
+                end_time=5.0,
+                sequence=original_sequence + 1,
+                is_changed=True
+            )
+            
+            # Handle subclip reassignment and removal
+            if existing_subclips:
+                # Get the clean text parts
+                first_clean = getCleanTextContent(first_part_text)
+                second_clean = getCleanTextContent(second_part_text)
+                
+                # Parse highlights that remain after split
+                first_highlights = _extract_highlights_from_marked_text(first_part_marked)
+                second_highlights = _extract_highlights_from_marked_text(second_part_marked)
+                
+                # Create sets of highlighted text that survived the split
+                surviving_first_texts = {h['text'].strip() for h in first_highlights}
+                surviving_second_texts = {h['text'].strip() for h in second_highlights}
+                
+                print(f"Original text length: {len(original_text)}, split at: {split_position}")
+                print(f"Surviving highlights - First: {surviving_first_texts}, Second: {surviving_second_texts}")
+                
+                subclips_to_delete = []
+                subclips_to_move = []
+                subclips_to_keep = []
+                
+                for subclip in existing_subclips:
+                    subclip_text = subclip.text.strip()
+                    
+                    # Check if this subclip's text survived in either part
+                    if subclip_text in surviving_second_texts:
+                        # This highlight survived in the second part
+                        subclips_to_move.append(subclip)
+                        print(f"Moving subclip '{subclip_text}' to second part")
+                    elif subclip_text in surviving_first_texts:
+                        # This highlight survived in the first part
+                        subclips_to_keep.append(subclip)
+                        print(f"Keeping subclip '{subclip_text}' in first part")
+                    else:
+                        # This highlight was removed during split (crossed boundary)
+                        subclips_to_delete.append(subclip)
+                        print(f"Deleting subclip '{subclip_text}' (crossed split boundary)")
+                
+                # Execute the changes
+                for subclip in subclips_to_move:
+                    subclip.clip = new_clip
+                    subclip.save()
+                
+                for subclip in subclips_to_delete:
+                    # Delete the video file if it exists
+                    if subclip.video_file:
+                        try:
+                            subclip.video_file.delete(save=False)
+                        except Exception as e:
+                            print(f"Error deleting video file: {e}")
+                    subclip.delete()
+                
+                print(f"Split complete: kept {len(subclips_to_keep)}, moved {len(subclips_to_move)}, deleted {len(subclips_to_delete)} subclips")
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Subtitle split successfully',
+                'original_clip_id': clip.id,
+                'new_clip_id': new_clip.id,
+                'deleted_subclips': len([s for s in existing_subclips if s.text.strip() not in 
+                                       {h['text'].strip() for h in first_highlights + second_highlights}])
+            })
+            
+        except Clips.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Clip not found'}, status=404)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        print(f"Error in split_subtitle: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def getCleanTextContent(text):
+    """
+    Helper function to extract clean text content from HTML text
+    This should match the JavaScript function getCleanTextContent
+    """
+    if not text:
+        return ""
+    
+    # Remove HTML tags
+    import re
+    clean_text = re.sub(r'<[^>]+>', '', text)
+    
+    # Normalize whitespace
+    clean_text = ' '.join(clean_text.split())
+    
+    return clean_text.strip()
+
+
+@csrf_exempt
+@require_POST
+@login_required(login_url='login')
+def merge_subtitles(request):
+    """
+    Merge a subtitle with the previous subtitle
+    """
+    try:
+        data = json.loads(request.body)
+        current_clip_id = data.get('current_clip_id')
+        previous_clip_id = data.get('previous_clip_id')
+        merged_text = data.get('merged_text')
+        merged_marked_text = data.get('merged_marked_text', '')
+        
+        # Validate input
+        if not all([current_clip_id, previous_clip_id, merged_text]):
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+        
+        try:
+            # Get both clips
+            current_clip = Clips.objects.get(id=current_clip_id, video__user=request.user)
+            previous_clip = Clips.objects.get(id=previous_clip_id, video__user=request.user)
+            
+            # Verify they belong to the same video
+            if current_clip.video_id != previous_clip.video_id:
+                return JsonResponse({'success': False, 'error': 'Clips belong to different videos'}, status=400)
+            
+            # Verify sequence order
+            if previous_clip.sequence >= current_clip.sequence:
+                return JsonResponse({'success': False, 'error': 'Invalid clip order for merging'}, status=400)
+            
+            current_sequence = current_clip.sequence
+            
+            # Move all subclips from current clip to previous clip
+            Subclip.objects.filter(clip=current_clip).update(clip=previous_clip)
+            
+            # Update previous clip with merged content
+            previous_clip.text = merged_text
+            previous_clip.is_changed = True
+            previous_clip.save()
+            
+            # Delete the current clip
+            current_clip.delete()
+            
+            # Update sequence numbers for clips after the deleted clip
+            clips_to_update = Clips.objects.filter(
+                video=previous_clip.video,
+                sequence__gt=current_sequence
+            ).order_by('sequence')
+            
+            for clip_to_update in clips_to_update:
+                clip_to_update.sequence -= 1
+                clip_to_update.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Subtitles merged successfully',
+                'merged_clip_id': previous_clip.id,
+                'deleted_clip_id': current_clip_id
+            })
+            
+        except Clips.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'One or both clips not found'}, status=404)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def _extract_highlights_from_marked_text(marked_text):
+    """
+    Helper function to extract highlight information from marked HTML text
+    """
+    if not marked_text or '<mark' not in marked_text:
+        return []
+    
+    import re
+    from html.parser import HTMLParser
+    
+    class HighlightExtractor(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.highlights = []
+            self.current_mark_attrs = {}
+            self.current_text = ''
+            self.in_mark = False
+        
+        def handle_starttag(self, tag, attrs):
+            if tag == 'mark':
+                self.in_mark = True
+                self.current_mark_attrs = dict(attrs)
+                self.current_text = ''
+        
+        def handle_endtag(self, tag):
+            if tag == 'mark' and self.in_mark:
+                self.highlights.append({
+                    'text': self.current_text,
+                    'attributes': self.current_mark_attrs
+                })
+                self.in_mark = False
+                self.current_mark_attrs = {}
+                self.current_text = ''
+        
+        def handle_data(self, data):
+            if self.in_mark:
+                self.current_text += data
+    
+    try:
+        extractor = HighlightExtractor()
+        extractor.feed(marked_text)
+        return extractor.highlights
+    except Exception as e:
+        print(f"Error extracting highlights: {e}")
+        return []
+
+
+@csrf_exempt
+@require_POST
+@login_required(login_url='login')
+def reorder_clips(request):
+    """
+    Reorder clips after split/merge operations to ensure proper sequencing
+    """
+    try:
+        data = json.loads(request.body)
+        video_id = data.get('video_id')
+        clip_orders = data.get('clip_orders')  # List of {clip_id: sequence} pairs
+        
+        # Validate input
+        if not video_id or not clip_orders:
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+        
+        try:
+            video = Video.objects.get(id=video_id, user=request.user)
+            
+            # Update clip sequences in a transaction to avoid conflicts
+            from django.db import transaction
+            
+            with transaction.atomic():
+                for clip_order in clip_orders:
+                    clip_id = clip_order.get('clip_id')
+                    sequence = clip_order.get('sequence')
+                    
+                    if clip_id and sequence is not None:
+                        Clips.objects.filter(
+                            id=clip_id, 
+                            video=video
+                        ).update(sequence=sequence)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Clips reordered successfully'
+            })
+            
+        except Video.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Video not found'}, status=404)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+@login_required(login_url='login')
+def batch_update_clips(request):
+    """
+    Batch update multiple clips after split/merge operations
+    This is useful for updating sequences and content in one request
+    """
+    try:
+        data = json.loads(request.body)
+        video_id = data.get('video_id')
+        clip_updates = data.get('clip_updates')  # List of clip update objects
+        
+        # Validate input
+        if not video_id or not clip_updates:
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+        
+        try:
+            video = Video.objects.get(id=video_id, user=request.user)
+            
+            from django.db import transaction
+            
+            with transaction.atomic():
+                for update in clip_updates:
+                    clip_id = update.get('clip_id')
+                    
+                    if not clip_id:
+                        continue
+                    
+                    try:
+                        clip = Clips.objects.get(id=clip_id, video=video)
+                        
+                        # Update fields if provided
+                        if 'text' in update:
+                            clip.text = update['text']
+                        if 'sequence' in update:
+                            clip.sequence = update['sequence']
+                        if 'start_time' in update:
+                            clip.start_time = update['start_time']
+                        if 'end_time' in update:
+                            clip.end_time = update['end_time']
+                        
+                        clip.save()
+                        
+                    except Clips.DoesNotExist:
+                        continue  # Skip non-existent clips
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Clips updated successfully'
+            })
+            
+        except Video.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Video not found'}, status=404)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

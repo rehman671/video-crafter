@@ -21,7 +21,11 @@ get_processing_status_with_credentials,
 get_voiceover_history,
 update_video_history,
 delete_all_clips,
-get_saved_history
+get_saved_history,
+split_subtitle,
+merge_subtitles,
+reorder_clips,
+batch_update_clips,
 )
 
 # router = DefaultRouter()
@@ -51,4 +55,9 @@ urlpatterns = [
     # Add this to your urlpatterns
 path('delete-all-clips/', delete_all_clips, name='delete_all_clips'),
 
+
+  path('split-subtitle/', split_subtitle, name='split_subtitle'),
+    path('merge-subtitles/', merge_subtitles, name='merge_subtitles'),
+    path('reorder-clips/', reorder_clips, name='reorder_clips'),
+    path('batch-update-clips/', batch_update_clips, name='batch_update_clips'),
 ]

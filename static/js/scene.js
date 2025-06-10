@@ -4,12 +4,14 @@ let scriptFile = null;
 // Add these after the existing variables at the top
 let scriptFileName = "No file chosen";
 let folderFiles = null;
-
+// Add these new variables for split/merge functionality
+let subtitleOperationHistory = [];
+let maxSubtitleHistorySize = 10;
 let folderFileName = "No folder chosen";
 let slides = [
     {
         id: -1, // Use negative ID for new slides
-        subtitle: "Subtitle 1",
+        subtitle: "Slide 1",
         text: "",
         markedText: "",
         originalText: "",
@@ -676,7 +678,7 @@ async function loadScript(clips) {
 
         let newSlides = clips.map((clip, index) => ({
             id: clip.id,
-            subtitle: `Subtitle ${index + 1}`,
+            subtitle: `Slide ${index + 1}`,
             text: clip.text,
             markedText: clip.text, // Will be updated if subclips exist
             originalText: clip.text,
@@ -2487,204 +2489,204 @@ function toggleContent(header) {
 }
 
 
-function renderSlides(send_update = true) {
-    const tbody = document.querySelector('#leadsTable tbody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    slides.forEach(slide => {
-        const tr = document.createElement('tr');
-        tr.dataset.id = slide.id;
-        tr.style.height = "5rem";
-        if (send_update === true) {
-            updateClipOnServer(slide.id, slide.text);
-        }
+// function renderSlides(send_update = true) {
+//     const tbody = document.querySelector('#leadsTable tbody');
+//     if (!tbody) return;
+//     tbody.innerHTML = '';
+//     slides.forEach(slide => {
+//         const tr = document.createElement('tr');
+//         tr.dataset.id = slide.id;
+//         tr.style.height = "5rem";
+//         if (send_update === true) {
+//             updateClipOnServer(slide.id, slide.text);
+//         }
 
-        const charCount = slide.text ? getCleanTextContent(slide.text).length : 0;
-        const charCountClass = charCount > MAX_SUBTITLE_LENGTH ? 'char-count-exceeded' : 'char-count';
+//         const charCount = slide.text ? getCleanTextContent(slide.text).length : 0;
+//         const charCountClass = charCount > MAX_SUBTITLE_LENGTH ? 'char-count-exceeded' : 'char-count';
 
-        tr.innerHTML = `
-            <td class="slide-first" style="font-size: 1.4rem; position: relative;" title="Drag to move">
-                <div style="display: flex; align-items: center;">
+//         tr.innerHTML = `
+//             <td class="slide-first" style="font-size: 1.4rem; position: relative;" title="Drag to move">
+//                 <div style="display: flex; align-items: center;">
                   
-                    ${slide.subtitle}
-                </div>
-            </td>
-            <td id="highlightable_${slide.id}">
-                <div class="highlight-sub">
-                    ${slide.isEditing ? `
-                        <textarea
-                            class="textarea-class"
-                            id="slide_text_${slide.id}"
-                            name="slide_text"
-                            placeholder="Type Your Script Here And Press Enter (Max ${MAX_SUBTITLE_LENGTH} Characters)"
-                            onkeydown="handleKeyPress(event, ${slide.id})"
-                            ${charCount > MAX_SUBTITLE_LENGTH ? 'style="border: 1px solid red;"' : ''}
-                        >${getCleanTextContent(slide.text)}</textarea>
-                        <div class="${charCountClass}">${charCount}/${MAX_SUBTITLE_LENGTH}</div>
-                    ` : `
-                        <span>${slide.markedText || slide.text || ""}</span>
-                    `}
-                    <div id="error-message_${slide.id}" class="error-message" style="display: ${charCount > MAX_SUBTITLE_LENGTH ? 'block' : 'none'};">
-                        ${charCount > MAX_SUBTITLE_LENGTH ? `Subtitle text cannot exceed ${MAX_SUBTITLE_LENGTH} characters (current: ${charCount})` : ''}
-                    </div>
-                </div>
-            </td>
+//                     ${slide.subtitle}
+//                 </div>
+//             </td>
+//             <td id="highlightable_${slide.id}">
+//                 <div class="highlight-sub">
+//                     ${slide.isEditing ? `
+//                         <textarea
+//                             class="textarea-class"
+//                             id="slide_text_${slide.id}"
+//                             name="slide_text"
+//                             placeholder="Type Your Script Here And Press Enter (Max ${MAX_SUBTITLE_LENGTH} Characters)"
+//                             onkeydown="handleKeyPress(event, ${slide.id})"
+//                             ${charCount > MAX_SUBTITLE_LENGTH ? 'style="border: 1px solid red;"' : ''}
+//                         >${getCleanTextContent(slide.text)}</textarea>
+//                         <div class="${charCountClass}">${charCount}/${MAX_SUBTITLE_LENGTH}</div>
+//                     ` : `
+//                         <span>${slide.markedText || slide.text || ""}</span>
+//                     `}
+//                     <div id="error-message_${slide.id}" class="error-message" style="display: ${charCount > MAX_SUBTITLE_LENGTH ? 'block' : 'none'};">
+//                         ${charCount > MAX_SUBTITLE_LENGTH ? `Subtitle text cannot exceed ${MAX_SUBTITLE_LENGTH} characters (current: ${charCount})` : ''}
+//                     </div>
+//                 </div>
+//             </td>
 
-            <td class="slide-last ${activeSlideIds.has(slide.id) ? 'active' : ''}">
-                <a href="#" class="above-del" onclick="handleUndo(${slide.id}); event.preventDefault();">
-                    <img src="/static/images/undo.svg" alt="Undo" style="width: 1.2rem; height: 3rem; cursor: pointer;">
-                </a>
-            </td>
+//             <td class="slide-last ${activeSlideIds.has(slide.id) ? 'active' : ''}">
+//                 <a href="#" class="above-del" onclick="handleUndo(${slide.id}); event.preventDefault();">
+//                     <img src="/static/images/undo.svg" alt="Undo" style="width: 1.2rem; height: 3rem; cursor: pointer;">
+//                 </a>
+//             </td>
 
-        `;
-        tbody.appendChild(tr);
+//         `;
+//         tbody.appendChild(tr);
 
-        if (!slide.isEditing) {
-            const highlightable = document.getElementById(`highlightable_${slide.id}`);
-            highlightable.addEventListener('mouseup', () => handleTextSelection(slide.id));
+//         if (!slide.isEditing) {
+//             const highlightable = document.getElementById(`highlightable_${slide.id}`);
+//             highlightable.addEventListener('mouseup', () => handleTextSelection(slide.id));
 
-            const marks = highlightable.querySelectorAll('mark.handlePopupSubmit');
-            marks.forEach(mark => {
-                mark.addEventListener('click', () => {
-                    selectedSlideId = slide.id;
-                    selectedText = mark.textContent;
-                    popupOpen = true;
-                    renderPopup();
-                });
-            });
-        }
+//             const marks = highlightable.querySelectorAll('mark.handlePopupSubmit');
+//             marks.forEach(mark => {
+//                 mark.addEventListener('click', () => {
+//                     selectedSlideId = slide.id;
+//                     selectedText = mark.textContent;
+//                     popupOpen = true;
+//                     renderPopup();
+//                 });
+//             });
+//         }
 
-        if (slide.isEditing) {
-            const textarea = document.getElementById(`slide_text_${slide.id}`);
+//         if (slide.isEditing) {
+//             const textarea = document.getElementById(`slide_text_${slide.id}`);
 
-            // Add keydown event listener to prevent typing at limit
-            textarea.addEventListener('keydown', (e) => {
-                const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
-                const currentLength = textarea.value.length;
-                const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
-                const isTextSelected = selectedText.length > 0;
+//             // Add keydown event listener to prevent typing at limit
+//             textarea.addEventListener('keydown', (e) => {
+//                 const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+//                 const currentLength = textarea.value.length;
+//                 const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
+//                 const isTextSelected = selectedText.length > 0;
 
-                // Allow backspace, delete, arrow keys, home, end, etc.
-                const allowedKeys = [8, 9, 37, 38, 39, 40, 46, 36, 35, 33, 34];
+//                 // Allow backspace, delete, arrow keys, home, end, etc.
+//                 const allowedKeys = [8, 9, 37, 38, 39, 40, 46, 36, 35, 33, 34];
 
-                // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-                if (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) {
-                    return;
-                }
+//                 // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+//                 if (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) {
+//                     return;
+//                 }
 
-                // If we're at the limit and trying to add more characters
-                if (currentLength >= maxLength && !allowedKeys.includes(e.keyCode) && !isTextSelected) {
-                    e.preventDefault();
+//                 // If we're at the limit and trying to add more characters
+//                 if (currentLength >= maxLength && !allowedKeys.includes(e.keyCode) && !isTextSelected) {
+//                     e.preventDefault();
 
-                    // Show error message
-                    const errorMessage = document.getElementById(`error-message_${slide.id}`);
-                    if (errorMessage) {
-                        errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters`;
-                        errorMessage.style.display = "block";
-                    }
+//                     // Show error message
+//                     const errorMessage = document.getElementById(`error-message_${slide.id}`);
+//                     if (errorMessage) {
+//                         errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters`;
+//                         errorMessage.style.display = "block";
+//                     }
 
-                    // Add shake animation to the textarea
-                    textarea.style.animation = 'shake 0.5s ease-in-out';
-                    setTimeout(() => {
-                        textarea.style.animation = '';
-                    }, 500);
+//                     // Add shake animation to the textarea
+//                     textarea.style.animation = 'shake 0.5s ease-in-out';
+//                     setTimeout(() => {
+//                         textarea.style.animation = '';
+//                     }, 500);
 
-                    return false;
-                }
-            });
+//                     return false;
+//                 }
+//             });
 
-            // Add paste event listener to handle pasted content
-            textarea.addEventListener('paste', (e) => {
-                e.preventDefault();
+//             // Add paste event listener to handle pasted content
+//             textarea.addEventListener('paste', (e) => {
+//                 e.preventDefault();
 
-                const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
-                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-                const currentText = textarea.value;
-                const selectionStart = textarea.selectionStart;
-                const selectionEnd = textarea.selectionEnd;
+//                 const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+//                 const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+//                 const currentText = textarea.value;
+//                 const selectionStart = textarea.selectionStart;
+//                 const selectionEnd = textarea.selectionEnd;
 
-                // Calculate new text after paste
-                const newText = currentText.substring(0, selectionStart) + pastedText + currentText.substring(selectionEnd);
+//                 // Calculate new text after paste
+//                 const newText = currentText.substring(0, selectionStart) + pastedText + currentText.substring(selectionEnd);
 
-                if (newText.length > maxLength) {
-                    // Calculate how much we can paste
-                    const remainingLength = maxLength - currentText.length + (selectionEnd - selectionStart);
-                    const truncatedPaste = pastedText.substring(0, Math.max(0, remainingLength));
+//                 if (newText.length > maxLength) {
+//                     // Calculate how much we can paste
+//                     const remainingLength = maxLength - currentText.length + (selectionEnd - selectionStart);
+//                     const truncatedPaste = pastedText.substring(0, Math.max(0, remainingLength));
 
-                    // Insert truncated text
-                    textarea.value = currentText.substring(0, selectionStart) + truncatedPaste + currentText.substring(selectionEnd);
+//                     // Insert truncated text
+//                     textarea.value = currentText.substring(0, selectionStart) + truncatedPaste + currentText.substring(selectionEnd);
 
-                    // Update cursor position
-                    const newCursorPos = selectionStart + truncatedPaste.length;
-                    textarea.setSelectionRange(newCursorPos, newCursorPos);
+//                     // Update cursor position
+//                     const newCursorPos = selectionStart + truncatedPaste.length;
+//                     textarea.setSelectionRange(newCursorPos, newCursorPos);
 
-                    // Show error message
-                    const errorMessage = document.getElementById(`error-message_${slide.id}`);
-                    if (errorMessage) {
-                        errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters. Pasted text was truncated.`;
-                        errorMessage.style.display = "block";
-                    }
+//                     // Show error message
+//                     const errorMessage = document.getElementById(`error-message_${slide.id}`);
+//                     if (errorMessage) {
+//                         errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters. Pasted text was truncated.`;
+//                         errorMessage.style.display = "block";
+//                     }
 
-                    // Trigger input event to update UI
-                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                } else {
-                    // Allow normal paste
-                    textarea.value = newText;
-                    const newCursorPos = selectionStart + pastedText.length;
-                    textarea.setSelectionRange(newCursorPos, newCursorPos);
-                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-            });
+//                     // Trigger input event to update UI
+//                     textarea.dispatchEvent(new Event('input', { bubbles: true }));
+//                 } else {
+//                     // Allow normal paste
+//                     textarea.value = newText;
+//                     const newCursorPos = selectionStart + pastedText.length;
+//                     textarea.setSelectionRange(newCursorPos, newCursorPos);
+//                     textarea.dispatchEvent(new Event('input', { bubbles: true }));
+//                 }
+//             });
 
-            // Original input event listener with modification to hard-limit length
-            textarea.addEventListener('input', (e) => {
-                const newText = e.target.value;
-                const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+//             // Original input event listener with modification to hard-limit length
+//             textarea.addEventListener('input', (e) => {
+//                 const newText = e.target.value;
+//                 const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
 
-                // Hard limit - truncate if somehow exceeds
-                if (newText.length > maxLength) {
-                    e.target.value = newText.substring(0, maxLength);
-                    return;
-                }
+//                 // Hard limit - truncate if somehow exceeds
+//                 if (newText.length > maxLength) {
+//                     e.target.value = newText.substring(0, maxLength);
+//                     return;
+//                 }
 
-                slides = slides.map(s =>
-                    s.id === slide.id ? { ...s, text: newText, markedText: newText } : s
-                );
+//                 slides = slides.map(s =>
+//                     s.id === slide.id ? { ...s, text: newText, markedText: newText } : s
+//                 );
 
-                // Update character count
-                const charCount = e.target.value.length;
-                const charCountElement = e.target.parentElement.querySelector(`.char-count, .char-count-exceeded`);
-                if (charCountElement) {
-                    charCountElement.textContent = `${charCount}/${maxLength}`;
-                    charCountElement.className = charCount >= maxLength ? 'char-count-exceeded' : 'char-count';
-                }
+//                 // Update character count
+//                 const charCount = e.target.value.length;
+//                 const charCountElement = e.target.parentElement.querySelector(`.char-count, .char-count-exceeded`);
+//                 if (charCountElement) {
+//                     charCountElement.textContent = `${charCount}/${maxLength}`;
+//                     charCountElement.className = charCount >= maxLength ? 'char-count-exceeded' : 'char-count';
+//                 }
 
-                // Show/hide error message
-                const errorMessage = document.getElementById(`error-message_${slide.id}`);
-                if (errorMessage) {
-                    if (charCount >= maxLength) {
-                        errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters`;
-                        errorMessage.style.display = 'block';
-                        textarea.style.border = '1px solid red';
-                    } else {
-                        errorMessage.style.display = 'none';
-                        textarea.style.border = '';
-                    }
-                }
-            });
-        }
-    });
+//                 // Show/hide error message
+//                 const errorMessage = document.getElementById(`error-message_${slide.id}`);
+//                 if (errorMessage) {
+//                     if (charCount >= maxLength) {
+//                         errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters`;
+//                         errorMessage.style.display = 'block';
+//                         textarea.style.border = '1px solid red';
+//                     } else {
+//                         errorMessage.style.display = 'none';
+//                         textarea.style.border = '';
+//                     }
+//                 }
+//             });
+//         }
+//     });
 
-    document.getElementById('no_of_slides').value = slideCount;
-    renderButton();
+//     document.getElementById('no_of_slides').value = slideCount;
+//     renderButton();
 
-    // Reinitialize drag functionality after rendering
-    if (window.$ && $('#leadsTable tbody').length) {
-        // initializeDragAndMove();
-    }
-    updateProceedButtonState();
+//     // Reinitialize drag functionality after rendering
+//     if (window.$ && $('#leadsTable tbody').length) {
+//         // initializeDragAndMove();
+//     }
+//     updateProceedButtonState();
 
-}
+// }
 
 
 function renderButton() {
@@ -3887,3 +3889,866 @@ function shouldEnableProceedButton() {
     // Always enable the button - we'll handle validation in the click handler
     return true;
 }
+
+
+// ADD these functions to your existing scene.js file (paste.txt)
+
+
+
+// Function to split a subtitle at cursor position
+function splitSubtitleAtCursor(slideId, cursorPosition) {
+    const slideIndex = slides.findIndex(s => s.id === slideId);
+    if (slideIndex === -1) return false;
+
+    const slide = slides[slideIndex];
+    const fullText = getCleanTextContent(slide.text);
+    
+    // Validate cursor position
+    if (cursorPosition <= 0 || cursorPosition >= fullText.length) {
+        console.log('Invalid cursor position for splitting');
+        return false;
+    }
+
+    // Find word boundary near cursor position
+    const splitPosition = findNearestWordBoundaryForSplit(fullText, cursorPosition);
+    if (splitPosition === -1) {
+        console.log('No valid word boundary found for splitting');
+        return false;
+    }
+
+    // Split the text
+    const firstPartText = fullText.substring(0, splitPosition).trim();
+    const secondPartText = fullText.substring(splitPosition).trim();
+
+    if (!firstPartText || !secondPartText) {
+        console.log('Split would result in empty subtitle');
+        return false;
+    }
+
+    // Check character limits
+    if (firstPartText.length > MAX_SUBTITLE_LENGTH || secondPartText.length > MAX_SUBTITLE_LENGTH) {
+        alert(`Split would create subtitle(s) exceeding ${MAX_SUBTITLE_LENGTH} character limit`);
+        return false;
+    }
+
+    // Check free plan restrictions
+    if (typeof isFreePlan !== 'undefined' && isFreePlan && slides.length >= 10) {
+        alert('Free plan users are limited to 10 subtitles. Please upgrade your subscription.');
+        return false;
+    }
+
+    // Save current state for undo
+    saveSubtitleOperationToHistory();
+
+    // Split highlighted text assignments
+    const { firstPartMarked, secondPartMarked } = splitMarkedText(slide.markedText || slide.text, splitPosition);
+
+    // Create new slide for second part
+    const newSlideId = generateNewSlideId();
+    const newSlide = {
+        id: newSlideId,
+        subtitle: `Subtitle ${slideIndex + 2}`,
+        text: secondPartText,
+        markedText: secondPartMarked,
+        originalText: secondPartText,
+        isEditing: false,
+        sequence: slide.sequence + 1
+    };
+
+    // Update current slide with first part
+    slides[slideIndex] = {
+        ...slide,
+        text: firstPartText,
+        markedText: firstPartMarked,
+        isEditing: false
+    };
+
+    // Insert new slide after current one
+    slides.splice(slideIndex + 1, 0, newSlide);
+
+    // Update sequence numbers for slides after the split
+    updateSequenceNumbers(slideIndex + 2);
+
+    // Send split request to server
+    sendSplitToServer(slideId, splitPosition, firstPartText, secondPartText, firstPartMarked, secondPartMarked);
+
+    // Re-render slides
+    renderSlides(false);
+    
+    console.log(`Split subtitle ${slideId} at position ${splitPosition}`);
+    return true;
+}
+
+// Function to merge a subtitle with the previous one
+function mergeWithPreviousSubtitle(slideId) {
+    const slideIndex = slides.findIndex(s => s.id === slideId);
+    if (slideIndex <= 0) {
+        console.log('Cannot merge: no previous subtitle');
+        return false;
+    }
+
+    const currentSlide = slides[slideIndex];
+    const previousSlide = slides[slideIndex - 1];
+
+    // Combine texts
+    const combinedText = getCleanTextContent(previousSlide.text) + ' ' + getCleanTextContent(currentSlide.text);
+
+    // Check character limit
+    if (combinedText.length > MAX_SUBTITLE_LENGTH) {
+        alert(`Merged subtitle would exceed ${MAX_SUBTITLE_LENGTH} character limit (${combinedText.length} characters)`);
+        return false;
+    }
+
+    // Save current state for undo
+    saveSubtitleOperationToHistory();
+
+    // Combine marked text preserving highlights
+    const combinedMarkedText = combineMarkedTexts(previousSlide.markedText || previousSlide.text, currentSlide.markedText || currentSlide.text);
+
+    // Send merge request to server
+    sendMergeToServer(currentSlide.id, previousSlide.id, combinedText, combinedMarkedText);
+
+    // Update previous slide with combined content
+    slides[slideIndex - 1] = {
+        ...previousSlide,
+        text: combinedText,
+        markedText: combinedMarkedText,
+        isEditing: false
+    };
+
+    // Remove current slide
+    const removedSlide = slides.splice(slideIndex, 1)[0];
+
+    // Update sequence numbers
+    updateSequenceNumbers(slideIndex);
+
+    // Re-render slides
+    renderSlides(false);
+
+    console.log(`Merged subtitle ${slideId} with previous subtitle`);
+    return true;
+}
+
+// Function to send split request to server
+function sendSplitToServer(clipId, splitPosition, firstPartText, secondPartText, firstPartMarked, secondPartMarked) {
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+    
+    const data = {
+        clip_id: clipId,
+        split_position: splitPosition,
+        first_part_text: firstPartText,
+        second_part_text: secondPartText,
+        first_part_marked: firstPartMarked,
+        second_part_marked: secondPartMarked
+    };
+
+    fetch('/split-subtitle/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Split request successful:', data);
+            // Update the new slide ID if needed
+            const newSlideIndex = slides.findIndex(s => s.id < 0 && s.text === secondPartText);
+            if (newSlideIndex !== -1 && data.new_clip_id) {
+                slides[newSlideIndex].id = data.new_clip_id;
+                renderSlides(false);
+            }
+        } else {
+            console.error('Split request failed:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending split request:', error);
+    });
+}
+
+// Function to send merge request to server
+function sendMergeToServer(currentClipId, previousClipId, mergedText, mergedMarkedText) {
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+    
+    const data = {
+        current_clip_id: currentClipId,
+        previous_clip_id: previousClipId,
+        merged_text: mergedText,
+        merged_marked_text: mergedMarkedText
+    };
+
+    fetch('/merge-subtitles/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Merge request successful:', data);
+        } else {
+            console.error('Merge request failed:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending merge request:', error);
+    });
+}
+
+// Function to split marked text while removing highlights from split text
+function splitMarkedText(markedText, splitPosition) {
+    if (!markedText || !markedText.includes('<mark')) {
+        // No highlights to preserve
+        const cleanText = getCleanTextContent(markedText || '');
+        return {
+            firstPartMarked: cleanText.substring(0, splitPosition).trim(),
+            secondPartMarked: cleanText.substring(splitPosition).trim()
+        };
+    }
+
+    // Create a mapping of character positions to track highlights
+    const cleanText = getCleanTextContent(markedText);
+    const characterHighlightMap = new Array(cleanText.length).fill(null);
+    
+    // Parse the HTML to map each character to its highlight information
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = markedText;
+    
+    let charIndex = 0;
+    
+    function mapHighlights(node, currentHighlight = null) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent;
+            for (let i = 0; i < text.length; i++) {
+                if (charIndex < characterHighlightMap.length) {
+                    characterHighlightMap[charIndex] = currentHighlight;
+                    charIndex++;
+                }
+            }
+        } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'MARK') {
+            // Extract all attributes from the mark element
+            const highlightInfo = {
+                attributes: {},
+                text: node.textContent
+            };
+            
+            for (let attr of node.attributes) {
+                highlightInfo.attributes[attr.name] = attr.value;
+            }
+            
+            // Process children with this highlight info
+            for (let child of node.childNodes) {
+                mapHighlights(child, highlightInfo);
+            }
+        } else {
+            // Process other elements
+            for (let child of node.childNodes) {
+                mapHighlights(child, currentHighlight);
+            }
+        }
+    }
+    
+    // Build the character highlight map
+    for (let child of tempDiv.childNodes) {
+        mapHighlights(child);
+    }
+    
+    // Find highlights that cross the split boundary and should be removed
+    const highlightsToRemove = new Set();
+    
+    // Check for highlights that span across the split position
+    for (let i = Math.max(0, splitPosition - 50); i < Math.min(characterHighlightMap.length, splitPosition + 50); i++) {
+        const highlight = characterHighlightMap[i];
+        if (highlight) {
+            const highlightText = highlight.text;
+            const highlightStart = cleanText.indexOf(highlightText);
+            const highlightEnd = highlightStart + highlightText.length;
+            
+            // If this highlight crosses the split boundary, mark it for removal
+            if (highlightStart < splitPosition && highlightEnd > splitPosition) {
+                // Create a unique identifier for this highlight
+                const highlightId = JSON.stringify(highlight.attributes);
+                highlightsToRemove.add(highlightId);
+                console.log(`Marking highlight for removal: "${highlightText}" (crosses split boundary)`);
+            }
+        }
+    }
+    
+    // Now reconstruct the HTML for both parts, excluding removed highlights
+    function reconstructHTML(startPos, endPos) {
+        let html = '';
+        let currentHighlight = null;
+        let markOpen = false;
+        
+        for (let i = startPos; i < endPos && i < characterHighlightMap.length; i++) {
+            const char = cleanText[i];
+            const highlight = characterHighlightMap[i];
+            
+            // Check if this highlight should be removed
+            let shouldRemoveHighlight = false;
+            if (highlight) {
+                const highlightId = JSON.stringify(highlight.attributes);
+                shouldRemoveHighlight = highlightsToRemove.has(highlightId);
+            }
+            
+            // Treat removed highlights as no highlight
+            const effectiveHighlight = shouldRemoveHighlight ? null : highlight;
+            
+            // Check if highlight state changed
+            if (!areHighlightsEqual(currentHighlight, effectiveHighlight)) {
+                // Close current mark if open
+                if (markOpen) {
+                    html += '</mark>';
+                    markOpen = false;
+                }
+                
+                // Open new mark if needed
+                if (effectiveHighlight) {
+                    const attrs = Object.entries(effectiveHighlight.attributes)
+                        .map(([key, value]) => `${key}="${value}"`)
+                        .join(' ');
+                    html += `<mark ${attrs}>`;
+                    markOpen = true;
+                }
+                
+                currentHighlight = effectiveHighlight;
+            }
+            
+            // Add the character (escape HTML entities)
+            html += char.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        
+        // Close any open mark
+        if (markOpen) {
+            html += '</mark>';
+        }
+        
+        return html.trim();
+    }
+    
+    function areHighlightsEqual(h1, h2) {
+        if (h1 === h2) return true;
+        if (!h1 || !h2) return false;
+        
+        // Compare attributes
+        const attrs1 = h1.attributes || {};
+        const attrs2 = h2.attributes || {};
+        
+        const keys1 = Object.keys(attrs1);
+        const keys2 = Object.keys(attrs2);
+        
+        if (keys1.length !== keys2.length) return false;
+        
+        for (let key of keys1) {
+            if (attrs1[key] !== attrs2[key]) return false;
+        }
+        
+        return true;
+    }
+    
+    const result = {
+        firstPartMarked: reconstructHTML(0, splitPosition),
+        secondPartMarked: reconstructHTML(splitPosition, cleanText.length)
+    };
+    
+    console.log('Split removing crossed highlights:', {
+        original: markedText,
+        splitAt: splitPosition,
+        removedHighlights: highlightsToRemove.size,
+        firstPart: result.firstPartMarked,
+        secondPart: result.secondPartMarked
+    });
+    
+    return result;
+}
+
+// Function to combine marked texts while preserving highlights
+function combineMarkedTexts(firstMarkedText, secondMarkedText) {
+    const firstClean = (firstMarkedText || '').trim();
+    const secondClean = (secondMarkedText || '').trim();
+
+    if (!firstClean) return secondClean;
+    if (!secondClean) return firstClean;
+
+    // Simply concatenate with a space, preserving all HTML
+    return firstClean + ' ' + secondClean;
+}
+
+// Function to find word boundary for splitting
+function findNearestWordBoundaryForSplit(text, position) {
+    // Word boundary characters
+    const wordBoundaryRegex = /[\s\.,!?;:\-\(\)\[\]{}""'']/;
+    
+    // Look for word boundaries before and after the position
+    let beforeBoundary = -1;
+    let afterBoundary = -1;
+    
+    // Search backwards for word boundary
+    for (let i = position - 1; i >= 0; i--) {
+        if (wordBoundaryRegex.test(text[i])) {
+            beforeBoundary = i + 1; // Position after the boundary character
+            break;
+        }
+    }
+    
+    // Search forwards for word boundary
+    for (let i = position; i < text.length; i++) {
+        if (wordBoundaryRegex.test(text[i])) {
+            afterBoundary = i;
+            break;
+        }
+    }
+    
+    // Choose the closest boundary
+    if (beforeBoundary === -1 && afterBoundary === -1) {
+        return -1; // No word boundary found
+    } else if (beforeBoundary === -1) {
+        return afterBoundary;
+    } else if (afterBoundary === -1) {
+        return beforeBoundary;
+    } else {
+        // Choose the closer one
+        const distanceBefore = position - beforeBoundary;
+        const distanceAfter = afterBoundary - position;
+        return distanceBefore <= distanceAfter ? beforeBoundary : afterBoundary;
+    }
+}
+
+// Function to generate new slide ID
+function generateNewSlideId() {
+    // Use negative IDs for new slides (similar to existing pattern)
+    const existingNegativeIds = slides
+        .filter(s => s.id < 0)
+        .map(s => s.id);
+    
+    if (existingNegativeIds.length === 0) {
+        return -1;
+    }
+    
+    return Math.min(...existingNegativeIds) - 1;
+}
+
+// Function to update sequence numbers after operations
+function updateSequenceNumbers(startIndex = 0) {
+    for (let i = startIndex; i < slides.length; i++) {
+        slides[i].subtitle = `Subtitle ${i + 1}`;
+        slides[i].sequence = i + 1;
+    }
+}
+
+// Function to save operation to history for undo
+function saveSubtitleOperationToHistory() {
+    const currentState = {
+        slides: JSON.parse(JSON.stringify(slides)), // Deep clone
+        timestamp: Date.now()
+    };
+    
+    subtitleOperationHistory.push(currentState);
+    
+    // Limit history size
+    if (subtitleOperationHistory.length > maxSubtitleHistorySize) {
+        subtitleOperationHistory.shift();
+    }
+}
+
+// Function to undo last operation
+function undoLastSubtitleOperation() {
+    if (subtitleOperationHistory.length === 0) {
+        console.log('No operations to undo');
+        return false;
+    }
+    
+    const lastState = subtitleOperationHistory.pop();
+    slides = lastState.slides;
+    
+    // Re-render slides
+    renderSlides(false);
+    
+    console.log('Undid last subtitle operation');
+    return true;
+}
+
+// Function to handle keyboard and mouse events for splitting and merging
+function handleSubtitleInteraction(event, slideId) {
+    const slide = slides.find(s => s.id === slideId);
+    if (!slide || slide.isEditing) {
+        return; // Don't handle interactions for editing slides
+    }
+
+    // Ctrl/Cmd + Click for splitting
+    if ((event.ctrlKey || event.metaKey) && event.type === 'click') {
+        event.preventDefault();
+        
+        // Get cursor position in the text
+        const selection = window.getSelection();
+        if (selection.rangeCount === 0) return;
+        
+        const range = selection.getRangeAt(0);
+        const cursorPosition = getCursorPositionInText(range, slideId);
+        
+        if (cursorPosition !== -1) {
+            splitSubtitleAtCursor(slideId, cursorPosition);
+        }
+    }
+    
+    // Shift + Click for merging with previous
+    else if (event.shiftKey && event.type === 'click') {
+        event.preventDefault();
+        mergeWithPreviousSubtitle(slideId);
+    }
+}
+
+// Function to get cursor position in clean text
+function getCursorPositionInText(range, slideId) {
+    const slideElement = document.querySelector(`#highlightable_${slideId} span`);
+    if (!slideElement) return -1;
+    
+    // Create a temporary element to get clean text
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = slideElement.innerHTML;
+    
+    // Get the clean text
+    const cleanText = tempDiv.textContent || '';
+    
+    // Try to find the position by walking through the DOM
+    const walker = document.createTreeWalker(
+        slideElement,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+    );
+    
+    let position = 0;
+    let node;
+    
+    while (node = walker.nextNode()) {
+        if (node === range.startContainer) {
+            return position + range.startOffset;
+        }
+        position += node.textContent.length;
+    }
+    
+    return -1;
+}
+
+// CSS styles for split/merge functionality
+const splitMergeStyles = `
+    .subtitle-split-merge-hint {
+        font-size: 11px;
+        color: #666;
+        margin-top: 4px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    
+    .highlight-sub:hover .subtitle-split-merge-hint {
+        opacity: 1;
+    }
+    
+    .subtitle-operation-success {
+        background-color: #e8f5e8 !important;
+        transition: background-color 0.3s ease;
+    }
+    
+    .subtitle-operation-error {
+        background-color: #ffebee !important;
+        animation: subtitleShake 0.5s ease-in-out;
+    }
+    
+    @keyframes subtitleShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-3px); }
+        75% { transform: translateX(3px); }
+    }
+    
+    .highlightable-interactive {
+        cursor: text;
+        position: relative;
+    }
+    
+    .highlightable-interactive:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .split-merge-tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        z-index: 1000;
+    }
+    
+    .highlightable-interactive:hover .split-merge-tooltip {
+        opacity: 1;
+    }
+`;
+
+// Add styles to document
+function addSplitMergeStyles() {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = splitMergeStyles;
+    document.head.appendChild(styleElement);
+}
+
+// MODIFY the existing renderSlides function to add split/merge event listeners
+// REPLACE the existing renderSlides function with this updated version:
+
+function renderSlides(send_update = true) {
+    const tbody = document.querySelector('#leadsTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    slides.forEach(slide => {
+        const tr = document.createElement('tr');
+        tr.dataset.id = slide.id;
+        tr.style.height = "5rem";
+        if (send_update === true) {
+            updateClipOnServer(slide.id, slide.text);
+        }
+
+        const charCount = slide.text ? getCleanTextContent(slide.text).length : 0;
+        const charCountClass = charCount > MAX_SUBTITLE_LENGTH ? 'char-count-exceeded' : 'char-count';
+
+        tr.innerHTML = `
+            <td class="slide-first" style="font-size: 1.4rem; position: relative;" title="Drag to move">
+                <div style="display: flex; align-items: center;">
+                     ${slide.subtitle}
+                </div>
+            </td>
+            <td id="highlightable_${slide.id}">
+                <div class="highlight-sub">
+                    ${slide.isEditing ? `
+                        <textarea
+                            class="textarea-class"
+                            id="slide_text_${slide.id}"
+                            name="slide_text"
+                            placeholder="Type Your Script Here And Press Enter (Max ${MAX_SUBTITLE_LENGTH} Characters)"
+                            onkeydown="handleKeyPress(event, ${slide.id})"
+                            ${charCount > MAX_SUBTITLE_LENGTH ? 'style="border: 1px solid red;"' : ''}
+                        >${getCleanTextContent(slide.text)}</textarea>
+                        <div class="${charCountClass}">${charCount}/${MAX_SUBTITLE_LENGTH}</div>
+                    ` : `
+                        <div class="highlightable-interactive">
+                            <span>${slide.markedText || slide.text || ""}</span>
+                            <div class="split-merge-tooltip">
+                                Ctrl+Click to split • Shift+Click to merge with previous
+                            </div>
+                        </div>
+                        <div class="subtitle-split-merge-hint">
+                            💡 Ctrl+Click to split • Shift+Click to merge with previous
+                        </div>
+                    `}
+                    <div id="error-message_${slide.id}" class="error-message" style="display: ${charCount > MAX_SUBTITLE_LENGTH ? 'block' : 'none'};">
+                        ${charCount > MAX_SUBTITLE_LENGTH ? `Subtitle text cannot exceed ${MAX_SUBTITLE_LENGTH} characters (current: ${charCount})` : ''}
+                    </div>
+                </div>
+            </td>
+            <td class="slide-last ${activeSlideIds.has(slide.id) ? 'active' : ''}">
+                <a href="#" class="above-del" onclick="handleUndo(${slide.id}); event.preventDefault();">
+                    <img src="/static/images/undo.svg" alt="Undo" style="width: 1.2rem; height: 3rem; cursor: pointer;">
+                </a>
+            </td>
+        `;
+        tbody.appendChild(tr);
+
+        if (!slide.isEditing) {
+            const highlightable = document.getElementById(`highlightable_${slide.id}`);
+            
+            // Add existing text selection handler
+            highlightable.addEventListener('mouseup', () => handleTextSelection(slide.id));
+
+            // Add split/merge event listeners
+            const interactiveDiv = highlightable.querySelector('.highlightable-interactive');
+            if (interactiveDiv) {
+                interactiveDiv.addEventListener('click', (e) => {
+                    handleSubtitleInteraction(e, slide.id);
+                });
+            }
+
+            // Add existing mark click handlers
+            const marks = highlightable.querySelectorAll('mark.handlePopupSubmit');
+            marks.forEach(mark => {
+                mark.addEventListener('click', () => {
+                    selectedSlideId = slide.id;
+                    selectedText = mark.textContent;
+                    popupOpen = true;
+                    renderPopup();
+                });
+            });
+        }
+
+        if (slide.isEditing) {
+            const textarea = document.getElementById(`slide_text_${slide.id}`);
+
+            // Add existing textarea event listeners (keydown, paste, input)
+            textarea.addEventListener('keydown', (e) => {
+                const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+                const currentLength = textarea.value.length;
+                const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
+                const isTextSelected = selectedText.length > 0;
+
+                const allowedKeys = [8, 9, 37, 38, 39, 40, 46, 36, 35, 33, 34];
+
+                if (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) {
+                    return;
+                }
+
+                if (currentLength >= maxLength && !allowedKeys.includes(e.keyCode) && !isTextSelected) {
+                    e.preventDefault();
+
+                    const errorMessage = document.getElementById(`error-message_${slide.id}`);
+                    if (errorMessage) {
+                        errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters`;
+                        errorMessage.style.display = "block";
+                    }
+
+                    textarea.style.animation = 'shake 0.5s ease-in-out';
+                    setTimeout(() => {
+                        textarea.style.animation = '';
+                    }, 500);
+
+                    return false;
+                }
+            });
+
+            // Add paste event listener
+            textarea.addEventListener('paste', (e) => {
+                e.preventDefault();
+
+                const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                const currentText = textarea.value;
+                const selectionStart = textarea.selectionStart;
+                const selectionEnd = textarea.selectionEnd;
+
+                const newText = currentText.substring(0, selectionStart) + pastedText + currentText.substring(selectionEnd);
+
+                if (newText.length > maxLength) {
+                    const remainingLength = maxLength - currentText.length + (selectionEnd - selectionStart);
+                    const truncatedPaste = pastedText.substring(0, Math.max(0, remainingLength));
+
+                    textarea.value = currentText.substring(0, selectionStart) + truncatedPaste + currentText.substring(selectionEnd);
+
+                    const newCursorPos = selectionStart + truncatedPaste.length;
+                    textarea.setSelectionRange(newCursorPos, newCursorPos);
+
+                    const errorMessage = document.getElementById(`error-message_${slide.id}`);
+                    if (errorMessage) {
+                        errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters. Pasted text was truncated.`;
+                        errorMessage.style.display = "block";
+                    }
+
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                } else {
+                    textarea.value = newText;
+                    const newCursorPos = selectionStart + pastedText.length;
+                    textarea.setSelectionRange(newCursorPos, newCursorPos);
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+
+            // Add input event listener
+            textarea.addEventListener('input', (e) => {
+                const newText = e.target.value;
+                const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+
+                if (newText.length > maxLength) {
+                    e.target.value = newText.substring(0, maxLength);
+                    return;
+                }
+
+                slides = slides.map(s =>
+                    s.id === slide.id ? { ...s, text: newText, markedText: newText } : s
+                );
+
+                const charCount = e.target.value.length;
+                const charCountElement = e.target.parentElement.querySelector(`.char-count, .char-count-exceeded`);
+                if (charCountElement) {
+                    charCountElement.textContent = `${charCount}/${maxLength}`;
+                    charCountElement.className = charCount >= maxLength ? 'char-count-exceeded' : 'char-count';
+                }
+
+                const errorMessage = document.getElementById(`error-message_${slide.id}`);
+                if (errorMessage) {
+                    if (charCount >= maxLength) {
+                        errorMessage.textContent = `Subtitle text cannot exceed ${maxLength} characters`;
+                        errorMessage.style.display = 'block';
+                        textarea.style.border = '1px solid red';
+                    } else {
+                        errorMessage.style.display = 'none';
+                        textarea.style.border = '';
+                    }
+                }
+            });
+        }
+    });
+
+    document.getElementById('no_of_slides').value = slideCount;
+    renderButton();
+    updateProceedButtonState();
+}
+
+// Initialize split/merge functionality
+document.addEventListener('DOMContentLoaded', () => {
+    addSplitMergeStyles();
+    
+    // Add global keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + Shift + Z for undo operations
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+            e.preventDefault();
+            undoLastSubtitleOperation();
+        }
+    });
+});
+
+// Export functions for use in other parts of the application
+window.splitSubtitleAtCursor = splitSubtitleAtCursor;
+window.mergeWithPreviousSubtitle = mergeWithPreviousSubtitle;
+window.undoLastSubtitleOperation = undoLastSubtitleOperation;

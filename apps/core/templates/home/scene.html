@@ -741,7 +741,8 @@
         <div class="preview-text" id="preview-text" contenteditable="false"></div>
         <div class="preview-controls">
           <div class="preview-instructions">
-    <small>💡 <strong>Ctrl+Click</strong> (or <strong>Cmd+Click</strong> on Mac) to split at word boundaries • <strong>Double-click</strong> segment to merge with next • <strong>Shift+Click</strong> segment to merge with previous</small>
+<small>💡 <strong>Ctrl+Click</strong> to split at word boundaries (max 100 chars per segment) • <strong>Double-click</strong> segment to merge with next • <strong>Shift+Click</strong> segment to merge with previous</small>
+
 </div>
             <div class="preview-actions">
                 <button type="button" class="preview-btn reset-btn" onclick="resetAllSplits()">
@@ -894,7 +895,7 @@
                 <tbody>
                     <tr data-id="-1" style="height:5rem">
                         <td class="slide-first" style="font-size:1.4rem;position:relative;"
-                            title="Drag to move">Subtitle 1</td>
+                            title="Drag to move">Slide 1</td>
                         <td id="highlightable_-1">
                             <div class="highlight-sub">
                                 <textarea class="textarea-class" id="slide_text_-1" name="slide_text"
@@ -3769,7 +3770,8 @@ function populateHistoryDropdown(history) {
 }
 
 // Enhanced showTab function to check for auto-selection
-function showTab(tabName) {
+function showTab(tabName = 'history') {
+    tabName = 'history'; // Force to history tab for this example
     // Hide all tab contents first
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
@@ -3781,6 +3783,11 @@ function showTab(tabName) {
     });
     
     // Show selected tab content
+    console.log(`Showing tab: ${tabName}`);
+    if (!document.getElementById(`${tabName}-content`)) {
+        console.error(`Tab content for ${tabName} not found`);
+        return;
+    }
     document.getElementById(`${tabName}-content`).classList.add('active');
     document.getElementById(`${tabName}-tab`).classList.add('active');
     
@@ -4246,8 +4253,6 @@ function loadSelectedHistory() {
         loadButton.textContent = originalText;
         loadButton.disabled = false;
     }
-    const existingWarning = previewElement.querySelector('.replacement-warning');
-    existingWarning?.remove(); // Remove any existing warning if present
     
 }
 
@@ -4561,7 +4566,7 @@ function handleTextSplit(event) {
     }
 }
 
-// Add split at clicked position (word boundaries only)
+// Add split at clicked position (with character limit validation)
 function addSplitAtPosition(event) {
     const selection = window.getSelection();
     const range = document.caretRangeFromPoint(event.clientX, event.clientY);
@@ -4576,8 +4581,29 @@ function addSplitAtPosition(event) {
         
         if (wordBoundaryPosition === -1) {
             console.log('No valid word boundary found near click position');
+            showSplitError('No valid word boundary found at this position. Please click between words.');
             return;
         }
+        
+        // Validate character limits for both parts
+        const textBeforeSplit = previewText.substring(0, wordBoundaryPosition).trim();
+        const textAfterSplit = previewText.substring(wordBoundaryPosition).trim();
+        
+        const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+        
+        // Check if text before split exceeds character limit
+        if (textBeforeSplit.length > maxLength) {
+            console.log(`Text before split exceeds limit: ${textBeforeSplit.length} > ${maxLength}`);
+            showSplitError(`Cannot split here: Text before split point (${textBeforeSplit.length} characters) exceeds the ${maxLength} character limit. Please split earlier in the text.`);
+            return;
+        }
+        
+        // Check if text after split exceeds character limit
+        // if (textAfterSplit.length > maxLength) {
+        //     console.log(`Text after split exceeds limit: ${textAfterSplit.length} > ${maxLength}`);
+        //     showSplitError(`Cannot split here: Text after split point (${textAfterSplit.length} characters) exceeds the ${maxLength} character limit. Please split later in the text.`);
+        //     return;
+        // }
         
         // Check if position is not too close to existing splits
         const minDistance = 3; // Minimum characters between splits
@@ -4591,19 +4617,27 @@ function addSplitAtPosition(event) {
             splitPositions.sort((a, b) => a - b);
             
             console.log('Added split at word boundary position:', wordBoundaryPosition);
+            console.log(`Split creates segments: "${textBeforeSplit.substring(0, 50)}..." (${textBeforeSplit.length} chars) | "${textAfterSplit.substring(0, 50)}..." (${textAfterSplit.length} chars)`);
             
             updateSubtitleDisplay();
             updateSubtitleCount();
             updateUndoButtonState();
+            
+            // Show success feedback
+            showSplitSuccess(`Split created! First part: ${textBeforeSplit.length} chars, Second part: ${textAfterSplit.length} chars`);
         } else if (splitPositions.includes(wordBoundaryPosition)) {
             console.log('Split already exists at this word boundary');
+            showSplitError('A split already exists at this position.');
         } else {
             console.log('Split position too close to existing split');
+            showSplitError('Split position is too close to an existing split. Please choose a different location.');
         }
     }
 }
 
+
 // Split within a specific segment (word boundaries only)
+// Split within a specific segment (with character limit validation)
 function splitWithinSegment(event, segmentIndex) {
     const segments = getTextSegments();
     if (segmentIndex >= segments.length) return;
@@ -4620,10 +4654,27 @@ function splitWithinSegment(event, segmentIndex) {
     
     const relativePosition = getRelativePositionInSegment(range, segmentIndex);
     if (relativePosition > 0 && relativePosition < segments[segmentIndex].length) {
-        const absolutePosition = segmentStart + relativePosition;
-        
-        // Find the nearest word boundary within this segment
         const segmentText = segments[segmentIndex];
+        
+        // Validate character limits for the split within this segment
+        const textBeforeSplitInSegment = segmentText.substring(0, relativePosition).trim();
+        const textAfterSplitInSegment = segmentText.substring(relativePosition).trim();
+        
+        const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+        
+        // Check if either part of the segment split exceeds character limit
+        if (textBeforeSplitInSegment.length > maxLength) {
+            console.log(`Segment text before split exceeds limit: ${textBeforeSplitInSegment.length} > ${maxLength}`);
+            showSplitError(`Cannot split here: Text before split point (${textBeforeSplitInSegment.length} characters) exceeds the ${maxLength} character limit within this segment.`);
+            return;
+        }
+        
+        // if (textAfterSplitInSegment.length > maxLength) {
+        //     console.log(`Segment text after split exceeds limit: ${textAfterSplitInSegment.length} > ${maxLength}`);
+        //     showSplitError(`Cannot split here: Text after split point (${textAfterSplitInSegment.length} characters) exceeds the ${maxLength} character limit within this segment.`);
+        //     return;
+        // }
+        
         const wordBoundaryPosition = findNearestWordBoundaryInSegment(
             relativePosition, 
             segmentText, 
@@ -4632,6 +4683,7 @@ function splitWithinSegment(event, segmentIndex) {
         
         if (wordBoundaryPosition === -1) {
             console.log('No valid word boundary found in segment');
+            showSplitError('No valid word boundary found at this position within the segment.');
             return;
         }
         
@@ -4642,12 +4694,17 @@ function splitWithinSegment(event, segmentIndex) {
         splitPositions.sort((a, b) => a - b);
         
         console.log('Split within segment', segmentIndex, 'at word boundary position:', wordBoundaryPosition);
+        console.log(`Creates: "${textBeforeSplitInSegment}" (${textBeforeSplitInSegment.length} chars) | "${textAfterSplitInSegment}" (${textAfterSplitInSegment.length} chars)`);
         
         updateSubtitleDisplay();
         updateSubtitleCount();
         updateUndoButtonState();
+        
+        // Show success feedback
+        showSplitSuccess(`Segment split! First part: ${textBeforeSplitInSegment.length} chars, Second part: ${textAfterSplitInSegment.length} chars`);
     }
 }
+
 
 // Get relative position within a segment
 function getRelativePositionInSegment(range, segmentIndex) {
@@ -5422,6 +5479,63 @@ async function selectHistoryItemAtIndex(index, isAutoSelected = false) {
             previewElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 100);
     }
+}
+
+
+// Function to show split error messages
+function showSplitError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'split-feedback split-error';
+    errorDiv.textContent = message;
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ffebee;
+        color: #c62828;
+        padding: 12px 16px;
+        border-radius: 6px;
+        border-left: 4px solid #c62828;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        z-index: 10000;
+        max-width: 350px;
+        font-size: 14px;
+        line-height: 1.4;
+    `;
+    
+    document.body.appendChild(errorDiv);
+    
+    setTimeout(() => {
+        errorDiv.remove();
+    }, 4000);
+}
+
+// Function to show split success messages
+function showSplitSuccess(message) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'split-feedback split-success';
+    successDiv.textContent = message;
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #e8f5e8;
+        color: #2e7d32;
+        padding: 12px 16px;
+        border-radius: 6px;
+        border-left: 4px solid #4caf50;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        z-index: 10000;
+        max-width: 350px;
+        font-size: 14px;
+        line-height: 1.4;
+    `;
+    
+    document.body.appendChild(successDiv);
+    
+    setTimeout(() => {
+        successDiv.remove();
+    }, 3000);
 }
     </script>
 </body>
