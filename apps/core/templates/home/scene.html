@@ -561,6 +561,13 @@
     color: #e53e3e;
     font-weight: bold;
 }
+div{
+    user-select: none;
+}
+mark{
+    user-select: none;
+}
+
     </style>
 </head>
 <body>
@@ -697,16 +704,56 @@
                     </div> -->
 
                     <!-- History Tab Content -->
-                    <div id="history-content" class="tab-content active">
-                        <div class="Script-text-file-text">
-                            <div class="Script-text-file-text-sub">
-                                <div class="script-text">ElevenLabs Voiceover:</div>
-                                    <div class="vh-child">
-                                        <span class="text3">Select from your previous ElevenLabs voiceovers</span>
-                                        <span class="text3" style="display: block; color: #864AF9; margin-top: 5px;">Text will be automatically split into subtitles</span>
-                                    </div>
-                            </div>
-                        </div>
+                   <div id="history-content" class="tab-content active">
+    <div class="Script-text-file-text">
+        <div class="Script-text-file-text-sub">
+            <div class="script-text">ElevenLabs Voiceover:</div>
+                <div class="vh-child">
+                    <span class="text3">Select from your previous ElevenLabs voiceovers</span>
+                    <span class="text3" style="display: block; color: #864AF9; margin-top: 5px;">Text will be automatically split into subtitles</span>
+                </div>
+        </div>
+
+
+    <div class="vh-child" style="margin-bottom: 15px;">
+        <span class="text3" style="font-size: 14px; color: #6b7280; line-height: 1.5;">Upload a .txt file with identical content, split into lines for custom subtitle segments</span>
+    </div>
+    
+    <div class="file-upload-wrapper" style="position: relative;">
+        <div class="custom-file-input" onclick="document.getElementById('historySplitFile').click()" style="
+            display: flex; 
+            align-items: center; 
+            padding: 16px 20px; 
+            background: white; 
+            border: 2px dashed #d1d9ff; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            min-height: 60px;
+        " onmouseover="this.style.borderColor='#864AF9'; this.style.backgroundColor='#fefeff';" onmouseout="this.style.borderColor='#d1d9ff'; this.style.backgroundColor='white';">
+            <div class="upload-icon" style="width: 40px; height: 40px; background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 16px;">
+                <img src="{% static 'images/choose-icon.svg' %}" alt="Upload" style="width: 20px; height: 20px; opacity: 0.8;">
+            </div>
+            <div class="upload-text-content" style="flex: 1;">
+                <div class="upload-title" style="font-weight: 600; color: #374151; font-size: 15px; margin-bottom: 4px;">Choose Split File</div>
+                <div class="upload-subtitle" style="font-size: 13px; color: #6b7280;">Click to browse or drag & drop your .txt file</div>
+            </div>
+            <div class="upload-arrow" style="color: #864AF9; font-size: 18px; margin-left: 12px;">→</div>
+        </div>
+        
+        <input type="file" id="historySplitFile" accept=".txt" style="display: none;">
+        
+        <div class="file-status" id="splitFileStatus" style="margin-top: 12px; padding: 12px; border-radius: 8px; display: none;">
+            <div class="status-content" style="display: flex; align-items: center;">
+                <div class="status-icon" id="statusIcon" style="width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 12px; font-weight: bold;"></div>
+                <div class="status-text">
+                    <div class="status-title" id="statusTitle" style="font-weight: 600; font-size: 14px; margin-bottom: 2px;"></div>
+                    <div class="status-subtitle" id="statusSubtitle" style="font-size: 12px; opacity: 0.8;"></div>
+                </div>
+            </div>
+    </div>
+</div>
+    </div>
                         
                         <div class="history-dropdown-container">
                             <!-- <div class="script-upload-sub">
@@ -740,8 +787,8 @@
     <div class="preview-text-container">
         <div class="preview-text" id="preview-text" contenteditable="false"></div>
         <div class="preview-controls">
-          <div class="preview-instructions">
-<small>💡 <strong>Ctrl+Click</strong> to split at word boundaries (max 100 chars per segment) • <strong>Double-click</strong> segment to merge with next • <strong>Shift+Click</strong> segment to merge with previous</small>
+          <div class="preview-instructions" style="user-select: none;">
+<small>💡 <strong>Ctrl+Click (⌘+Click on Mac)</strong> to split at word boundaries (max 100 chars per segment) • <strong>Double-click</strong> segment to merge with next • <strong>Shift+Click</strong> segment to merge with previous</small>
 
 </div>
             <div class="preview-actions">
@@ -898,9 +945,9 @@
                             title="Drag to move">Slide 1</td>
                         <td id="highlightable_-1">
                             <div class="highlight-sub">
-                                <textarea class="textarea-class" id="slide_text_-1" name="slide_text"
+                                <!-- <textarea class="textarea-class" id="slide_text_-1" name="slide_text"
                                     placeholder="Type Your Script Here">
-                                </textarea>
+                                </textarea> -->
                                 <div id="error-message_-1" class="error-message" style="display:none"></div>
                                 <div class="error-message" style="display:none">Highlighting Must Start From The First
                                     Unassigned Word Of The Sentence.</div>
@@ -1285,6 +1332,140 @@
 .subtitle-segment:hover::after {
     background: linear-gradient(to right, transparent 0%, #864AF9 20%, #864AF9 80%, transparent 100%);
 }
+.custom-split-preview {
+    /* background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+    border: 2px solid #fb923c; */
+    border-radius: 12px;
+    padding: 16px;
+    margin: 0;
+}
+
+.custom-split-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #fb923c;
+}
+
+.custom-split-header strong {
+    color: #9a3412;
+    font-size: 16px;
+}
+
+.split-count {
+    background: #9a3412;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.custom-split-segments {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.custom-split-segment {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #fed7aa;
+    transition: all 0.2s ease;
+}
+
+.custom-split-segment:hover {
+    background: #fffbf5;
+    border-color: #fb923c;
+}
+
+.custom-split-segment.exceeds-limit {
+    background: #fef2f2;
+    border-color: #f87171;
+}
+
+.segment-number {
+    background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.custom-split-segment.exceeds-limit .segment-number {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.segment-text {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #374151;
+}
+
+.segment-length {
+    font-size: 11px;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+    min-width: 60px;
+    text-align: center;
+}
+
+.custom-split-segment.exceeds-limit .segment-length {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+/* File upload styling improvements */
+.custom-file-input {
+    position: relative;
+    overflow: hidden;
+}
+
+.custom-file-input:hover .upload-arrow {
+    transform: translateX(4px);
+    transition: transform 0.2s ease;
+}
+
+.file-status {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Drag and drop styling */
+.custom-file-input.dragover {
+    border-color: #864AF9 !important;
+    background-color: #f8f9ff !important;
+    transform: scale(1.02);
+}
+
     </style>
 <script>        const video_type = "{{ video.dimensions }}";
         console.log("Video type:", video_type);
@@ -1310,6 +1491,9 @@ let splittingMode = false;
 let splitPositions = [];
 let previewText = '';
 let currentHistoryItem = null;
+let historySplitFile = null;
+let historySplitFileName = "No file chosen";
+let customSplitLines = null;
         // Add subscription plan check variable
         const userSubscriptionPlan = "{{ user_subscription.plan.name|default:'Free Plan'|lower }}";
         const isFreePlan = userSubscriptionPlan.toLowerCase().includes('free');
@@ -1534,6 +1718,40 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Make sure to set up event listeners for highlighted text after they're loaded
         document.addEventListener('DOMContentLoaded', () => {
+            // Add drag and drop functionality for split file
+const fileUploadWrapper = document.querySelector('.custom-file-input');
+if (fileUploadWrapper) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileUploadWrapper.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        fileUploadWrapper.addEventListener(eventName, () => {
+            fileUploadWrapper.classList.add('dragover');
+        }, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        fileUploadWrapper.addEventListener(eventName, () => {
+            fileUploadWrapper.classList.remove('dragover');
+        }, false);
+    });
+    
+    fileUploadWrapper.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            document.getElementById('historySplitFile').files = files;
+            handleHistorySplitFileChange({ target: { files: files } });
+        }
+    }, false);
+}
+            document.getElementById('historySplitFile')?.addEventListener('change', handleHistorySplitFileChange);
+
             setTimeout(() => {
                 // Add click handlers for all highlighted text
                 document.querySelectorAll('mark.handlePopupSubmit').forEach(mark => {
@@ -2996,8 +3214,8 @@ document.addEventListener('DOMContentLoaded', addNotificationStyles);
                 
                 popup.innerHTML = `
                     <div class="popup-container">
-                        <div class="close-btnx close-btn">
-                            <button class="close-popup" onclick="closePopup()">X</button>
+                        <div class="close-btnx close-btn"onclick="closePopup()">
+                            <button class="close-popup" >X</button>
                         </div>
                         <div id="modal-cont">
                             <form class="popup-content" style="grid-template-columns: 0.7fr 1fr; width: 100%;" onsubmit="handlePopupSubmit(event)">
@@ -3844,7 +4062,11 @@ function handleHistorySelection(event) {
     // Get selected history item
     selectedHistoryItem = voiceoverHistory[selectedIndex];
     selectedHistoryId = selectedHistoryItem.history_item_id || selectedHistoryItem.id || null;
-    
+        // If there's a custom split file loaded, re-validate it against this voiceover
+    if (customSplitLines && customSplitLines.length > 0) {
+        console.log('Re-validating custom split file against new voiceover selection');
+        validateAndPreviewSplit(customSplitLines);
+}
     console.log('Selected history item:', selectedHistoryItem);
     console.log('Selected history ID:', selectedHistoryId);
     
@@ -3895,7 +4117,7 @@ function showHistoryPreview(historyItem) {
     
     charCountElement.innerHTML = `
         ${cleanedLength} chars
-        ${reductionPercent > 0 ? `<small style="color: #666;"> (cleaned: -${reductionPercent}%)</small>` : ''}
+
     `;
     
     // Format date
@@ -4122,7 +4344,7 @@ function updateVideoHistoryIdWithHtml(historyId, previewHtml = '') {
         });
     });
 }
-// Enhanced loadSelectedHistory function with clip deletion and history_id update
+// Enhanced loadSelectedHistory function with custom splitting support
 function loadSelectedHistory() {
     if (!selectedHistoryItem) {
         alert('Please select a voiceover from history first.');
@@ -4135,11 +4357,43 @@ function loadSelectedHistory() {
     loadButton.disabled = true;
     
     try {
-        console.log('Loading selected history with splits:', selectedHistoryItem.voice_name || selectedHistoryItem.voice_id);
+        console.log('Loading selected history with custom splitting support:', selectedHistoryItem.voice_name || selectedHistoryItem.voice_id);
         console.log('History ID to save:', selectedHistoryId);
+        console.log('Custom split file provided:', !!customSplitLines);
         
-        // Get the segments based on user-defined splits
-        const segments = getTextSegments();
+        let segments;
+        
+        if (customSplitLines && customSplitLines.length > 0) {
+            // Use custom split lines from uploaded file
+            console.log('Using custom split from uploaded file');
+            
+            // Validate that the uploaded text matches the voiceover text
+            const voiceoverText = cleanPreviewText(selectedHistoryItem.text || 
+                                                  (selectedHistoryItem.dialogue?.[0]?.text) || '');
+            const uploadedText = customSplitLines.join(' ').replace(/\s+/g, ' ').trim();
+            const normalizedVoiceoverText = voiceoverText.replace(/\s+/g, ' ').trim();
+            
+            console.log('Comparing texts:');
+            console.log('Voiceover text:', normalizedVoiceoverText.substring(0, 100) + '...');
+            console.log('Uploaded text:', uploadedText.substring(0, 100) + '...');
+            
+            // Check if texts match (allowing for minor formatting differences)
+            const similarity = calculateTextSimilarity(normalizedVoiceoverText, uploadedText);
+            console.log('Text similarity:', similarity);
+            
+            if (similarity < 0.95) { // 95% similarity threshold
+                alert('The uploaded text file does not match the selected voiceover content. Please ensure the text content is identical to your voiceover.');
+                loadButton.textContent = originalText;
+                loadButton.disabled = false;
+                return;
+            }
+            
+            segments = customSplitLines;
+        } else {
+            // Use manual splits from preview
+            console.log('Using manual splits from preview');
+            segments = getTextSegments();
+        }
         
         if (segments.length === 0) {
             alert('No text content to load.');
@@ -4153,7 +4407,7 @@ function loadSelectedHistory() {
         const longSegments = segments.filter(segment => segment.trim().length > maxLength);
         
         if (longSegments.length > 0) {
-            alert(`${longSegments.length} subtitle(s) still exceed the ${maxLength} character limit. Please split them further before loading.`);
+            alert(`${longSegments.length} subtitle(s) exceed the ${maxLength} character limit. Please edit your file or split them further before loading.`);
             loadButton.textContent = originalText;
             loadButton.disabled = false;
             return;
@@ -4161,7 +4415,7 @@ function loadSelectedHistory() {
         
         // Check free plan restrictions
         if (typeof isFreePlan !== 'undefined' && isFreePlan && segments.length > 10) {
-            alert(`Free plan users are limited to 10 subtitles. This voiceover would create ${segments.length} subtitles. Please upgrade your subscription or split less.`);
+            alert(`Free plan users are limited to 10 subtitles. This would create ${segments.length} subtitles. Please upgrade your subscription or reduce the number of lines.`);
             loadButton.textContent = originalText;
             loadButton.disabled = false;
             return;
@@ -4170,7 +4424,8 @@ function loadSelectedHistory() {
         // Show confirmation dialog if there are existing clips
         if (slides.length > 0 && slides.some(slide => slide.text && slide.text.trim() !== '')) {
             const confirmReplace = confirm(
-                `This will replace all existing ${slides.length} subtitle(s) with ${segments.length} new subtitle(s) from the selected voiceover history.\n\n` +
+                `This will replace all existing ${slides.length} subtitle(s) with ${segments.length} new subtitle(s) from the selected voiceover.\n\n` +
+                `${customSplitLines ? 'Using custom splitting from uploaded file.' : 'Using manual splits.'}\n\n` +
                 `Are you sure you want to continue? This action cannot be undone.`
             );
             
@@ -4181,9 +4436,9 @@ function loadSelectedHistory() {
             }
         }
         
-        // ADD THIS: Get the current preview HTML to save
+        // Get the current preview HTML to save (if using manual splits)
         const previewElement = document.getElementById('preview-text');
-        const previewHtml = previewElement ? previewElement.innerHTML : '';
+        const previewHtml = !customSplitLines && previewElement ? previewElement.innerHTML : '';
         
         // Update loading text to show deletion progress
         loadButton.textContent = 'Clearing existing clips...';
@@ -4191,8 +4446,8 @@ function loadSelectedHistory() {
         // Delete all existing clips first, then update history_id with HTML, then load new clips
         deleteAllClips()
             .then(() => {
-                loadButton.textContent = 'Saving splits and updating history...';
-                return updateVideoHistoryIdWithHtml(selectedHistoryId, previewHtml); // MODIFIED THIS LINE
+                loadButton.textContent = 'Saving configuration...';
+                return updateVideoHistoryIdWithHtml(selectedHistoryId, previewHtml);
             })
             .then(() => {
                 loadButton.textContent = 'Loading new subtitles...';
@@ -4216,16 +4471,22 @@ function loadSelectedHistory() {
                     window.videoFiles = {};
                 }
                 
+                // Clear the custom split data after successful load
+                customSplitLines = null;
+                historySplitFile = null;
+                historySplitFileName = "No file chosen";
+                document.getElementById('historySplitFile').value = '';
+                
                 // Use existing loadScript function to load the clips
                 loadScript(clips, true); // true indicates we want to replace existing clips
-
                 
                 // Reset button
                 loadButton.textContent = originalText;
                 loadButton.disabled = false;
                 
                 // Show success message
-                console.log(`Successfully replaced all clips with ${segments.length} user-defined subtitles from history`);
+                const splitMethod = segments.length !== getTextSegments().length ? 'custom file splitting' : 'manual splitting';
+                console.log(`Successfully replaced all clips with ${segments.length} subtitles using ${splitMethod}`);
                 
                 // Optional: Switch back to upload tab to show the loaded content
                 setTimeout(() => {
@@ -4253,11 +4514,7 @@ function loadSelectedHistory() {
         loadButton.textContent = originalText;
         loadButton.disabled = false;
     }
-    
 }
-
-
-
 // Split text into appropriate subtitle chunks (word boundaries only)
 function splitTextIntoSubtitles(text) {
     const maxLength = window.MAX_SUBTITLE_LENGTH || 80;
@@ -4594,7 +4851,8 @@ function addSplitAtPosition(event) {
         // Check if text before split exceeds character limit
         if (textBeforeSplit.length > maxLength) {
             console.log(`Text before split exceeds limit: ${textBeforeSplit.length} > ${maxLength}`);
-            showSplitError(`Cannot split here: Text before split point (${textBeforeSplit.length} characters) exceeds the ${maxLength} character limit. Please split earlier in the text.`);
+            //showSplitError(`Cannot split here: Text before split point (${textBeforeSplit.length} characters) exceeds the ${maxLength} character limit. Please split earlier in the text.`);
+            showSplitError(`Cannot Split Here: Exceeds The 100 Character Limit Per Slide`);
             return;
         }
         
@@ -5536,6 +5794,308 @@ function showSplitSuccess(message) {
     setTimeout(() => {
         successDiv.remove();
     }, 3000);
+}
+// Enhanced history split file handler with real-time preview
+function handleHistorySplitFileChange(event) {
+    const file = event.target.files[0];
+    historySplitFile = file;
+    
+    const statusDiv = document.getElementById('splitFileStatus');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusTitle = document.getElementById('statusTitle');
+    const statusSubtitle = document.getElementById('statusSubtitle');
+    
+    // Hide any existing preview
+    hideCustomSplitPreview();
+    
+    if (!file) {
+        // File was cleared
+        historySplitFileName = "No file chosen";
+        customSplitLines = null;
+        statusDiv.style.display = 'none';
+        return;
+    }
+    
+    // Show loading status
+    showFileStatus('loading', 'Processing file...', 'Reading and validating content');
+    
+    if (!file.name.toLowerCase().endsWith('.txt')) {
+        showFileStatus('error', 'Invalid file type', 'Please select a .txt file');
+        event.target.value = "";
+        historySplitFile = null;
+        historySplitFileName = "No file chosen";
+        customSplitLines = null;
+        return;
+    }
+    
+    historySplitFileName = file.name;
+    
+    // Read and validate the file content
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const content = e.target.result;
+        const lines = content.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+        
+        if (lines.length === 0) {
+            showFileStatus('error', 'File is empty', 'Please provide a file with text content');
+            event.target.value = "";
+            historySplitFile = null;
+            historySplitFileName = "No file chosen";
+            customSplitLines = null;
+            return;
+        }
+        
+        // Check character limits
+        const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+        const exceededLines = lines.filter(line => line.length > maxLength);
+        
+        if (exceededLines.length > 0) {
+            showFileStatus('error', 'Character limit exceeded', `${exceededLines.length} line(s) exceed ${maxLength} characters`);
+            event.target.value = "";
+            historySplitFile = null;
+            historySplitFileName = "No file chosen";
+            customSplitLines = null;
+            return;
+        }
+        
+        // Check if a voiceover is selected for comparison
+        if (!selectedHistoryItem) {
+            showFileStatus('warning', 'Select voiceover first', 'Please select a voiceover to validate against');
+            customSplitLines = lines; // Store for later validation
+            return;
+        }
+        
+        // Validate against selected voiceover
+        validateAndPreviewSplit(lines);
+    };
+    
+    reader.onerror = function() {
+        showFileStatus('error', 'File read error', 'Could not read the selected file');
+        event.target.value = "";
+        historySplitFile = null;
+        historySplitFileName = "No file chosen";
+        customSplitLines = null;
+    };
+    
+    reader.readAsText(file);
+}
+
+// Function to show file status
+function showFileStatus(type, title, subtitle) {
+    const statusDiv = document.getElementById('splitFileStatus');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusTitle = document.getElementById('statusTitle');
+    const statusSubtitle = document.getElementById('statusSubtitle');
+    
+    statusDiv.style.display = 'block';
+    statusTitle.textContent = title;
+    statusSubtitle.textContent = subtitle;
+    
+    switch(type) {
+        case 'loading':
+            statusDiv.style.background = 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)';
+            statusDiv.style.border = '1px solid #f59e0b';
+            statusIcon.style.background = '#f59e0b';
+            statusIcon.style.color = 'white';
+            statusIcon.textContent = '⟳';
+            statusTitle.style.color = '#92400e';
+            statusSubtitle.style.color = '#92400e';
+            break;
+        case 'success':
+            statusDiv.style.background = 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)';
+            statusDiv.style.border = '1px solid #10b981';
+            statusIcon.style.background = '#10b981';
+            statusIcon.style.color = 'white';
+            statusIcon.textContent = '✓';
+            statusTitle.style.color = '#065f46';
+            statusSubtitle.style.color = '#065f46';
+            break;
+        case 'error':
+            statusDiv.style.background = 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
+            statusDiv.style.border = '1px solid #ef4444';
+            statusIcon.style.background = '#ef4444';
+            statusIcon.style.color = 'white';
+            statusIcon.textContent = '✕';
+            statusTitle.style.color = '#991b1b';
+            statusSubtitle.style.color = '#991b1b';
+            break;
+        case 'warning':
+            statusDiv.style.background = 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)';
+            statusDiv.style.border = '1px solid #f59e0b';
+            statusIcon.style.background = '#f59e0b';
+            statusIcon.style.color = 'white';
+            statusIcon.textContent = '⚠';
+            statusTitle.style.color = '#92400e';
+            statusSubtitle.style.color = '#92400e';
+            break;
+    }
+}
+
+// Function to validate split against voiceover and show preview
+function validateAndPreviewSplit(lines) {
+    if (!selectedHistoryItem) {
+        showFileStatus('warning', 'Select voiceover first', 'Please select a voiceover to validate against');
+        return;
+    }
+    
+    // Get voiceover text
+    const voiceoverText = cleanPreviewText(selectedHistoryItem.text || 
+                                          (selectedHistoryItem.dialogue?.[0]?.text) || '');
+    const uploadedText = lines.join(' ').replace(/\s+/g, ' ').trim();
+    const normalizedVoiceoverText = voiceoverText.replace(/\s+/g, ' ').trim();
+    
+    // Calculate similarity
+    const similarity = calculateTextSimilarity(normalizedVoiceoverText, uploadedText);
+    console.log('Text validation - Similarity:', similarity);
+    
+    if (similarity < 0.95) {
+        showFileStatus('error', 'Text mismatch detected', `Content similarity: ${(similarity * 100).toFixed(1)}% (need 95%+)`);
+        customSplitLines = null;
+        return;
+    }
+    
+    // Validation successful - store lines and show preview
+    customSplitLines = lines;
+    showFileStatus('success', 'File validated successfully', `${lines.length} subtitle segments ready`);
+    
+    // Show custom split preview
+    showCustomSplitPreview(lines);
+}
+
+// Function to show custom split preview
+function showCustomSplitPreview(lines) {
+    const previewElement = document.getElementById('preview-text');
+    if (!previewElement) return;
+    
+    // Create segments display
+    const maxLength = window.MAX_SUBTITLE_LENGTH || 100;
+    let html = '';
+    
+    lines.forEach((line, index) => {
+        const exceeds = line.length > maxLength;
+        const className = exceeds ? 'custom-split-segment exceeds-limit' : 'custom-split-segment';
+        
+        html += `<div class="${className}" data-segment="${index}" data-length="${line.length}">
+            <span class="segment-number">${index + 1}</span>
+            <span class="segment-text">${line}</span>
+            <span class="segment-length">${line.length}/${maxLength}</span>
+        </div>`;
+    });
+    
+    // Replace preview content temporarily
+    previewElement.innerHTML = `
+
+            <div class="custom-split-segments">
+                ${html}
+            </div>
+    `;
+    
+    // Update subtitle count
+    updateSubtitleCountForCustomSplit(lines);
+}
+
+// Function to hide custom split preview
+function hideCustomSplitPreview() {
+    const previewElement = document.getElementById('preview-text');
+    if (!previewElement || !previewElement.querySelector('.custom-split-preview')) {
+        return;
+    }
+    
+    // Restore original preview if available
+    if (currentHistoryItem) {
+        setupTextSplitting(previewElement, previewText);
+        updateSubtitleCount();
+    }
+}
+
+// Function to update subtitle count for custom split
+function updateSubtitleCountForCustomSplit(lines) {
+    const subtitleCountElement = document.getElementById('preview-subtitle-count');
+    const maxLength = window.MAX_SUBTITLE_LENGTH || 80;
+    
+    const exceedsCount = lines.filter(line => line.length > maxLength).length;
+    
+    let countText = `${lines.length} subtitle${lines.length === 1 ? '' : 's'} (custom)`;
+    
+    if (exceedsCount > 0) {
+        countText += ` (${exceedsCount} exceed${exceedsCount === 1 ? 's' : ''} limit)`;
+        subtitleCountElement.className = 'subtitle-count subtitle-count-warning';
+    } else {
+        subtitleCountElement.className = 'subtitle-count';
+    }
+    
+    subtitleCountElement.textContent = countText;
+    
+    // Update load button state
+    updateLoadButtonStateForCustomSplit(lines.length, exceedsCount);
+}
+
+// Function to update load button for custom split
+function updateLoadButtonStateForCustomSplit(subtitleCount, exceedsCount) {
+    const loadButton = document.getElementById('historyLoadButton');
+    
+    if (!loadButton) return;
+    
+    let canLoad = true;
+    let disableReason = '';
+    
+    // Check free plan restrictions
+    if (typeof isFreePlan !== 'undefined' && isFreePlan && subtitleCount > 10) {
+        canLoad = false;
+        disableReason = `Free plan limited to 10 subtitles (file has ${subtitleCount})`;
+    }
+    
+    // Check character limit violations
+    if (exceedsCount > 0) {
+        canLoad = false;
+        disableReason = `${exceedsCount} subtitle${exceedsCount === 1 ? '' : 's'} exceed character limit`;
+    }
+    
+    loadButton.disabled = !canLoad;
+    loadButton.title = canLoad ? 'Load voiceover with custom splitting' : disableReason;
+    
+    if (!canLoad) {
+        loadButton.style.opacity = '0.5';
+        loadButton.style.cursor = 'not-allowed';
+    } else {
+        loadButton.style.opacity = '1';
+        loadButton.style.cursor = 'pointer';
+    }
+}
+// Helper function to calculate text similarity
+function calculateTextSimilarity(text1, text2) {
+    // Simple similarity calculation based on character matching
+    const len1 = text1.length;
+    const len2 = text2.length;
+    const maxLen = Math.max(len1, len2);
+    
+    if (maxLen === 0) return 1; // Both empty
+    
+    // Count matching characters
+    let matches = 0;
+    const minLen = Math.min(len1, len2);
+    
+    for (let i = 0; i < minLen; i++) {
+        if (text1[i].toLowerCase() === text2[i].toLowerCase()) {
+            matches++;
+        }
+    }
+    
+    // Account for length difference
+    const similarity = matches / maxLen;
+    
+    // Additional check for word-level similarity
+    const words1 = text1.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    const words2 = text2.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    
+    const commonWords = words1.filter(word => words2.includes(word));
+    const totalWords = Math.max(words1.length, words2.length);
+    const wordSimilarity = totalWords > 0 ? commonWords.length / totalWords : 0;
+    
+    // Return weighted average of character and word similarity
+    return (similarity * 0.7 + wordSimilarity * 0.3);
 }
     </script>
 </body>

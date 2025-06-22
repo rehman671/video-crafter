@@ -6,7 +6,8 @@ from apps.core.views import (
     stripe_billing_portal, purchase_credits, credits_success, stripe_webhook,
     upgrade_plan, asset_view, delete_asset, rename_asset, verify_email,
     register_view, register, password_reset_request, password_reset_confirm, loading_view, proxy_video_download,
-    cancel_subscription, speed_up_video, affiliate_program, refund, privacy, terms_and_condition
+    cancel_subscription, speed_up_video, affiliate_program, refund, privacy, terms_and_condition,bulk_delete_assets,
+upload_to_folder
 )
 
 urlpatterns = [
@@ -19,7 +20,7 @@ urlpatterns = [
    path("scene/<int:video_id>/", scene_view, name="scene_view"),
 
    path("download/<int:video_id>/", download_video, name="download_video"),
-   path("download-file/<int:video_id>/", proxy_video_download, name="proxy_video_download"),
+path('download-video/<int:video_id>/', proxy_video_download, name='proxy_video_download'),
 
    # HAVE TO CHANGE 
    path("password_reset/", index, name="password_reset"),
@@ -52,6 +53,9 @@ urlpatterns = [
         path('refund/', refund, name='refund'),
         path('privacy/', privacy, name='privacy'),
         path('terms-and-condition/', terms_and_condition, name='terms_and_condition'),
+        # ADD these two lines to your urlpatterns list:
+path("bulk-delete-assets/", bulk_delete_assets, name="bulk_delete_assets"),
+path("upload-to-folder/", upload_to_folder, name="upload_to_folder"),
 
 
 ]

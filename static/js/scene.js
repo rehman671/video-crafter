@@ -108,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateClipOnServer(firstSlide.id, firstSlide.text || "");
         }, 500);
     }
+
 });
 
 // Helper function to load JSZip library dynamically
@@ -4561,27 +4562,19 @@ function renderSlides(send_update = true) {
                      ${slide.subtitle}
                 </div>
             </td>
-            <td id="highlightable_${slide.id}">
+            <td id="highlightable_${slide.id}" style="user-select:text;">
                 <div class="highlight-sub">
                     ${slide.isEditing ? `
-                        <textarea
-                            class="textarea-class"
-                            id="slide_text_${slide.id}"
-                            name="slide_text"
-                            placeholder="Type Your Script Here And Press Enter (Max ${MAX_SUBTITLE_LENGTH} Characters)"
-                            onkeydown="handleKeyPress(event, ${slide.id})"
-                            ${charCount > MAX_SUBTITLE_LENGTH ? 'style="border: 1px solid red;"' : ''}
-                        >${getCleanTextContent(slide.text)}</textarea>
-                        <div class="${charCountClass}">${charCount}/${MAX_SUBTITLE_LENGTH}</div>
+                     
                     ` : `
-                        <div class="highlightable-interactive">
+                        <div class="highlightable-interactive" style="user-select: text;">
                             <span>${slide.markedText || slide.text || ""}</span>
-                            <div class="split-merge-tooltip">
-                                Ctrl+Click to split • Shift+Click to merge with previous
+                            <div class="split-merge-tooltip" style="user-select: none;">
+    Ctrl+Click (⌘+Click on Mac) to split • Shift+Click to merge with previous
                             </div>
                         </div>
-                        <div class="subtitle-split-merge-hint">
-                            💡 Ctrl+Click to split • Shift+Click to merge with previous
+                        <div class="subtitle-split-merge-hint" style="user-select: none;">
+    💡 Ctrl+Click (⌘+Click on Mac) to split • Shift+Click to merge with previous
                         </div>
                     `}
                     <div id="error-message_${slide.id}" class="error-message" style="display: ${charCount > MAX_SUBTITLE_LENGTH ? 'block' : 'none'};">

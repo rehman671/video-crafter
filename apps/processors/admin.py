@@ -38,6 +38,7 @@ class BackgroundMusicInline(admin.TabularInline):
 class VideoAdmin(admin.ModelAdmin):
     list_display = ['id', 'output','output_with_watermark', 'dimensions', 'created_at', 'updated_at']
     search_fields = ['id']
+    list_filter = ['user']
     inlines = [ClipsInline, BackgroundMusicInline]
     actions = ['generate_clips_from_srt', 'generate_srt_file', 'generate_audio_file', 'generate_final_video']
     
@@ -113,9 +114,9 @@ class ClipsAdmin(admin.ModelAdmin):
     
 @admin.register(Subclip)
 class SubclipAdmin(admin.ModelAdmin):
-    list_display = ['id', 'clip', 'video_id', 'start_time', 'end_time', 'text', 'created_at']
-    list_filter = ['clip', 'clip__video', 'created_at']
-    search_fields = ['text']
+    list_display = ['id', 'clip', 'video_id', 'start_time', 'end_time', 'text', 'video_file', 'created_at']
+    list_filter = ['clip__video', 'created_at', 'clip__video__user']
+    search_fields = ['text', 'video_file']
     
     def video_id(self, obj):
         return obj.clip.video.id if obj.clip and obj.clip.video else None

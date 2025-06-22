@@ -39,6 +39,7 @@
             padding: 10px 20px;
             border-bottom: 1px solid #e0e0e0;
             position: relative;
+            transition: background-color 0.2s ease;
         }
         .log-item > div:first-child {
             flex: 2;
@@ -52,11 +53,177 @@
         .child-item {
             background-color: rgba(0, 0, 0, 0.02);
             padding-left: 40px !important;
-            display: none !important; /* Force hide by default with !important */
+            display: none !important;
         }
-        /* Only when explicitly shown */
         .child-item.visible {
             display: flex !important;
+        }
+
+        /* Bulk selection styles */
+        .log-item.selected {
+
+            padding-left: 10px;
+        }
+
+        .item-checkbox {
+            margin-right: 10px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .select-all-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .select-all-checkbox {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        /* Bulk actions toolbar */
+        .bulk-actions-toolbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 1000;
+            min-width: 300px;
+            text-align: center;
+        }
+
+        .bulk-actions-toolbar.show {
+            display: block;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translate(-50%, 100%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        .bulk-actions-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .bulk-actions-info {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .bulk-actions-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .bulk-action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .bulk-action-btn.delete {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .bulk-action-btn.delete:hover {
+            background-color: #c82333;
+        }
+
+        .bulk-action-btn.cancel {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .bulk-action-btn.cancel:hover {
+            background-color: #5a6268;
+        }
+
+        /* Upload to folder modal */
+        .upload-to-folder-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .upload-to-folder-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .folder-selection {
+            margin: 20px 0;
+        }
+
+        .folder-selection select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        /* Confirmation modal */
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirmation-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
         }
 
         /* Upgrade overlay styles */
@@ -111,6 +278,93 @@
         .upgrade-button:hover {
             background-color: #8450e7;
         }
+
+        /* Add this to your existing <style> section */
+.file-upload-area {
+    border: 2px dashed #9662f9;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin: 15px 0;
+    background-color: #f8f9fa;
+    transition: background-color 0.3s;
+}
+
+.file-upload-area:hover {
+    background-color: #e9ecef;
+}
+
+.file-upload-area input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.upload-info {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Custom file upload styles */
+.custom-file-upload {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    cursor: pointer;
+    display: flex ;
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-file-upload input[type="file"] {
+    margin-top: 7%;
+    position: absolute;
+    opacity: 0;
+    width: 109%;
+    height: 251%;
+    cursor: pointer;
+}
+
+.file-upload-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #9662f9, #8450e7);
+    color: white;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    width: 50%;
+    box-sizing: border-box;
+    gap: 8px;
+}
+
+.file-upload-button:hover {
+    background: linear-gradient(135deg, #8450e7, #7340d3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(150, 98, 249, 0.3);
+}
+
+.upload-icon {
+    font-size: 18px;
+}
+
+.upload-text {
+    font-size: 14px;
+}
+
+.selected-files {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+}
+
+.file-upload-area:hover {
+    border-color: #8450e7;
+}
     </style>
 </head>
 
@@ -178,8 +432,68 @@
         </div>
         {% endif %}
         
-        <div id="loader" style="display: none; position: fixed; z-index: 9999; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #9662f9; border-radius: 50%; animation: spin 1s linear infinite;">
+        <div id="loader" style="display: none; position: fixed; z-index: 999999; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #9662f9; border-radius: 50%; animation: spin 1s linear infinite;"></div>
         </div>
+
+        <!-- Bulk Actions Toolbar -->
+        <div class="bulk-actions-toolbar" id="bulkActionsToolbar">
+            <div class="bulk-actions-content">
+                <div class="bulk-actions-info">
+                    <span id="selectedCount">0</span> items selected
+                </div>
+                <div class="bulk-actions-buttons">
+                    <button class="bulk-action-btn cancel" onclick="clearSelection()">Cancel</button>
+                    <button class="bulk-action-btn delete" onclick="confirmBulkDelete()">Delete Selected</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div class="confirmation-modal" id="confirmationModal">
+            <div class="confirmation-container">
+                <h3>Confirm Deletion</h3>
+                <p id="confirmationMessage">Are you sure you want to delete the selected items?</p>
+                <div class="confirmation-buttons">
+                    <button class="bulk-action-btn cancel" onclick="hideConfirmationModal()">Cancel</button>
+                    <button class="bulk-action-btn delete" onclick="executeBulkDelete()">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload to Folder Modal -->
+        <div class="upload-to-folder-modal" id="uploadToFolderModal">
+            <div class="upload-to-folder-container">
+                <h2>Upload to Existing Folder</h2>
+                <p>Select a folder to upload your files to</p>
+           <form id="uploadToFolderForm" enctype="multipart/form-data" method="POST" action="{% url 'upload_to_folder' %}">
+    {% csrf_token %}
+    <div class="folder-selection">
+        <select name="target_folder" id="targetFolderSelect" required>
+            <option value="">Select a folder...</option>
+            {% for folder_info in folder_structure %}
+            <option value="{{ folder_info.folder.key }}">{{ folder_info.folder.filename }}</option>
+            {% endfor %}
+        </select>
+    </div>
+<div class="file-upload-area">
+    <div class="custom-file-upload">
+        <input type="file" name="files" multiple required accept="video/*,image/*,audio/*" id="folderFileInput">
+        <div class="file-upload-button">
+            <span class="upload-icon">📁</span>
+            <span class="upload-text">Choose Files</span>
+        </div>
+    </div>
+    <div class="upload-info">Select multiple files (videos, images, audio)</div>
+    <div class="selected-files" id="selectedFilesList"></div>
+</div>
+    <div class="modal-buttons">
+        <button type="button" class="cancel-btn" onclick="closeUploadToFolderModal()">Cancel</button>
+        <button type="submit" class="upload-btn">Upload</button>
+    </div>
+</form>
+            </div>
+        </div>
+
         <main>
             <div class="content">
                 <div class="box">
@@ -188,17 +502,30 @@
                             <a href="#" class="link-tag">Assets Library</a>
                             <img src="{% static 'images/chewron.svg' %}" alt="Chevron Icon">
                         </div>
-                        <div class="newFolder">
-                            <a href="#" class="import-folder-link link-tag" onclick="openModal()">
-                                <img src="{% static 'images/create.svg' %}" alt="Create Folder Icon">
-                                <span style="padding-left: 5px;">Import Folder</span>
-                            </a>
+                        <div style="display:flex; flex-direction: row;">
+
+                            <div class="newFolder">
+                                <a href="#" class="import-folder-link link-tag" onclick="openModal()">
+                                    <img src="{% static 'images/create.svg' %}" alt="Create Folder Icon">
+                                    <span style="padding-left: 5px;">Import Folder</span>
+                                </a>
+                            </div>
+                            <div class="newFolder">
+                                
+                                <a href="#" class="import-folder-link link-tag" onclick="openUploadToFolderModal()" style="margin-left: 10px;">
+                                    <img src="{% static 'images/create.svg' %}" alt="Upload to Folder Icon">
+                                    <span style="padding-left: 5px;">Upload to Existing Folder</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
                     <div class="log">
                         <div class="log-header">
-                            <div><input type="checkbox" name="selectall" id="selectall" style="opacity: 0;">Folder Name</div>
+                            <div class="select-all-container">
+                                <input type="checkbox" class="select-all-checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                                <span>Folder Name</span>
+                            </div>
                             <div>Items</div>
                             <div>Modified At</div>
                         </div>
@@ -206,9 +533,9 @@
                         <!-- Display folders with their child files -->
                         {% for folder_info in folder_structure %}
                         <!-- Folder row -->
-                        <div class="log-item folder-item" data-folder-id="{{ folder_info.folder.id }}">
+                        <div class="log-item folder-item" data-folder-id="{{ folder_info.folder.id }}" data-asset-type="folder" data-asset-key="{{ folder_info.folder.key }}" onclick="toggleFolderContents(event, '{{ folder_info.folder.id }}')">
                             <div>
-                                <input type="checkbox" name="selectall" id="selectall-{{ folder_info.folder.id }}" style="opacity: 0;">
+                                <input type="checkbox" class="item-checkbox" data-asset-id="{{ folder_info.folder.id }}" data-asset-type="folder" onchange="updateBulkSelection()">
                                 <span class="toggle-icon" data-folder-id="{{ folder_info.folder.id }}" onclick="toggleFolderContents(event, '{{ folder_info.folder.id }}')">▶</span>
                                 <a href="#" class="link-tag folder-name" onclick="toggleFolderContents(event, '{{ folder_info.folder.id }}')">
                                     <span class="folder-icon">📁</span>
@@ -239,9 +566,9 @@
                         
                         <!-- Child files -->
                         {% for child in folder_info.children %}
-                        <div class="log-item child-item" data-parent-id="{{ folder_info.folder.id }}">
+                        <div class="log-item child-item" data-parent-id="{{ folder_info.folder.id }}" data-asset-type="file" data-asset-key="{{ child.key }}">
                             <div>
-                                <input type="checkbox" name="selectchild" id="selectchild-{{ child.id }}" style="opacity: 0;">
+                                <input type="checkbox" class="item-checkbox" data-asset-id="{{ child.id }}" data-asset-type="file" onchange="updateBulkSelection()">
                                 <a href="#" class="link-tag file-name">
                                     <span class="file-icon">📄</span>
                                     {{ child.filename }}
@@ -273,9 +600,9 @@
                         
                         <!-- Display root-level files (not in any folder) -->
                         {% for asset in root_assets %}
-                        <div class="log-item" data-asset-id="{{ asset.id }}">
+                        <div class="log-item" data-asset-id="{{ asset.id }}" data-asset-type="file" data-asset-key="{{ asset.key }}">
                             <div>
-                                <input type="checkbox" name="selectfile" id="selectfile-{{ asset.id }}" style="opacity: 0;">
+                                <input type="checkbox" class="item-checkbox" data-asset-id="{{ asset.id }}" data-asset-type="file" onchange="updateBulkSelection()">
                                 <a href="#" class="link-tag file-name">
                                     <span class="file-icon">📄</span>
                                     {{ asset.filename }}
@@ -371,8 +698,10 @@
     </div>
     <script src="{% static 'js/asset-lib.js' %}"></script>
     <script src="{% static 'js/header-toggle.js' %}"></script>
-    <script>
-    // Add loader animation for uploads
+ <script>
+    // Global variables for bulk operations
+    let selectedAssets = new Set();
+
     document.addEventListener('DOMContentLoaded', function() {
         const uploadForm = document.getElementById('uploadForm');
         const loader = document.getElementById('loader');
@@ -402,8 +731,6 @@
                 });
             }
         });
-        
-        console.log("DOMContentLoaded event fired! Child items should be hidden.");
 
         // Handle direct rename form submission
         const directRenameForm = document.getElementById('direct-rename-form');
@@ -424,7 +751,6 @@
                     return;
                 }
 
-                // Only check for file extension if it's a file, not a folder
                 if (!isFolder && !newName.includes('.')) {
                     renameExtensionWarning.style.display = 'block';
                     return;
@@ -432,25 +758,221 @@
                     renameExtensionWarning.style.display = 'none';
                 }
                 
-                // Display loading indicator
                 renameLoader.style.display = 'flex';
-                
-                // Update the form action
                 this.action = `/rename-asset/${assetId}/`;
-                
-                // Submit the form directly
                 this.submit();
             });
 
             renameNewNameInput.addEventListener('input', function() {
                 const isFolder = document.getElementById('rename-is-folder').value === 'true';
-                // Only check file extension for files
                 if (!isFolder && this.value.includes('.')) {
                     renameExtensionWarning.style.display = 'none';
                 }
             });
         }
+
+        // Fix checkbox event handlers
+        setupCheckboxHandlers();
     });
+
+    // Setup checkbox event handlers properly
+    function setupCheckboxHandlers() {
+        // Select all checkbox
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.removeEventListener('change', toggleSelectAll);
+            selectAllCheckbox.addEventListener('change', toggleSelectAll);
+        }
+
+        // Individual checkboxes
+        document.querySelectorAll('.item-checkbox').forEach(function(checkbox) {
+            checkbox.removeEventListener('change', handleCheckboxChange);
+            checkbox.addEventListener('change', handleCheckboxChange);
+            checkbox.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent folder toggle
+            });
+        });
+    }
+
+    // Handle individual checkbox changes
+// Handle individual checkbox changes
+// Handle individual checkbox changes
+function handleCheckboxChange(e) {
+    e.stopPropagation();
+    
+    // Handle parent-child logic for BOTH folders AND files
+    handleParentChildSelection(e.target);
+    
+    updateBulkSelection();
+}
+
+    // Toggle select all functionality
+    function toggleSelectAll() {
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+        
+        itemCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+            updateItemSelection(checkbox);
+        });
+        
+        updateBulkActionsToolbar();
+    }
+
+    // Update bulk selection when individual items are selected
+    function updateBulkSelection() {
+        const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        
+        // Update select all checkbox state
+        if (checkedBoxes.length === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checkedBoxes.length === itemCheckboxes.length) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        }
+        
+        // Update visual state
+        itemCheckboxes.forEach(checkbox => {
+            updateItemSelection(checkbox);
+        });
+        
+        updateBulkActionsToolbar();
+    }
+
+    // Update individual item selection
+    // Update individual item selection
+// Update individual item selection
+function updateItemSelection(checkbox) {
+    const logItem = checkbox.closest('.log-item');
+    if (!logItem) return;
+    
+    if (checkbox.checked) {
+        logItem.classList.add('selected');
+    } else {
+        logItem.classList.remove('selected');
+    }
+    
+    // Don't call handleParentChildSelection here - it's already called in handleCheckboxChange
+}
+
+    // Update bulk actions toolbar visibility
+    function updateBulkActionsToolbar() {
+        const toolbar = document.getElementById('bulkActionsToolbar');
+        const selectedCount = document.getElementById('selectedCount');
+        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+        
+        if (checkedBoxes.length > 0) {
+            toolbar.classList.add('show');
+            selectedCount.textContent = checkedBoxes.length;
+        } else {
+            toolbar.classList.remove('show');
+        }
+    }
+
+    // Clear all selections
+    function clearSelection() {
+        const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        
+        itemCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            const logItem = checkbox.closest('.log-item');
+            if (logItem) {
+                logItem.classList.remove('selected');
+            }
+        });
+        
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+        updateBulkActionsToolbar();
+    }
+
+    // Show confirmation modal for bulk delete
+    function confirmBulkDelete() {
+        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+        const folderCount = Array.from(checkedBoxes).filter(cb => cb.dataset.assetType === 'folder').length;
+        
+        let message = `Are you sure you want to delete ${checkedBoxes.length} item(s)?`;
+        if (folderCount > 0) {
+            message += ` This includes ${folderCount} folder(s) and all their contents.`;
+        }
+        
+        document.getElementById('confirmationMessage').textContent = message;
+        document.getElementById('confirmationModal').style.display = 'flex';
+    }
+
+    // Hide confirmation modal
+    function hideConfirmationModal() {
+        document.getElementById('confirmationModal').style.display = 'none';
+    }
+    // Execute bulk delete
+    function executeBulkDelete() {
+        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+        const assetIds = Array.from(checkedBoxes).map(cb => ({
+            id: cb.dataset.assetId,
+            type: cb.dataset.assetType
+        }));
+        
+        document.getElementById('loader').style.display = 'block';
+        hideConfirmationModal();
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+        document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='))?.split('=')[1];
+    
+    fetch('/bulk-delete-assets/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            assets: assetIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('loader').style.display = 'none';
+        
+        if (data.success) {
+            checkedBoxes.forEach(checkbox => {
+                const logItem = checkbox.closest('.log-item');
+                if (logItem) {
+                    logItem.remove();
+                }
+            });
+            clearSelection();
+            
+            // UPDATE: Add these two lines
+            updateFolderItemCounts();
+            updateUploadToFolderOptions();
+            
+            alert(`Successfully deleted ${data.deleted_count} item(s)`);
+        } else {
+            alert(`Error: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        document.getElementById('loader').style.display = 'none';
+        hideConfirmationModal();
+        alert('An error occurred while deleting assets');
+        console.error('Error:', error);
+    });
+}
+
+    // Upload to folder modal functions
+    function openUploadToFolderModal() {
+        document.getElementById('uploadToFolderModal').style.display = 'flex';
+    }
+
+    function closeUploadToFolderModal() {
+        document.getElementById('uploadToFolderModal').style.display = 'none';
+    }
 
     // Show the rename form
     function showRenameForm(id, currentName, isFolder) {
@@ -459,27 +981,20 @@
         document.getElementById('rename-is-folder').value = isFolder ? 'true' : 'false';
         document.getElementById('rename-container').style.display = 'block';
         
-        // Only show the extension warning for files, not folders
         const extensionWarning = document.getElementById('rename-extension-warning');
         if (isFolder) {
             extensionWarning.style.display = 'none';
         } else {
-            // For files, check if input has extension as typing happens
             const inputField = document.getElementById('rename-new-name');
-            // If current name has extension, don't show warning initially
             if (currentName.includes('.')) {
                 extensionWarning.style.display = 'none';
             } else {
-                // Show warning if file name doesn't have extension
                 extensionWarning.style.display = 'block';
             }
-            
-            // Focus and select the input
             inputField.focus();
             inputField.select();
         }
         
-        // Close any open menus
         document.querySelectorAll('.actions').forEach(menu => menu.style.display = 'none');
     }
     
@@ -488,56 +1003,36 @@
         document.getElementById('rename-container').style.display = 'none';
     }
 
-    // Toggle folder contents visibility
+    // Toggle folder contents visibility - FIXED
     function toggleFolderContents(event, folderId) {
         event.preventDefault();
         event.stopPropagation();
         
-        console.log("Toggling folder with ID:", folderId);
-        
-        // Find the folder item
         const folderItem = document.querySelector(`.folder-item[data-folder-id="${folderId}"]`);
-        if (!folderItem) {
-            console.error("Folder item not found for ID:", folderId);
-            return;
-        }
+        if (!folderItem) return;
         
-        // Find the toggle icon
         const toggleIcon = folderItem.querySelector('.toggle-icon');
-        if (!toggleIcon) {
-            console.error("Toggle icon not found for folder:", folderId);
-            return;
-        }
+        if (!toggleIcon) return;
         
-        // Find the folder icon
         const folderItemIcon = folderItem.querySelector('.folder-icon');
-        
-        // Find all child items for this folder
         const childItems = document.querySelectorAll(`.child-item[data-parent-id="${folderId}"]`);
-        console.log("Found", childItems.length, "child items");
         
-        // Determine current state
         const isCurrentlyExpanded = toggleIcon.textContent === '▼';
         
-        // Toggle visibility
         if (isCurrentlyExpanded) {
-            // Currently expanded, so collapse
             childItems.forEach(function(item) {
                 item.style.display = 'none';
                 item.classList.remove('visible');
             });
             toggleIcon.textContent = '▶';
             if (folderItemIcon) folderItemIcon.textContent = '📁';
-            console.log("Collapsed folder", folderId);
         } else {
-            // Currently collapsed, so expand
             childItems.forEach(function(item) {
                 item.style.display = 'flex';
                 item.classList.add('visible');
             });
             toggleIcon.textContent = '▼';
             if (folderItemIcon) folderItemIcon.textContent = '📂';
-            console.log("Expanded folder", folderId);
         }
     }
     
@@ -546,19 +1041,194 @@
         event.preventDefault();
         event.stopPropagation();
         
-        // Close all other menus first
         document.querySelectorAll('.actions').forEach(function(menu) {
             if (menu.id !== `actions-${id}`) {
                 menu.style.display = 'none';
             }
         });
         
-        // Toggle current menu
         const menu = document.getElementById(`actions-${id}`);
         if (menu) {
             menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         }
     }
+
+    // Update row visual state (used by handleParentChildSelection)
+function updateRowVisual(checkbox) {
+    const row = checkbox.closest('.log-item');
+    if (checkbox.checked) {
+        row.classList.add('selected');
+    } else {
+        row.classList.remove('selected');
+    }
+}
+// Add this function to handle parent-child checkbox relationships
+// Handle parent-child checkbox relationships (both ways)
+function handleParentChildSelection(checkbox) {
+    const assetType = checkbox.dataset.assetType;
+    const assetId = checkbox.dataset.assetId;
+    
+    if (assetType === 'folder') {
+        // If it's a folder, select/unselect all its children
+        const childCheckboxes = document.querySelectorAll(`.child-item[data-parent-id="${assetId}"] .item-checkbox`);
+        childCheckboxes.forEach(childCheckbox => {
+            childCheckbox.checked = checkbox.checked;
+            updateRowVisual(childCheckbox);
+        });
+    } else if (assetType === 'file') {
+        // If it's a file, check if we need to update the parent folder
+        const childItem = checkbox.closest('.child-item');
+        if (childItem) {
+            const parentId = childItem.dataset.parentId;
+            const parentCheckbox = document.querySelector(`.folder-item[data-folder-id="${parentId}"] .item-checkbox`);
+            
+            if (parentCheckbox) {
+                // Get all child checkboxes for this folder
+                const allChildCheckboxes = document.querySelectorAll(`.child-item[data-parent-id="${parentId}"] .item-checkbox`);
+                const checkedChildCheckboxes = document.querySelectorAll(`.child-item[data-parent-id="${parentId}"] .item-checkbox:checked`);
+                
+                // Update parent based on children state
+                if (checkedChildCheckboxes.length === 0) {
+                    // No children checked - uncheck parent
+                    parentCheckbox.checked = false;
+                    parentCheckbox.indeterminate = false;
+                } else if (checkedChildCheckboxes.length === allChildCheckboxes.length) {
+                    // All children checked - check parent
+                    parentCheckbox.checked = true;
+                    parentCheckbox.indeterminate = false;
+                } else {
+                    // Some children checked - set parent to indeterminate
+                    parentCheckbox.checked = false;
+                    parentCheckbox.indeterminate = true;
+                }
+                
+                updateRowVisual(parentCheckbox);
+            }
+        }
+    }
+}
+
+// Update folder item counts
+function updateFolderItemCounts() {
+    // Loop through all folders and update their item counts
+    document.querySelectorAll('.folder-item').forEach(folderItem => {
+        const folderId = folderItem.dataset.folderId;
+        const childItems = document.querySelectorAll(`.child-item[data-parent-id="${folderId}"]`);
+        const itemCountElement = folderItem.children[1]; // Second div contains the item count
+        
+        if (itemCountElement) {
+            itemCountElement.textContent = `${childItems.length} items`;
+        }
+    });
+}
+
+// Update the upload to folder dropdown options
+function updateUploadToFolderOptions() {
+    const folderSelect = document.getElementById('targetFolderSelect');
+    if (!folderSelect) return;
+    
+    // Clear existing options except the first one
+    const firstOption = folderSelect.children[0]; // "Select a folder..." option
+    folderSelect.innerHTML = '';
+    folderSelect.appendChild(firstOption);
+    
+    // Re-populate with remaining folders
+    document.querySelectorAll('.folder-item').forEach(folderItem => {
+        const folderKey = folderItem.dataset.assetKey;
+        const folderName = folderItem.querySelector('.folder-name').textContent.trim();
+        
+        // Remove the folder icon from the name
+        const cleanFolderName = folderName.replace('📁', '').trim();
+        
+        const option = document.createElement('option');
+        option.value = folderKey;
+        option.textContent = cleanFolderName;
+        folderSelect.appendChild(option);
+    });
+}
+
+// ADD this to your script section - after the existing functions
+// Handle upload to folder form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadToFolderForm = document.getElementById('uploadToFolderForm');
+    
+    if (uploadToFolderForm) {
+        uploadToFolderForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const files = document.querySelector('input[name="files"]').files;
+            const targetFolder = document.getElementById('targetFolderSelect').value;
+            
+            if (!targetFolder) {
+                alert('Please select a target folder');
+                return;
+            }
+            
+            if (files.length === 0) {
+                alert('Please select files to upload');
+                return;
+            }
+            
+            // Show loading
+            const uploadBtn = this.querySelector('.upload-btn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = `Uploading ${files.length} file(s)...`;
+            
+            // Create FormData with multiple files
+            const uploadData = new FormData();
+            uploadData.append('target_folder', targetFolder);
+            
+            // Add all selected files
+            for (let i = 0; i < files.length; i++) {
+                uploadData.append('files', files[i]);
+            }
+            
+            // Add CSRF token
+            uploadData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            // Upload files
+            fetch('/upload-to-folder/', {
+                method: 'POST',
+                body: uploadData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                }
+                throw new Error('Upload failed');
+            })
+            .then(data => {
+                closeUploadToFolderModal();
+                alert(`Successfully uploaded ${files.length} file(s) to folder`);
+                
+                // Reset form
+                uploadToFolderForm.reset();
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload';
+                
+                // Reload page to show new files
+                window.location.reload();
+            })
+            .catch(error => {
+                alert('Error uploading files: ' + error.message);
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload';
+            });
+        });
+    }
+});
+
+// Show selected files
+document.getElementById('folderFileInput').addEventListener('change', function(e) {
+    const filesList = document.getElementById('selectedFilesList');
+    const files = e.target.files;
+    
+    if (files.length > 0) {
+        filesList.innerHTML = `<small style="color: #666;">${files.length} file(s) selected</small>`;
+    } else {
+        filesList.innerHTML = '';
+    }
+});
     </script>
 </body>
 <!--Start of Tawk.to Script-->
@@ -573,5 +1243,5 @@ s1.setAttribute('crossorigin','*');
 s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
-<!--End of Tawk.to Script-->
+<!--End of Tawk.to Script-->
 </html>

@@ -180,3 +180,15 @@ class AppVariables(models.Model):
 
     class Meta:
         verbose_name_plural = "App Variables"
+
+
+class Transitions(models.Model):
+    """Model to store transitions for video effects"""
+    name = models.CharField(max_length=100)
+    slug = models.CharField(max_length=100, unique=True)
+    duration = models.FloatField(default=1.0)  # Duration in seconds
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name

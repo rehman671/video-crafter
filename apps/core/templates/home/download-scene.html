@@ -195,13 +195,13 @@
                     </div>
                 </div>
             {% else %}
-                <a id="downloadButton" href="{% url 'proxy_video_download' video.id %}?redirect_to=preview" class="download-link" download>
-                    <img src="{% static 'images/download-icon.svg' %}" alt="Download Icon">
-                    <span id="download_text">Download</span>
-                </a>
-                <p class="watermark">
-                    *Please Note That When You Click Download, Watermark Will Be Removed
-                </p>
+                  <a id="downloadButton" href="{% url 'proxy_video_download' video.id %}?redirect_to=preview" class="download-link">
+        <img src="{% static 'images/download-icon.svg' %}" alt="Download Icon">
+        <span id="download_text">Download</span>
+    </a>
+    <p class="watermark">
+        *Please Note That When You Click Download, Watermark Will Be Removed
+    </p>
             {% endif %}
         </div>
     </div>

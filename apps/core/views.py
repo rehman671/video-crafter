@@ -5,6 +5,7 @@ import os
 
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -34,7 +35,16 @@ from apps.core.models import UserAsset
 from django.utils.encoding import force_bytes, force_str
 from apps.processors.utils import generate_signed_url, generate_signed_url_for_upload
 from apps.core.utils import process_video_speed
+# ADD these imports to your existing imports:
+from django.http import JsonResponse
+import json
+import logging
 
+# Make sure you have this import (should already exist):
+from django.contrib import messages
+
+# Add logger if not present:
+logger = logging.getLogger(__name__)
 
 def index(request):
     plans = Plan.objects.filter(show_on_frontend=True).order_by('price_per_month')
@@ -321,7 +331,11 @@ def preview(request):
             'font_size1': request.POST.get('font_size1', '22'),
             'box_radius': request.POST.get('box_radius', '26')
         }
-            
+        print("=====================")
+        print(request.POST)
+        print("=====================")
+        if int(form_data['box_radius']) == 0:
+            form_data['box_radius'] = 1
         try:
             resolution = form_data['resolution']
             elevenlabs_api_key = form_data['elevenlabs_apikey']
@@ -329,6 +343,7 @@ def preview(request):
             
             # Only get Font if font_select is not empty
             font = None
+            form_data['font_select'] = Font.objects.get(css_name="Tiktokfont") if form_data['resolution'] == '9:16' else form_data['font_select']
             if form_data['font_select']:
                 font = Font.objects.get(css_name=form_data['font_select'])
             else:
@@ -381,6 +396,7 @@ def scene_view(request, video_id):
     View to display details for a specific video based on its ID
     """
     try:
+        print(f"Fetching video {video_id} for user {request.user}")
         video = Video.objects.get(id=video_id, user=request.user)
         
         if Subscription.objects.filter(user=request.user, status__in=['active', 'canceled', 'cancelling']).first().unused_credits <= 0:
@@ -444,6 +460,7 @@ def scene_view(request, video_id):
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         print(request, f"An error occurred: {str(e)}")
+        traceback.print_exc()
         return redirect('preview')
 
 
@@ -2044,3 +2061,239 @@ def privacy(request):
 def terms_and_condition(request):
     """View for the affiliate program"""
     return render(request, "terms/terms-and-conditions.html")
+
+
+from django.http import HttpResponse, Http404
+from django.shortcuts import get_object_or_404
+import requests
+import traceback
+
+@login_required(login_url='login')
+def proxy_video_download(request, video_id):
+    """
+    Proxy download view that ensures proper headers for all browsers
+    """
+    try:
+        # Debug: Print basic info
+        print(f"Attempting to download video {video_id} for user {request.user}")
+        
+        video = get_object_or_404(Video, id=video_id, user=request.user)
+        print(f"Video found: {video}")
+        user_subscription = Subscription.objects.filter(user=request.user).first()
+        if 'free' in user_subscription.plan.name.lower():
+            print(request, "You need to upgrade to download videos.")
+            return redirect('download_video', video_id=video_id)
+        
+        # Check if video has output file
+        if not video.output_with_bg:
+            print(f"No output_with_bg for video {video_id}")
+            if video.output:
+                print(f"Using fallback video.output for video {video_id}")
+                output_file = video.output
+            else:
+                print(f"No output file at all for video {video_id}")
+                raise Http404("No video file available for download")
+        else:
+            output_file = video.output_with_bg
+            print(f"Using output_with_bg: {output_file.name}")
+        
+        if not output_file.name:
+            print(f"Output file has no name for video {video_id}")
+            raise Http404("Video file name is missing")
+        
+        # Generate signed URL
+        print(f"Generating signed URL for: {output_file.name}")
+        if BackgroundMusic.objects.filter(video=video).exists():
+            print("Using signed URL for upload")
+            video_url = generate_signed_url_for_upload(output_file.name, expires_in=7200)
+        else:
+            print("Using regular signed URL")
+            video_url = generate_signed_url(output_file.name, expires_in=7200)
+        
+        print(f"Generated video URL: {video_url}")
+        
+        if not video_url:
+            print("Failed to generate signed URL")
+            raise Http404("Could not generate download URL")
+        
+        # Fetch the video file
+        print("Fetching video file...")
+        response = requests.get(video_url, stream=True, timeout=30)
+        print(f"Response status: {response.status_code}")
+        print(f"Response headers: {dict(response.headers)}")
+        
+        response.raise_for_status()
+        
+        # Create Django response with proper headers
+        django_response = HttpResponse(
+            response.iter_content(chunk_size=8192),
+            content_type='video/mp4'
+        )
+        
+        # Force download with proper filename
+        filename = f"video_{video.id}.mp4"
+        django_response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        # Set content length if available
+        content_length = response.headers.get('Content-Length')
+        user_subscription.unused_credits -= 1
+        user_subscription.save()
+        if content_length:
+            django_response['Content-Length'] = content_length
+        
+        # Handle redirect cookie if specified
+        redirect_to = request.GET.get('redirect_to')
+        if redirect_to:
+            django_response.set_cookie('post_download_redirect', redirect_to, max_age=30)
+        
+        print(f"Successfully serving video download for {video_id}")
+        return django_response
+        
+    except Video.DoesNotExist:
+        print(f"Video {video_id} not found for user {request.user}")
+        raise Http404("Video not found")
+    except requests.exceptions.RequestException as e:
+        print(f"Request error for video {video_id}: {str(e)}")
+        traceback.print_exc()
+        raise Http404("Failed to fetch video file")
+    except Exception as e:
+        print(f"Unexpected error for video {video_id}: {str(e)}")
+        traceback.print_exc()
+        raise Http404("Video download failed")
+
+
+
+@login_required(login_url='login')
+@csrf_exempt
+def bulk_delete_assets(request):
+    """Bulk delete multiple assets"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        assets_to_delete = data.get('assets', [])
+        
+        if not assets_to_delete:
+            return JsonResponse({'success': False, 'error': 'No assets specified'}, status=400)
+        
+        deleted_count = 0
+        
+        # Import S3 deletion functions
+        from apps.core.services.s3_service import delete_from_s3, delete_folder_from_s3
+        from django.db import transaction
+        
+        with transaction.atomic():
+            for asset_data in assets_to_delete:
+                asset_id = asset_data.get('id')
+                asset_type = asset_data.get('type')
+                
+                try:
+                    asset = get_object_or_404(UserAsset, id=asset_id, user=request.user)
+                    
+                    if asset.is_folder:
+                        # Delete folder and all contents
+                        success = delete_folder_from_s3(asset.key)
+                        if success:
+                            # Delete all child assets from database
+                            child_count = UserAsset.objects.filter(
+                                user=request.user,
+                                key__startswith=asset.key
+                            ).delete()[0]
+                            deleted_count += child_count
+                    else:
+                        # Delete single file
+                        success = delete_from_s3(asset.key)
+                        if success:
+                            asset.delete()
+                            deleted_count += 1
+                            
+                except Exception as e:
+                    logger.error(f"Error deleting asset {asset_id}: {str(e)}")
+                    continue
+        
+        return JsonResponse({
+            'success': True, 
+            'deleted_count': deleted_count,
+            'message': f'Successfully deleted {deleted_count} item(s)'
+        })
+        
+    except Exception as e:
+        logger.error(f"Bulk delete error: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+        
+@login_required(login_url='login')
+@csrf_exempt
+def upload_to_folder(request):
+    """Upload multiple files to a specific folder"""
+    if request.method != 'POST':
+        return redirect('asset_library')
+    
+    try:
+        target_folder = request.POST.get('target_folder', '')
+        files = request.FILES.getlist('files')  # This gets ALL files with name="files"
+        
+        if not files:
+            messages.error(request, 'No files selected for upload')
+            return redirect('asset_library')
+        
+        if not target_folder:
+            messages.error(request, 'No target folder selected')
+            return redirect('asset_library')
+        
+        # Import upload function
+        from apps.core.services.s3_service import upload_file_to_s3, get_user_root_folder
+        import mimetypes
+        
+        uploaded_count = 0
+        failed_count = 0
+        user_root = get_user_root_folder(request.user.id)
+        
+        # Process each file
+        for file in files:
+            try:
+                # Determine the S3 key
+                s3_key = f"{target_folder}{file.name}"
+                
+                # Guess content type
+                content_type, _ = mimetypes.guess_type(file.name)
+                
+                # Upload to S3
+                upload_result = upload_file_to_s3(file, s3_key, content_type)
+                
+                if upload_result:
+                    # Create asset record
+                    UserAsset.objects.create(
+                        user=request.user,
+                        key=s3_key,
+                        filename=file.name,
+                        file_size=file.size,
+                        content_type=content_type or '',
+                        is_folder=False,
+                        parent_folder=target_folder.rstrip('/')
+                    )
+                    uploaded_count += 1
+                else:
+                    failed_count += 1
+                    
+            except Exception as e:
+                logger.error(f"Error uploading file {file.name}: {str(e)}")
+                failed_count += 1
+        
+        # Provide feedback
+        if uploaded_count > 0:
+            messages.success(request, f'Successfully uploaded {uploaded_count} file(s) to folder')
+        
+        if failed_count > 0:
+            messages.warning(request, f'{failed_count} file(s) failed to upload')
+            
+        if uploaded_count == 0:
+            messages.error(request, 'Failed to upload any files')
+            
+    except Exception as e:
+        messages.error(request, f'Error uploading files: {str(e)}')
+        logger.error(f"Upload to folder error: {str(e)}")
+    
+    return redirect('asset_library')

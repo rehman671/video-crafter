@@ -152,8 +152,6 @@ class ElevenLabsHandler:
             url = f"{self.base_url}/history?page_size=20&source=TTS"
         print(f"Requesting history for voice ID: {voice_id}")
         response = requests.get(url, headers=headers)
-        print(f"Response status code: {response.status_code}")
-        print(f"Response text: {response.text}")
         if response.status_code == 200:
             return response.json()
         else:
@@ -174,8 +172,7 @@ class ElevenLabsHandler:
 
         url = f"{self.base_url}/history/{history_id}"
         response = requests.get(url, headers=headers)
-        print(f"Response status code: {response.status_code}")
-        print(f"Response text: {response.text}")
+
         if response.status_code == 200:
             return response.json()
         else:

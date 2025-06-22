@@ -212,7 +212,6 @@ function initializeFromServerData() {
     if (mp3Templates.length === 0) {
         mp3Templates = [
             { id: 1, file: null, startTime: "", endTime: "", volume: 50 },
-            { id: 2, file: null, startTime: "", endTime: "", volume: 50 }
         ];
     }
     
@@ -379,13 +378,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Add form submission interceptor to ensure music IDs are included
+ 
+});
+
+function submitBgForm(event) {
     const bgForm = document.getElementById('bg_form');
     if (bgForm) {
-        bgForm.addEventListener('submit', function(event) {
             event.preventDefault();
             console.log("Form submission intercepted");
             
-            const actualForm = new FormData(this);
+            const actualForm = new FormData(bgForm);
             
             // Add existing music IDs to the form data explicitly
             mp3Templates.forEach(template => {
@@ -463,6 +465,5 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitButton.classList.remove('loading');
                 }
             });
-        });
     }
-});
+}

@@ -1,3 +1,4 @@
+
 let activeMenuId = null;
 let isModalOpen = false;
 let isLoading = false;
@@ -810,6 +811,9 @@ function deleteFolder(id) {
         document.getElementById(`actions-${id}`).style.display = 'none';
         activeMenuId = null;
     }
+    // In your deleteFolder function, after successful deletion, add:
+updateFolderItemCounts();
+updateUploadToFolderOptions();
 }
 
 // Helper function to get CSRF token
@@ -936,3 +940,124 @@ document.addEventListener('DOMContentLoaded', () => {
         loadJSZip().catch(err => console.error("Failed to load JSZip:", err));
     }
 });
+
+
+
+// ADD these JavaScript functions to your asset-lib.js file:
+
+// Global variables for bulk operations
+// let selectedAssets = new Set();
+
+// Toggle select all functionality
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    
+    itemCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+        updateItemSelection(checkbox);
+    });
+    
+    updateBulkActionsToolbar();
+}
+
+// Update bulk selection when individual items are selected
+function updateBulkSelection() {
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    
+    // Update select all checkbox state
+    if (checkedBoxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedBoxes.length === itemCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+    
+    // Update visual state and selection set
+    itemCheckboxes.forEach(checkbox => {
+        updateItemSelection(checkbox);
+    });
+    
+    updateBulkActionsToolbar();
+}
+
+// Clear all selections
+function clearSelection() {
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    
+    itemCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+        checkbox.closest('.log-item').classList.remove('selected');
+    });
+    
+    selectAllCheckbox.checked = false;
+    selectAllCheckbox.indeterminate = false;
+    selectedAssets.clear();
+    updateBulkActionsToolbar();
+}
+
+// Upload to folder modal functions
+function openUploadToFolderModal() {
+    document.getElementById('uploadToFolderModal').style.display = 'flex';
+}
+
+function closeUploadToFolderModal() {
+    document.getElementById('uploadToFolderModal').style.display = 'none';
+}
+
+// Execute bulk delete
+function executeBulkDelete() {
+    const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    const assetIds = Array.from(checkedBoxes).map(cb => ({
+        id: cb.dataset.assetId,
+        type: cb.dataset.assetType
+    }));
+    
+    // Show loader
+    document.getElementById('loader').style.display = 'block';
+    
+    // Send AJAX request for bulk delete
+    fetch('/bulk-delete-assets/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({
+            assets: assetIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('loader').style.display = 'none';
+        hideConfirmationModal();
+        
+        if (data.success) {
+            // Remove deleted items from DOM
+            checkedBoxes.forEach(checkbox => {
+                const logItem = checkbox.closest('.log-item');
+                logItem.remove();
+            });
+            
+            clearSelection();
+            alert(`Successfully deleted ${data.deleted_count} item(s)`);
+        } else {
+            alert(`Error: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        document.getElementById('loader').style.display = 'none';
+        hideConfirmationModal();
+        alert('An error occurred while deleting assets');
+        console.error('Error:', error);
+    });
+}
+
+

@@ -659,3 +659,54 @@ def extract_and_upload_zip(user: User, zip_file, parent_folder: str = '') -> Lis
 #         'folders': folders,
 #         'files': files
 #     }
+
+
+    def bulk_delete_from_s3(keys: List[str]) -> Dict[str, bool]:
+        """
+        Bulk delete multiple objects from S3
+        
+        Args:
+            keys: List of S3 keys to delete
+            
+        Returns:
+            Dict mapping keys to success status
+        """
+        s3_client = get_s3_client()
+        results = {}
+        
+        try:
+            # Prepare objects for deletion
+            objects_to_delete = [{'Key': key} for key in keys]
+            
+            # Delete in batches of 1000 (S3 limit)
+            for i in range(0, len(objects_to_delete), 1000):
+                batch = objects_to_delete[i:i+1000]
+                
+                response = s3_client.delete_objects(
+                    Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                    Delete={'Objects': batch}
+                )
+                
+                # Process successful deletions
+                if 'Deleted' in response:
+                    for deleted in response['Deleted']:
+                        results[deleted['Key']] = True
+                
+                # Process errors
+                if 'Errors' in response:
+                    for error in response['Errors']:
+                        results[error['Key']] = False
+                        logger.error(f"S3 delete error for {error['Key']}: {error['Code']} - {error['Message']}")
+            
+            # Mark any remaining keys as successful if not in results
+            for key in keys:
+                if key not in results:
+                    results[key] = True
+                    
+        except ClientError as e:
+            logger.error(f"S3 bulk delete error: {str(e)}")
+            # Mark all as failed
+            for key in keys:
+                results[key] = False
+        
+        return results

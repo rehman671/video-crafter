@@ -178,9 +178,7 @@
                         <div class="eleven-labs-heading">ElevenLabs Api Key:</div>
                         <div class="vh-parent">
                             <div class="vh-child">
-                                <span class="text3">An unique code from your Eleven Labs account that
-                                    lets VideoCrafter.io use your selected AI voices. Find it in your Eleven Labs
-                                    account under API settings.
+                                <span class="text3">A unique code that connects video crafter to your eleven Labs  account. Find it in your elevenlabs account under API Settings
                                 </span>
                             </div>?
                         </div>
@@ -243,7 +241,7 @@
                     <div id="color2">
                         <input type="color" id="colorPicker2" name="subtitle_box_color" value="#000000">
                     </div>
-                    <input id="colortext2" type="text" class="focusdefault" placeholder="#000000" value="#000000">
+                    <input name="subtitle_box_color_text"  id="colortext2" type="text" class="focusdefault" placeholder="#000000" value="#000000">
                 </div>
                 <div class="Font-Size-text" style="display: flex;">
                     <div class="Font-Size-text-heading">Font Size: <span id="recommended-font-size">(Recommended Font
@@ -568,6 +566,36 @@
     
 }
 
+// Sync color picker and text input for subtitle box color
+document.getElementById('colorPicker2').addEventListener('input', function() {
+    const colorValue = this.value;
+    document.getElementById('colortext2').value = colorValue;
+    document.getElementById('color2').style.backgroundColor = colorValue;
+    document.getElementById('previewBackground').style.backgroundColor = colorValue;
+    
+    // Update 9:16 preview if active
+    if (resolution === '9:16') {
+        document.querySelectorAll('.text-wrapper2-span').forEach(span => {
+            span.style.backgroundColor = colorValue;
+        });
+    }
+});
+
+document.getElementById('colortext2').addEventListener('input', function() {
+    const colorValue = this.value;
+    if (/^#[0-9A-F]{6}$/i.test(colorValue)) {
+        document.getElementById('colorPicker2').value = colorValue;
+        document.getElementById('color2').style.backgroundColor = colorValue;
+        document.getElementById('previewBackground').style.backgroundColor = colorValue;
+        
+        // Update 9:16 preview if active
+        if (resolution === '9:16') {
+            document.querySelectorAll('.text-wrapper2-span').forEach(span => {
+                span.style.backgroundColor = colorValue;
+            });
+        }
+    }
+});
     </script>
 </body>
 <!--Start of Tawk.to Script-->

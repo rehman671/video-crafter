@@ -234,7 +234,71 @@
     <script src="{% static 'js/bg-music.js' %}"></script>
     <script src="{% static 'js/header-toggle.js' %}"></script>
     <script>
+        // Simple validation - just add this one script
+// Simple validation with proper error handling
+document.addEventListener('DOMContentLoaded', function() {
+    const bgForm = document.getElementById('bg_form');
+    if (bgForm) {
+        bgForm.addEventListener('submit', function(e) {
+            const musicForms = document.querySelectorAll('.uploadmp3');
+            
+            for (let form of musicForms) {
+                const fileOutput = form.querySelector('.output');
+                const startTime = form.querySelector('.startTime');
+                const endTime = form.querySelector('.endTime');
+                
+                // If file is uploaded, validate times
+                if (fileOutput && fileOutput.textContent.trim() !== 'Choose File') {
+                    const startVal = startTime.value.trim();
+                    const endVal = endTime.value.trim();
+                    
+                    // Check if times are entered
+                    if (!startVal || !endVal) {
+                        alert('Please enter start and end times for all uploaded music files.');
+                        e.preventDefault();
+                        return;
+                    }
+                    
+                    // Convert times to seconds for comparison
+                    const startSec = timeToSeconds(startVal);
+                    const endSec = timeToSeconds(endVal);
+                    
+                    // Check start < end
+                    if (startSec >= endSec) {
+                        alert('End time must be greater than start time.');
+                        e.preventDefault();
+                        return;
+                    }
+                    
+                    // Check against video duration
+                    const video = document.getElementById('my-video');
+                    if (video && video.duration) {
+                        const videoDuration = Math.floor(video.duration);
+                        if (endSec > videoDuration) {
+                            const videoTime = Math.floor(videoDuration / 60) + ':' + (videoDuration % 60).toString().padStart(2, '0');
+                            alert(`End time cannot exceed video duration (${videoTime}).`);
+                            e.preventDefault();
+                            return;
+                        }
+                    }
+                }
+            }
+            submitBgForm(event);
 
+
+        });
+    }
+    
+    // Helper function to convert MM:SS to seconds
+    function timeToSeconds(timeString) {
+        if (!timeString) return 0;
+        const parts = timeString.split(':');
+        if (parts.length === 2) {
+            return (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
+        }
+        return parseInt(timeString) || 0;
+    }
+});
         // Update the time formatting script to handle both new and existing music tracks
 
 // Handle form submission - convert MM:SS back to seconds before submit
@@ -427,15 +491,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInputs = document.querySelectorAll('.fileInput');
     
     // Handle form submission (spinner functionality)
-    if (bgForm && submitButton) {
-        bgForm.addEventListener('submit', function(e) {
-            // Add loading class to the button
-            submitButton.classList.add('loading');
+    // if (bgForm && submitButton) {
+    //     bgForm.addEventListener('submit', function(e) {
+    //         // Add loading class to the button
+    //         submitButton.classList.add('loading');
             
-            // Allow the form to submit
-            return true;
-        });
-    }
+    //         // Allow the form to submit
+    //         return true;
+    //     });
+    // }
     
     // Function to check if any file inputs have files
     function checkForFiles() {
@@ -521,15 +585,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const bgForm = document.getElementById('bg_form');
     const submitButton = document.getElementById('submitBgButton');
     
-    if (bgForm && submitButton) {
-        bgForm.addEventListener('submit', function(e) {
-            // Add loading class to the button
-            submitButton.classList.add('loading');
+    // if (bgForm && submitButton) {
+    //     bgForm.addEventListener('submit', function(e) {
+    //         // Add loading class to the button
+    //         submitButton.classList.add('loading');
             
-            // Allow the form to submit
-            return true;
-        });
-    }
+    //         // Allow the form to submit
+    //         return true;
+    //     });
+    // }
 });
         // Initialize all sliders for proper visual display
 document.querySelectorAll('.slider').forEach(slider => {

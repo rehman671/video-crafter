@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Font, Plan, Subscription, BillingInfo, TempSubscription, UserAsset, AppVariables
+from .models import Font, Plan, Subscription, BillingInfo, TempSubscription, UserAsset, AppVariables, Transitions
 
 # Register your models here.
 @admin.register(Font)
@@ -51,3 +51,11 @@ class AppVariablesAdmin(admin.ModelAdmin):
     ordering = ('key',)
     fields = ('key', 'value', 'description')
     readonly_fields = ('key', )
+
+@admin.register(Transitions)
+class TransitionsAdmin(admin.ModelAdmin):
+    list_display = ('name', 'duration', 'slug')
+    search_fields = ('name', 'slug')
+    ordering = ('name',)
+    fields = ('name', 'duration', 'slug')
+    readonly_fields = ('slug', )
