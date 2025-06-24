@@ -1096,3 +1096,71 @@ def delete_when_reach_hundred(sender, instance:ProcessingStatus, created, **kwar
         time.sleep(5)
         instance.delete()
         logger.info(f"Deleted ProcessingStatus instance with ID {instance.id} as progress reached 100%.")
+
+@receiver(pre_save, sender=Subclip)
+def check_image(sender, instance:Subclip, **kwargs):
+    """
+    Check if the video_file is an image or video and mark is_image accordingly
+    """
+    if instance.video_file:
+        # Get file extension
+        filename = instance.video_file.name.lower()
+        # Check if file has image extension
+        is_image = filename.endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'))
+        instance.is_image = is_image
+
+
+@receiver(pre_save, sender=Subclip) 
+def check_subclip_exists(sender, instance:Subclip, **kwargs):
+    if not instance.pk:
+        existing_subclips = Subclip.objects.filter(
+            clip=instance.clip, pk__isnull=False
+        )
+        
+        # Get first word of new subclip and clip
+        new_first_word = instance.text.strip().split()[0] if instance.text else ""
+        clip_words = instance.clip.text.strip().split() if instance.clip.text else []
+        
+        # Find position of new subclip's first word in clip text
+        try:
+            clip_first_word_pos = clip_words.index(new_first_word)
+            print(f"New subclip first word position in clip text: {clip_first_word_pos}")
+        except ValueError:
+            clip_first_word_pos = -1
+            
+        for existing in existing_subclips:
+            # Check if new subclip text is contained in existing subclip
+            if instance.text and instance.text.lower() in existing.text.lower():
+                # Get existing subclip's first word position in clip text
+                existing_first_word = existing.text.strip().split()[0] if existing.text else ""
+                try:
+                    existing_clip_pos = clip_words.index(existing_first_word)
+                    # If positions in clip text match, delete existing subclip
+                    if clip_first_word_pos == existing_clip_pos:
+                        # Log deletion to file before deleting
+                        log_entry = {
+                            'timestamp': str(time.time()),
+                            'subclip_id': existing.id,
+                            'clip_id': existing.clip.id,
+                            'text': existing.text,
+                            'reason': 'Replaced by new matching subclip'
+                        }
+                        
+                        with open('deleted_subclips.json', 'a+') as f:
+                            # Move to start and check if file is empty
+                            f.seek(0)
+                            try:
+                                data = json.load(f)
+                            except json.JSONDecodeError:
+                                data = []
+                            
+                            # Append new entry and move to end
+                            f.seek(0)
+                            f.truncate()
+                            data.append(log_entry)
+                            json.dump(data, f, indent=2)
+
+                        existing.delete()
+                except ValueError:
+                    # First word not found in clip text, continue checking 
+                    continue

@@ -17,6 +17,93 @@
     <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
     <title>VideoCrafter.io</title>
     <style>
+/* Enhanced Template Download Button */
+.template-download-wrapper {
+    margin: 15px 0;
+}
+
+.template-download-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f0fe 100%);
+    border: 2px solid #d1d9ff;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(134, 74, 249, 0.1);
+    min-width: 280px;
+    max-width: 100%;
+}
+
+.template-download-btn:hover {
+    background: linear-gradient(135deg, #864AF9 0%, #bfa9fc 100%);
+    border-color: #864AF9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(134, 74, 249, 0.3);
+}
+
+.template-btn-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.template-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(134, 74, 249, 0.1);
+    border-radius: 8px;
+    color: #864AF9;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.template-download-btn:hover .template-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.template-btn-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.template-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #374151;
+    transition: color 0.3s ease;
+}
+
+.template-subtitle {
+    font-size: 12px;
+    color: #6b7280;
+    transition: color 0.3s ease;
+}
+
+.template-download-btn:hover .template-title,
+.template-download-btn:hover .template-subtitle {
+    color: white;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .template-download-btn {
+        min-width: 100%;
+        justify-content: center;
+    }
+    
+    .template-btn-content {
+        justify-content: center;
+    }
+}
         .upload-container.drag-over {
     background-color: #f3f0ff;
     border-color: #864AF9;
@@ -483,7 +570,7 @@
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 16px;
-    max-height: 200px;
+    max-height: 5000px;
     overflow-y: auto;
     font-size: 14px;
     line-height: 1.5;
@@ -651,9 +738,9 @@ mark{
         <div id="pfp"></div>
         <div id="pfpdropdown" class="not-present"></div>
      <div class="card-container">
-            <div class="card">
+            <div class="card" style="max-height: 15000px;">
                 <div class="card-header">
-                    <div id="previousButton">
+                     <div id="previousButton">
                         <a href="{% url 'preview' %}">
                             <img src="{% static 'images/back.svg' %}" alt="Back">
                         </a>
@@ -712,14 +799,15 @@ mark{
                     <span class="text3">Select from your previous ElevenLabs voiceovers</span>
                     <span class="text3" style="display: block; color: #864AF9; margin-top: 5px;">Text will be automatically split into subtitles</span>
                 </div>
+               
         </div>
 
 
     <div class="vh-child" style="margin-bottom: 15px;">
         <span class="text3" style="font-size: 14px; color: #6b7280; line-height: 1.5;">Upload a .txt file with identical content, split into lines for custom subtitle segments</span>
     </div>
-    
-    <div class="file-upload-wrapper" style="position: relative;">
+    <!-- Removed -->
+    <div class="file-upload-wrapper" style="position: relative;display: none;">
         <div class="custom-file-input" onclick="document.getElementById('historySplitFile').click()" style="
             display: flex; 
             align-items: center; 
@@ -738,9 +826,28 @@ mark{
                 <div class="upload-title" style="font-weight: 600; color: #374151; font-size: 15px; margin-bottom: 4px;">Choose Split File</div>
                 <div class="upload-subtitle" style="font-size: 13px; color: #6b7280;">Click to browse or drag & drop your .txt file</div>
             </div>
+            
             <div class="upload-arrow" style="color: #864AF9; font-size: 18px; margin-left: 12px;">→</div>
         </div>
-        
+        <div class="template-download-wrapper" style="margin-top: 15px; text-align: center;">
+         <a href="{% static 'dummy/template.txt' %}" download="" class="" style="color:#6c25be;text-decoration: none;">
+ Download Empty txt Template Here
+ </a>
+
+        <!-- <span class="template-title">Download Empty txt Template Here</span> -->
+        <!-- <span class="template-subtitle">Download Empty txt Template Here</span> -->
+        <!-- <div class="template-btn-content">
+            <div class="template-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7,10 12,15 17,10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+            </div>
+            <div class="template-btn-text">
+            </div>
+        </div> -->
+</div>
         <input type="file" id="historySplitFile" accept=".txt" style="display: none;">
         
         <div class="file-status" id="splitFileStatus" style="margin-top: 12px; padding: 12px; border-radius: 8px; display: none;">
@@ -821,6 +928,7 @@ mark{
             <!-- Keep the second card as is -->
             <div class="card" id="uploadCard" style="position:relative">
                 <div class="card-header">
+       
                     <span class="card-header-span">Upload To Your Asset Folder</span>
                     <h5>These Files Will be Saved In Your Asset Library Which You Can Manage Through The Profile Icon
                         Above</h5>
@@ -3245,7 +3353,7 @@ document.addEventListener('DOMContentLoaded', addNotificationStyles);
                                                         <span id="upload-text">${popupFile ? popupFile.name.slice(0, 7) + (popupFile.name.includes('.') ? popupFile.name.slice(popupFile.name.lastIndexOf('.')) : '') : 'Choose or Drag File'}</span>
                                                     </label>
                                                     <i id="clear-file" style="display: ${popupFile ? 'inline' : 'none'};" onclick="clearPopupFile()" class="ri-close-circle-line"></i>
-                                                    <input type="file" id="slide_file" name="slide_file" class="upload-input" accept="video/*" onchange="handlePopupFileChange(event)">
+                                                    <input type="file" id="slide_file" name="slide_file" class="upload-input" accept="video/*,image/*" onchange="handlePopupFileChange(event)">
                                                 </div>
                                             </div>
                                         </div>
@@ -4380,7 +4488,7 @@ function loadSelectedHistory() {
             // Check if texts match (allowing for minor formatting differences)
             const similarity = calculateTextSimilarity(normalizedVoiceoverText, uploadedText);
             console.log('Text similarity:', similarity);
-            
+            console.log(normalizedVoiceoverText, uploadedText);
             if (similarity < 0.95) { // 95% similarity threshold
                 alert('The uploaded text file does not match the selected voiceover content. Please ensure the text content is identical to your voiceover.');
                 loadButton.textContent = originalText;
@@ -5177,7 +5285,8 @@ function updateSubtitleDisplay() {
 
 // Create subtitle segment with word boundary awareness
 function createSubtitleSegmentWithBoundaries(text, index, maxLength) {
-    const exceeds = text.length > maxLength;
+    const exceeds = text.length > maxLength + 1;
+    console.log(`Creating subtitle segment ${index + 1}: "${text.substring(0, 50)}..." (${text.length} chars)`);
     const className = exceeds ? 'subtitle-segment exceeds-limit' : 'subtitle-segment';
     
     let title = `Subtitle ${index + 1}: ${text.length}/${maxLength} characters\n`;
@@ -5203,7 +5312,7 @@ function addWordBoundaryHints(textElement) {
 
 // Enhanced subtitle segment creation with numbering
 function createSubtitleSegment(text, index, maxLength) {
-    const exceeds = text.length > maxLength;
+    const exceeds = text.length > maxLength + 1;
     const className = exceeds ? 'subtitle-segment exceeds-limit' : 'subtitle-segment';
     
     let title = `Subtitle ${index + 1}: ${text.length}/${maxLength} characters\n`;
@@ -5307,7 +5416,7 @@ function updateSubtitleDisplay() {
 
 // Create a subtitle segment with appropriate styling
 function createSubtitleSegment(text, index, maxLength) {
-    const exceeds = text.length > maxLength;
+    const exceeds = text.length > maxLength + 1;
     const className = exceeds ? 'subtitle-segment exceeds-limit' : 'subtitle-segment';
     const title = exceeds ? `Exceeds limit: ${text.length}/${maxLength} characters.` : 
                            `Subtitle ${index + 1}: ${text.length}/${maxLength} characters`;
@@ -5949,7 +6058,8 @@ function validateAndPreviewSplit(lines) {
     // Calculate similarity
     const similarity = calculateTextSimilarity(normalizedVoiceoverText, uploadedText);
     console.log('Text validation - Similarity:', similarity);
-    
+
+
     if (similarity < 0.95) {
         showFileStatus('error', 'Text mismatch detected', `Content similarity: ${(similarity * 100).toFixed(1)}% (need 95%+)`);
         customSplitLines = null;

@@ -1307,10 +1307,10 @@ def generate_signed_url_for_upload(s3_key, expires_in=3600):
         import boto3
         
         # Initialize the S3 client using settings from Django settings
-        s3_client = boto3.client('s3', region_name='eu-west-2')
+        s3_client = boto3.client('s3', region_name='us-east-1')
 
         # Now define the bucket and object key
-        bucket_name = 'admultiplier'
+        bucket_name = settings.AWS_STORAGE_BUCKET_NAME
         print("--- s3 key ---")
         print(s3_key)
         object_key = s3_key
@@ -1331,8 +1331,8 @@ def generate_signed_url_for_upload(s3_key, expires_in=3600):
         if hasattr(e, 'response') and e.response.get('Error', {}).get('Code') == '404':
             logging.warning(f"S3 404: {s3_key} not found, falling back to direct URL.")
             from django.conf import settings
-            region = getattr(settings, 'AWS_REGION', 'eu-west-2')
-            bucket = getattr(settings, 'AWS_STORAGE_BUCKET_NAME', 'admultiplier')
+            region = getattr(settings, 'AWS_REGION', 'us-east-1')
+            bucket = getattr(settings, 'AWS_STORAGE_BUCKET_NAME', 's3videocrafter')
             return f"https://{bucket}.s3.{region}.amazonaws.com/{s3_key}"
         else:
             logging.error(f"Error generating signed URL for {s3_key}: {str(e)}")

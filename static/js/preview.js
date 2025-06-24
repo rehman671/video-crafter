@@ -406,7 +406,12 @@ function handleVideoClipChange(event) {
     }
 
     renderPopup();
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
 }
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}}
 
 function handlePopupFileChange(e) {
     console.log("File change event triggered");
@@ -452,7 +457,12 @@ function handlePopupFileChange(e) {
         }
 
         renderPopup();
-    } else {
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}    } else {
         console.log("No file selected or file input not found");
         popupFile = null;
 
@@ -475,7 +485,12 @@ function handlePopupFileChange(e) {
         }
 
         renderPopup();
-    }
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}    }
 }
 
 function handleResolutionChange(newResolution) {

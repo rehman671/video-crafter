@@ -634,7 +634,12 @@ function handleTextSelection(slideId) {
                 selectedText = selected;
                 popupOpen = true;
                 renderPopup();
-            } else {
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}            } else {
                 // Display appropriate error message
                 if (errorMessage) {
                     errorMessage.textContent = isAlreadyHighlighted ? 
@@ -662,7 +667,12 @@ function handleHighlightedTextClick(slideId, markedText) {
         selectedText = match[1]; // The highlighted text
         popupOpen = true;
         renderPopup();
-    }
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}    }
 }
 
 function areAllTextareasHidden() {
@@ -939,7 +949,10 @@ function handlePopupFileChange(e) {
         document.getElementById("clear-file").style.display = "none";
         submitButton.disabled = !popupVideoClip; 
     }
-    renderPopup(); 
+    renderPopup();
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+} 
 }
 
 function clearPopupFile() {
@@ -950,7 +963,12 @@ function clearPopupFile() {
     const submitButton = document.getElementById("submit-clip");
     submitButton.disabled = !popupVideoClip; 
     renderPopup();
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
 }
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}}
 
 function handleTopicChange(e) {
     popupTopic = e.target.value;
@@ -962,7 +980,12 @@ function handleTopicChange(e) {
     const submitButton = document.getElementById("submit-clip");
     submitButton.disabled = true; // Disable until video clip selected
     renderPopup();
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
 }
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}}
 
 function handleVideoClipChange(e) {
     popupVideoClip = e.target.value;
@@ -973,7 +996,12 @@ function handleVideoClipChange(e) {
     const submitButton = document.getElementById("submit-clip");
     submitButton.disabled = !popupVideoClip; 
     renderPopup();
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
 }
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}}
 
 function handlePopupSubmit(e) {
     e.preventDefault();
@@ -1004,7 +1032,12 @@ function handlePopupSubmit(e) {
         popupErrorMessage = "Please select a video file or choose a video from your assets.";
         console.log("Validation error:", popupErrorMessage);
         renderPopup();
-        return;
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}        return;
     }
     
     // Get CSRF token from cookie
@@ -1110,7 +1143,12 @@ function handlePopupSubmit(e) {
                 console.error("File upload failed:", data.error);
                 popupErrorMessage = data.error || "Failed to upload the file. Please try again.";
                 renderPopup();
-                return;
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}                return;
             }
             
             // Close popup and reset state
@@ -1132,7 +1170,12 @@ function handlePopupSubmit(e) {
             console.error("Error details:", error.message, error.stack);
             popupErrorMessage = "An error occurred. Please try again.";
             renderPopup();
-        });
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}        });
     } 
     // Process asset selection
     else if (hasVideoSelection) {
@@ -1213,7 +1256,12 @@ function handlePopupSubmit(e) {
                 console.error("Asset selection failed:", data.error);
                 popupErrorMessage = data.error || "Failed to assign the asset. Please try again.";
                 renderPopup();
-                return;
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}                return;
             }
             
             // Close popup and reset state
@@ -1235,7 +1283,12 @@ function handlePopupSubmit(e) {
             console.error("Error details:", error.message, error.stack);
             popupErrorMessage = "An error occurred. Please try again.";
             renderPopup();
-        });
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}        });
     }
 }
 
@@ -1273,7 +1326,12 @@ function closePopup() {
     selectedText = "";
     selectedSlideId = null;
     renderPopup();
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
 }
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}}
 
 // Instruction modals
 let tutorialModalOpen = false;
@@ -1381,7 +1439,12 @@ function renderSlides(send_update=true) {
                     selectedText = mark.textContent;
                     popupOpen = true;
                     renderPopup();
-                });
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}
+if (popupOpen) {
+    setTimeout(enhancePopupWithRecentSelections, 100);
+}                });
             });
         }
         

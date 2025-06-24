@@ -27,7 +27,7 @@ p {
 
 .card-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
     align-items: center;
     padding: 0 30px;
@@ -40,7 +40,7 @@ p {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     /* margin: 0 auto; */
     min-height: 446px;
-    max-height: 1110px;
+    max-height: 150000px;
     padding: 20px;
     font-size: 14px;
     box-sizing: border-box;

@@ -3,6 +3,7 @@ import os
 import tempfile
 import requests
 import io
+import time
 from typing import Dict, Any, List, Optional
 import re
 
@@ -25,27 +26,6 @@ class ElevenLabsTextAlignment:
         self.base_url = base_url
         self.headers = {"xi-api-key": api_key}
     
-    # def preprocess_text(self, text: str) -> str:
-    #     """
-    #     Preprocess text similar to original Aeneas function
-        
-    #     Args:
-    #         text (str): Raw text to preprocess
-            
-    #     Returns:
-    #         str: Preprocessed text
-    #     """
-    #     # Basic text preprocessing
-    #     # Remove extra whitespace
-    #     text = ' '.join(text.split())
-        
-    #     # Ensure text ends with punctuation for better alignment
-    #     if text and text[-1] not in '.!?':
-    #         text += '.'
-        
-    #     return text
-    
-
     def preprocess_text(self, text: str) -> str:
         """
         Preprocess text similar to original Aeneas function
@@ -154,7 +134,7 @@ class ElevenLabsTextAlignment:
     
     def _perform_elevenlabs_alignment(self, audio_path: str, text: str) -> Optional[List[Dict]]:
         """
-        Perform forced alignment using ElevenLabs API
+        Perform forced alignment using ElevenLabs API with exponential backoff for rate limiting
         
         Args:
             audio_path (str): Path to audio file
@@ -163,58 +143,96 @@ class ElevenLabsTextAlignment:
         Returns:
             Optional[List[Dict]]: List of word timestamps or None if failed
         """
-        try:
-            url = f"{self.base_url}/forced-alignment"
-            
-            # Read audio file
-            with open(audio_path, "rb") as f:
-                audio_bytes = f.read()
-            
-            # Prepare multipart form data
-            files = {
-                'file': ('audio.mp3', io.BytesIO(audio_bytes), 'audio/mpeg')
-            }
-            
-            data = {
-                'text': text,
-                'language': 'en'  # Default to English
-            }
-            
-            headers = {"xi-api-key": self.api_key}
-            
-            print("🔄 Sending request to ElevenLabs Forced Alignment API...")
-            response = requests.post(url, files=files, data=data, headers=headers, timeout=60)
-            response.raise_for_status()
-            
-            result = response.json()
-            
-            # Extract word-level timestamps
-            words = result.get("words", [])
-            
-            # Process and clean the words
-            processed_words = []
-            for word_data in words:
-                word_text = word_data.get("text", "").strip()
+        max_retries = 10
+        base_wait_time = 5  # Start with 5 seconds
+        
+        for attempt in range(max_retries):
+            try:
+                url = f"{self.base_url}/forced-alignment"
                 
-                # Skip empty words or just spaces
-                if not word_text:
+                # Read audio file
+                with open(audio_path, "rb") as f:
+                    audio_bytes = f.read()
+                
+                # Prepare multipart form data
+                files = {
+                    'file': ('audio.mp3', io.BytesIO(audio_bytes), 'audio/mpeg')
+                }
+                
+                data = {
+                    'text': text,
+                    'language': 'en'  # Default to English
+                }
+                
+                headers = {"xi-api-key": self.api_key}
+                
+                if attempt == 0:
+                    print("🔄 Sending request to ElevenLabs Forced Alignment API...")
+                else:
+                    print(f"🔄 Retry attempt {attempt + 1}/{max_retries} - Sending request to ElevenLabs API...")
+                
+                response = requests.post(url, files=files, data=data, headers=headers, timeout=60)
+                
+                # Check for rate limiting (429) or server errors (5xx)
+                if response.status_code == 429:
+                    wait_time = base_wait_time * (2 ** attempt)  # Exponential backoff
+                    print(f"⚠️ Rate limited (429). Waiting {wait_time} seconds before retry {attempt + 1}/{max_retries}...")
+                    time.sleep(wait_time)
+                    continue
+                elif response.status_code >= 500:
+                    wait_time = base_wait_time * (2 ** attempt)  # Also backoff for server errors
+                    print(f"⚠️ Server error ({response.status_code}). Waiting {wait_time} seconds before retry {attempt + 1}/{max_retries}...")
+                    time.sleep(wait_time)
                     continue
                 
-                processed_words.append({
-                    "word": word_text,
-                    "start_time_s": word_data.get("start", 0.0),
-                    "end_time_s": word_data.get("end", 0.0)
-                })
-            
-            print(f"✅ Received {len(processed_words)} word alignments from ElevenLabs")
-            return processed_words
-            
-        except requests.exceptions.RequestException as e:
-            print(f"❌ ElevenLabs API request failed: {e}")
-            return None
-        except Exception as e:
-            print(f"❌ Error in ElevenLabs alignment: {e}")
-            return None
+                # Raise for other HTTP errors (4xx except 429)
+                response.raise_for_status()
+                
+                result = response.json()
+                
+                # Extract word-level timestamps
+                words = result.get("words", [])
+                
+                # Process and clean the words
+                processed_words = []
+                for word_data in words:
+                    word_text = word_data.get("text", "").strip()
+                    
+                    # Skip empty words or just spaces
+                    if not word_text:
+                        continue
+                    
+                    processed_words.append({
+                        "word": word_text,
+                        "start_time_s": word_data.get("start", 0.0),
+                        "end_time_s": word_data.get("end", 0.0)
+                    })
+                
+                print(f"✅ Received {len(processed_words)} word alignments from ElevenLabs")
+                return processed_words
+                
+            except requests.exceptions.RequestException as e:
+                if attempt == max_retries - 1:
+                    print(f"❌ ElevenLabs API request failed after {max_retries} attempts: {e}")
+                    return None
+                else:
+                    wait_time = base_wait_time * (2 ** attempt)
+                    print(f"⚠️ Request failed: {e}. Waiting {wait_time} seconds before retry {attempt + 1}/{max_retries}...")
+                    time.sleep(wait_time)
+                    continue
+                    
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    print(f"❌ Error in ElevenLabs alignment after {max_retries} attempts: {e}")
+                    return None
+                else:
+                    wait_time = base_wait_time * (2 ** attempt)
+                    print(f"⚠️ Unexpected error: {e}. Waiting {wait_time} seconds before retry {attempt + 1}/{max_retries}...")
+                    time.sleep(wait_time)
+                    continue
+        
+        print(f"❌ All {max_retries} retry attempts failed")
+        return None
     
     def _convert_to_aeneas_format(self, alignment_data: List[Dict], original_text: str) -> Dict[str, Any]:
         """
@@ -515,4 +533,3 @@ class ElevenLabsTextAlignment:
                     
         except Exception as e:
             print(f"❌ Test failed: {e}")
-

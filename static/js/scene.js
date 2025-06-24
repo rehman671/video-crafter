@@ -788,7 +788,7 @@ function addSlide(e) {
     const slideNumber = slides.length + 1; // Keep track of the display number separately
     const newSlide = {
         id: newId,
-        subtitle: `Subtitle ${slideNumber}`, // Use positive number for display
+        subtitle: `Slide ${slideNumber}`, // Use positive number for display
         text: "",
         markedText: "",
         originalText: "",
@@ -810,7 +810,7 @@ function deleteSlide(id) {
         .filter(slide => slide.id !== id)
         .map((slide, index) => ({
             ...slide,
-            subtitle: `Subtitle ${index + 1}`,
+            subtitle: `Slide ${index + 1}`,
             sequence: index + 1
         }));
     slideCount = slides.length > 0 ? Math.max(...slides.map(s => s.id)) : 0;
@@ -3948,7 +3948,7 @@ function splitSubtitleAtCursor(slideId, cursorPosition) {
     const newSlideId = generateNewSlideId();
     const newSlide = {
         id: newSlideId,
-        subtitle: `Subtitle ${slideIndex + 2}`,
+        subtitle: `Slide ${slideIndex + 2}`,
         text: secondPartText,
         markedText: secondPartMarked,
         originalText: secondPartText,
@@ -4004,7 +4004,9 @@ function mergeWithPreviousSubtitle(slideId) {
     saveSubtitleOperationToHistory();
 
     // Combine marked text preserving highlights
+    // Combine marked text and reset all video assignments
     const combinedMarkedText = combineMarkedTexts(previousSlide.markedText || previousSlide.text, currentSlide.markedText || currentSlide.text);
+    console.log('Merged subtitles - all video assignments reset for combined text');
 
     // Send merge request to server
     sendMergeToServer(currentSlide.id, previousSlide.id, combinedText, combinedMarkedText);
@@ -4107,11 +4109,12 @@ function sendMergeToServer(currentClipId, previousClipId, mergedText, mergedMark
     const csrftoken = getCookie('csrftoken');
     
     const data = {
-        current_clip_id: currentClipId,
-        previous_clip_id: previousClipId,
-        merged_text: mergedText,
-        merged_marked_text: mergedMarkedText
-    };
+    current_clip_id: currentClipId,
+    previous_clip_id: previousClipId,
+    merged_text: mergedText,
+    merged_marked_text: mergedMarkedText,
+    reset_video_assignments: true  // Add this flag to inform backend
+};
 
     fetch('/merge-subtitles/', {
         method: 'POST',
@@ -4302,17 +4305,17 @@ function splitMarkedText(markedText, splitPosition) {
 }
 
 // Function to combine marked texts while preserving highlights
+// Function to combine marked texts while REMOVING all highlights (reset videos)
 function combineMarkedTexts(firstMarkedText, secondMarkedText) {
-    const firstClean = (firstMarkedText || '').trim();
-    const secondClean = (secondMarkedText || '').trim();
+    const firstClean = getCleanTextContent(firstMarkedText || '').trim();
+    const secondClean = getCleanTextContent(secondMarkedText || '').trim();
 
     if (!firstClean) return secondClean;
     if (!secondClean) return firstClean;
 
-    // Simply concatenate with a space, preserving all HTML
+    // Return plain text without any highlights - this resets all assigned videos
     return firstClean + ' ' + secondClean;
 }
-
 // Function to find word boundary for splitting
 function findNearestWordBoundaryForSplit(text, position) {
     // Word boundary characters
@@ -4370,7 +4373,7 @@ function generateNewSlideId() {
 // Function to update sequence numbers after operations
 function updateSequenceNumbers(startIndex = 0) {
     for (let i = startIndex; i < slides.length; i++) {
-        slides[i].subtitle = `Subtitle ${i + 1}`;
+        slides[i].subtitle = `Slide ${i + 1}`;
         slides[i].sequence = i + 1;
     }
 }
@@ -4478,6 +4481,7 @@ const splitMergeStyles = `
         margin-top: 4px;
         opacity: 0;
         transition: opacity 0.2s ease;
+        width: fit-content;
     }
     
     .highlight-sub:hover .subtitle-split-merge-hint {

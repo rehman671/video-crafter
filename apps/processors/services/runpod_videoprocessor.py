@@ -81,6 +81,7 @@ class RunPodVideoProcessor:
                         "start_time": subclip.start_time,
                         "end_time": subclip.end_time,
                         "text": subclip.text.replace("'", "").replace('"',''),  # Remove single quotes from text
+                        "is_image": subclip.is_image,  # Include is_image flag
                     }
                     if subclip.video_file:
                         subclip_info["video_file"] = subclip.video_file.name
@@ -217,6 +218,7 @@ class RunPodVideoProcessor:
                         "start_time": subclip.start_time,
                         "end_time": subclip.end_time,
                         "text": subclip.text.replace("'", "").replace('"',''),  # Remove single quotes from text
+                        "is_image": subclip.is_image,  # Include is_image flag
                     }
                     if subclip.video_file:
                         subclip_info["video_file"] = subclip.video_file.name

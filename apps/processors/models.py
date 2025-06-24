@@ -74,7 +74,9 @@ class Subclip(models.Model):
     video_file = models.FileField(upload_to="subclips/", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_image = models.BooleanField(default=False)  # Flag to indicate if the subclip is an image
 
+    
     class Meta:
         ordering = ["start_time"]
 
