@@ -1225,6 +1225,11 @@
                 margin-bottom: 98px;
             }
         }
+        .vl {
+border-left: 1px solid rgba(114, 114, 114, 0.2);
+  height: 40px;
+  margin: 0 20px;
+}
     </style>
 </head>
 <body>
@@ -1244,7 +1249,11 @@
                 <li><a href="#testimonials">Testimonials</a></li>
                 <li><a href="#pricing">Pricing</a></li>
                 <li><a href="#faq">FAQ</a></li>
-                <li><a href="{% url 'register' %}" class="btn btn-primary">Start Free</a></li>
+                <li>
+                    <div class="vl"></div>
+                    <a href="{% url 'register' %}" class="btn btn-primary">Start Free</a> <a href="{% url 'login' %}" style="margin-left:5px;" class="btn btn-outline">
+                        Login
+                    </a></li>
             </ul>
         </div>
     </header>
