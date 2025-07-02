@@ -32,7 +32,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-*gn_a!jnk_sk3tl$p3@%+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.environ.get('DEBUG', 1)))
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['videocrafter.io', 'www.videocrafter.io', ]
 
 
 # Application definition
@@ -59,6 +59,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
         'config.middleware.S3DebugMiddleware',
+        'config.middleware.RequestInfoMiddleware',
+        # 'config.middleware.MaintenanceModeMiddleware',
 
 ]
 

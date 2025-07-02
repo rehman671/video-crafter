@@ -82,3 +82,4 @@ ffmpeg-python
 psutil
 django-storages 
 boto3
+django-ratelimit

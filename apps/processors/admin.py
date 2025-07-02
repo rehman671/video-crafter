@@ -2,8 +2,12 @@ from django.contrib import admin
 from django import forms
 from .models import Video, Clips, Subclip, BackgroundMusic, ProcessingStatus
 from django.contrib import messages
-from .utils import generate_final_video, generate_audio_file, generate_srt_file, generate_clips_from_srt
+from .utils import generate_final_video, generate_audio_file, generate_srt_file, generate_clips_from_srt, generate_signed_url
 import json
+from .models import VideoLogs
+from django.utils.html import format_html
+import requests
+
 
 class SubclipInline(admin.TabularInline):
     model = Subclip
@@ -131,3 +135,41 @@ class BackgroundMusicAdmin(admin.ModelAdmin):
 @admin.register(ProcessingStatus)
 class ProcessingStatusAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(VideoLogs)
+class VideoLogsAdmin(admin.ModelAdmin):
+    list_display = ('video', 'created_at', 'log_file')
+    list_filter = ('created_at','video', 'video__user')
+    search_fields = ('video__id',)
+    readonly_fields = ('video', 'log_preview', 'created_at', 'updated_at')
+    ordering = ('-created_at',)
+    fields = ['video', 'log_file','log_preview', 'created_at', 'updated_at']
+    def has_add_permission(self, request):
+        return False  # Logs are created automatically
+
+    @admin.display(description='Log Preview')
+    def log_preview(self, obj):
+        try:
+            if obj.log_file:
+                log_url = generate_signed_url(obj.log_file.name)
+                if log_url:
+                    # Get first 500 characters from remote log file
+                    response = requests.get(log_url)
+                    if response.status_code == 200:
+                        content = response.text
+                        # Format the content in a pre tag with styling 
+                        formatted_content = format_html(
+                            '<div style="max-height: 400px; overflow-y: auto;">'
+                            '<pre style="background-color: #f5f5f5; padding: 10px; '
+                            'border: 1px solid #ddd; border-radius: 4px; '
+                            'font-family: monospace; white-space: pre-wrap;">{}</pre>',
+                            content, 
+                        )
+                            # log_url
+                            # '<a href="{}" target="_blank">View Full Log</a></div>',
+                        return formatted_content
+                    return "Could not fetch log file"
+            return "No log file available"
+        except Exception as e:
+            return f"Error reading log file: {str(e)}"

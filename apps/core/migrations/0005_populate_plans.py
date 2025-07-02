@@ -22,7 +22,7 @@ def populate_plans(apps, schema_editor):
         price_per_month=497.00,
         description='$497 /Month',
         ad_variations_per_month=25 ,
-        stripe_price_id='price_1RGKLPB13B1g6neBYmmpdXHq',
+        stripe_price_id='price_1RdoTJB2Vog0OftoC82o2J4V',
         credits_price=19.88,
         show_on_frontend=True
     )
@@ -33,7 +33,7 @@ def populate_plans(apps, schema_editor):
         price_per_month=997.00,
         description='$997 /Month',
         ad_variations_per_month=60 ,
-        stripe_price_id='price_1RGKM0B13B1g6neBaqZKzxpP',
+        stripe_price_id='price_1RdoVlB2Vog0OftokJOtgf69',
         credits_price=16.62,
         show_on_frontend=True
     )

@@ -119,11 +119,29 @@
             <div class="card-text">
                 <h3>Tutorial Video:</h3>
             </div>
-            <div class="video-card">
-                <div class="video-card-sub-div">
-                    <div id="videoPreviewContainer" class="videoPreviewContainer"></div>
-                </div>
-            </div>
+   <div class="video-card" style="padding:0px;width:742px;margin:auto;margin-bottom:20px;">
+    <div class="video-card-sub-div" style="height:418px">
+        <div id="videoPreviewContainer" class="videoPreviewContainer" style="
+            width: 100%;
+            max-width: 800px; /* Set maximum width as needed */
+            margin: 0 auto;
+            aspect-ratio: 16/9; /* Modern browsers - adjust ratio as needed */
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        ">
+ <video controls class="demo-video" poster="{% static 'images/tutorial_poster.png' %}" style="
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            background-color: transparent;
+            ">
+                    <source src="https://videocraftervideos.s3.us-east-1.amazonaws.com/videocrafter+tutorial.mov" type="video/mp4">
+                </video>
+        </div>
+    </div>
+</div>
             <div class="pick-dimension">Pick Your Dimension</div>
             <div class="options video-sizes video-sizes-div">
                 <div class="box" data-resolution="1:1">
@@ -586,7 +604,7 @@ document.getElementById('colortext2').addEventListener('input', function() {
     if (/^#[0-9A-F]{6}$/i.test(colorValue)) {
         document.getElementById('colorPicker2').value = colorValue;
         document.getElementById('color2').style.backgroundColor = colorValue;
-        document.getElementById('previewBackground').style.backgroundColor = colorValue;
+        document.getElementById('previewB   ackground').style.backgroundColor = colorValue;
         
         // Update 9:16 preview if active
         if (resolution === '9:16') {
@@ -598,17 +616,39 @@ document.getElementById('colortext2').addEventListener('input', function() {
 });
     </script>
 </body>
-<!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/67bde19ce1b723191240f344/1ikurij78';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
-</html>
+ <!-- WhatsApp Chat Button -->
+<a href="https://wa.me/447770218787?text=Hi%2C%20I%20need%20support" 
+   class="whatsapp-chat-button" 
+   target="_blank" 
+   title="Chat with us on WhatsApp">
+   <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="Chat on WhatsApp" width="60">
+</a>
+
+<style>
+.whatsapp-chat-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #25D366;
+  border-radius: 50%;
+  padding: 0.5em;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Icon image with responsive scaling */
+.whatsapp-chat-button img {
+  width: clamp(30px, 5vw, 48px);  /* Auto-scale based on screen width */
+  height: clamp(30px, 5vw, 48px);
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.whatsapp-chat-button:hover {
+  transform: scale(1.1);
+}
+</style></html>

@@ -1604,7 +1604,8 @@ let historySplitFileName = "No file chosen";
 let customSplitLines = null;
         // Add subscription plan check variable
         const userSubscriptionPlan = "{{ user_subscription.plan.name|default:'Free Plan'|lower }}";
-        const isFreePlan = userSubscriptionPlan.toLowerCase().includes('free');
+        const isFreePlan = false; // Default to false
+        {% comment %} const isFreePlan = userSubscriptionPlan.toLowerCase().includes('free'); {% endcomment %}
         console.log("User plan:", userSubscriptionPlan, "Is free plan:", isFreePlan);
         
         console.log("User plan:", userSubscriptionPlan, "Is free plan:", isFreePlan);
@@ -5447,7 +5448,7 @@ function updateSubtitleCount() {
     
     // Check how many subtitles exceed the limit
     const segments = getTextSegments();
-    const exceedsCount = segments.filter(segment => segment.length > maxLength).length;
+    const exceedsCount = segments.filter(segment => segment.length > maxLength + 1).length;
     
     let countText = `${subtitleCount} subtitle${subtitleCount === 1 ? '' : 's'}`;
     
@@ -6208,18 +6209,31 @@ function calculateTextSimilarity(text1, text2) {
     return (similarity * 0.7 + wordSimilarity * 0.3);
 }
     </script>
+<!-- WhatsApp Chat Button -->
+<a href="https://wa.me/447770218787?text=Hi%2C%20I%20need%20support" 
+   class="whatsapp-chat-button" 
+   target="_blank" 
+   title="Chat with us on WhatsApp">
+   <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="Chat on WhatsApp" width="60">
+</a>
+
+<style>
+.whatsapp-chat-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  background-color: #25D366;
+  padding: 12px;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: transform 0.2s;
+}
+.whatsapp-chat-button:hover {
+  transform: scale(1.1);
+}
+</style>
+
 </body>
-<!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/67bde19ce1b723191240f344/1ikurij78';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
+
 </html>

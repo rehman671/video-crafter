@@ -113,3 +113,16 @@ class ProcessingStatus(models.Model):
     
     def __str__(self):
         return f"Processing status for Video #{self.video.id}: {self.status} ({self.progress}%)"
+
+
+
+
+class VideoLogs(models.Model):
+    """Logs for video processing steps"""
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='logs')
+    log_file = models.FileField(upload_to='logs/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Logs for Video #{self.video.id} at {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"

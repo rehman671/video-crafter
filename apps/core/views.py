@@ -39,7 +39,8 @@ from apps.core.utils import process_video_speed
 from django.http import JsonResponse
 import json
 import logging
-
+from django_ratelimit.decorators import ratelimit
+from django.core.exceptions import PermissionDenied
 # Make sure you have this import (should already exist):
 from django.contrib import messages
 
@@ -752,7 +753,7 @@ def purchase_credits(request):
         print(request, f"Error adding credits: {str(e)}")
         return redirect('manage_subscription')
 
-CREDITS_PRICE_ID="price_1RGKTgB13B1g6neBlqrG27V7"
+CREDITS_PRICE_ID="price_1RdrSKB2Vog0OftoH29KST34"
 
 @login_required(login_url='login')
 def credits_success(request):
@@ -1656,8 +1657,16 @@ def register(request):
     return render(request, "register.html")
 
 
-
+@ratelimit(key='ip', rate='5/12h', block=True)
 def register_view(request):
+    if getattr(request, 'limited', False):
+        raise PermissionDenied("Too many signups from your IP. Try again later.")
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    print(f"Register view accessed from IP: {ip}")
     error_message = None
     if request.method == "POST":
         print("Got Register")
@@ -1691,7 +1700,7 @@ def register_view(request):
                 password=password,
                 is_active=False  # User will be inactive until email verification
             )
-
+            print(f"Created user {user.first_name} with email {user.email}")
             # Generate verification token
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))

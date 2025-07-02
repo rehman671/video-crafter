@@ -8,7 +8,7 @@ from django.core.files.storage import default_storage
 from django.core.files import File
 
 from apps.processors.utils import generate_signed_url, generate_signed_url_for_upload
-from apps.processors.models import Video, Clips, Subclip, BackgroundMusic
+from apps.processors.models import Video, Clips, Subclip, BackgroundMusic, VideoLogs
 
 class RunPodVideoProcessor:
     def __init__(self, video_id, api_key=None, endpoint_id=None):
@@ -158,7 +158,10 @@ class RunPodVideoProcessor:
                     "bucket": settings.AWS_STORAGE_BUCKET_NAME,
                     "region": settings.AWS_REGION,
                     "output_folder": "output/",
-                    "output_bg_folder": "output_bg/"
+                    "output_bg_folder": "output_bg/",
+                                        "logs_folder": "logs/"  # ADD THIS LINE
+
+                    
                 }
             }
         }
@@ -291,7 +294,9 @@ class RunPodVideoProcessor:
                     "bucket": settings.AWS_STORAGE_BUCKET_NAME,
                     "region": settings.AWS_REGION,
                     "output_folder": "output/",
-                    "output_bg_folder": "output_bg/"
+                    "output_bg_folder": "output_bg/",
+                                        "logs_folder": "logs/"  # ADD THIS LINE
+
                 }
             }
         }
@@ -390,6 +395,24 @@ class RunPodVideoProcessor:
                     # Save the S3 key to the video model
                     video.output_with_watermark.name = output_watermarked_key
                     print(f"Saved watermarked output video reference to: {output_watermarked_key}")
+                
+                # Save complete logs if available
+                if "complete_logs_key" in result_data and result_data["complete_logs_key"]:
+                    complete_logs_key = result_data["complete_logs_key"]
+                    # Create or update VideoLogs entry
+                    from apps.processors.models import VideoLogs  # Import here to avoid circular imports
+                    
+                    video_logs, created = VideoLogs.objects.get_or_create(
+                        video=video,
+                        defaults={'log_file': complete_logs_key}
+                    )
+                    
+                    if not created:
+                        # Update existing log entry
+                        video_logs.log_file.name = complete_logs_key
+                        video_logs.save()
+                    
+                    print(f"Saved complete logs reference to: {complete_logs_key}")
             
             video.save()
             return success

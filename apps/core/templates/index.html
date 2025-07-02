@@ -1,741 +1,1700 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VideoCrafter.io</title>
-    <!-- Font Awesome CDN for icons -->
-    <link rel="stylesheet" href="{% static 'styles/landing-bck.css' %}">
-    <link rel="stylesheet" href="{% static 'styles/landing.css' %}">
-    <link rel="stylesheet" href="{% static 'styles/landing_style-bck.css' %}">
-    <link rel="stylesheet" href="{% static 'styles/landing_style.css' %}">
-    <link rel="stylesheet" href="{% static 'styles/video-js.css' %}">
-    <link rel="stylesheet" href="{% static 'styles/videos.css' %}">
+    <title>VideoCrafter.io - Create Video Ads Fast Without Editors</title>
     <link rel="icon" href="{% static 'images/iconlogo.svg' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <style>
-            .hamburger {
-                display: none;
-                cursor: pointer;
-            }
-    
-            .topbar {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                z-index: 1000;
-                background: white;
-                transition: transform 0.3s ease-in-out;
-            }
-    
-            .links-topbar {
-                margin-top: 97px;
-            }
-    
-            @media (max-width: 768px) {
-                .header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-    
-                .topbar{
-                    padding: 0;
-                }
-                .hamburger {
-                    display: block;
-                }
-    
-                .links {
-                    display: none;
-                }
-            }
-        </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Additional CSS for slider functionality */
-        .slider-videos {
+        :root {
+            --primary: #8A2BE2;
+            --primary-dark: #6A1B9A;
+            --accent: #A855F7;
+            --accent-light: #C084FC;
+            --dark: #000000;
+            --light: #FFFFFF;
+            --light-gray: #F5F3FF;
+            --gray: #6B7280;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --transition: all 0.3s ease;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--light);
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            gap: 8px;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--light);
+            box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(168, 85, 247, 0.1);
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .section {
+            padding: 100px 0;
+        }
+        
+        .section-title {
+            font-size: 2.75rem;
+            font-weight: 800;
+            margin-bottom: 1.25rem;
+            line-height: 1.2;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Header */
+        header {
+            padding: 18px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background-color: var(--light);
+            box-shadow: var(--shadow-sm);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+        
+        .scrolled {
+            padding: 12px 0;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        
+        .header-container {
             display: flex;
-            transition: transform 0.3s ease-in-out;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .logo-img {
+            height: 40px;
+            width: auto;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 32px;
         }
 
-        .slider-video {
-            flex: 0 0 100%;
+        .nav-links li {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-links a.btn-primary{
+            color: var(--light);
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--primary);
+            transition: var(--transition);
+        }
+        
+        .nav-links a:hover::after {
             width: 100%;
         }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary);
+            z-index: 1001;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 180px 0 100px;
+            background: linear-gradient(135deg, #f6f7ff 0%, #f0f4ff 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, rgba(138, 43, 226, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
+            top: -300px;
+            right: -200px;
+            z-index: 0;
+        }
+        
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, rgba(168, 85, 247, 0.1) 0%, rgba(138, 43, 226, 0.05) 100%);
+            bottom: -200px;
+            left: -100px;
+            z-index: 0;
+        }
+        
+        .hero-content {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-text {
+            flex: 1;
+            min-width: 300px;
+            max-width: 700px;
+        }
+        
+        .hero-title {
+            font-size: 3.25rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(138, 43, 226, 0.1);
+            color: var(--primary);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-image {
+            flex: 1;
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
+            transition: var(--transition);
+            max-width: 340px;
+            min-width: 300px;
+        }
 
-        .slider-btn {
+
+        .hero-image video{
+            width: 100%;
+            display: block;
+            height: 425px;
+        }
+        
+        .hero-image:hover {
+            transform: perspective(1000px) rotateY(0) rotateX(0);
+        }
+        
+        .hero-video {
+            width: 100%;
+            display: block;
+            transition: var(--transition);
+        }
+
+        .trust-badges {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+        
+        .trust-badges p {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .stars {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .star {
+            color: #FFD700;
+            font-size: 1.1rem;
+        }
+        
+        /* Features Section */
+        .features {
+            background-color: var(--light);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .feature-card {
+            background-color: var(--light);
+            border-radius: 16px;
+            padding: 40px 30px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: var(--transition);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-description {
+            color: var(--gray);
+            line-height: 1.7;
+        }
+        
+        /* Portfolio Section - Updated to match your screenshot */
+        .portfolio {
+            background-color: var(--light-gray);
+        }
+        
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .portfolio-item {
+            background-color: var(--light);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .portfolio-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 16px 48px rgba(138, 43, 226, 0.15);
+        }
+        
+        .portfolio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--light-gray);
+            border-bottom: 1px solid rgba(138, 43, 226, 0.1);
+        }
+        
+        .dimension-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .dimension-badge i {
+            color: var(--accent);
+        }
+        
+        .play-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(138, 43, 226, 0.1);
+            border-radius: 8px;
+            color: var(--primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .play-icon:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .portfolio-thumbnail {
+            width: 100%;
+        }
+        
+        .dimension-label {
             position: absolute;
             top: 50%;
-            transform: translateY(-50%);
-            background: rgba(0, 0, 0, 0.5);
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: rgba(138, 43, 226, 0.15);
+        }
+        
+        .portfolio-info {
+            padding: 20px;
+        }
+        
+        .platform-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        .platform-description {
+            color: var(--gray);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        /* FAQ Section - Updated to match TwoHands.studio style */
+        .faq-section {
+            background: white;
+            padding: 100px 0;
+        }
+        
+        .faq-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .faq-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .faq-title {
+            font-size: 2.75rem;
+            font-weight: 800;
+            margin-bottom: 1.25rem;
+            line-height: 1.2;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .faq-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+        
+        .faq-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(138, 43, 226, 0.08);
+            border: 1px solid rgba(138, 43, 226, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .faq-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(138, 43, 226, 0.15);
+        }
+        
+        .faq-question {
+            padding: 25px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question span {
+            max-width: calc(100% - 36px);
+        }
+        
+        .faq-card.active .faq-question {
+            background: var(--light-gray);
+            color: var(--primary);
+        }
+        
+        .faq-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(138, 43, 226, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        .faq-card.active .faq-toggle {
+            background: var(--primary);
             color: white;
-            border: none;
-            padding: 10px;
+            transform: rotate(45deg);
+        }
+        
+        .faq-answer {
+            padding: 0 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            color: var(--gray);
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+        
+        .faq-card.active .faq-answer {
+            padding: 0 25px 25px;
+            max-height: 300px;
+        }
+        
+        /* Video Modal */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .video-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            position: relative;
+            max-width: 900px;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-dimension {
+            position: absolute;
+            top:60px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-video {
+            width: 100%;
+            display: block;
+            height: 100%;
+            max-height: 60vh;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: white;
+            font-size: 2rem;
             cursor: pointer;
             z-index: 10;
-        }
-
-        .slider-btn.prev {
-            left: 0px;
-        }
-
-        .slider-btn.next {
-            right: 37px;
-        }
-
-        .slider-dots {
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #ccc;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 50%;
-            margin: 0 5px;
-            cursor: pointer;
         }
-
-        .dot.active {
-            background: #000;
+        
+        .close-modal:hover {
+            transform: rotate(90deg);
+            background: rgba(138, 43, 226, 0.7);
         }
-
-        /* Ensure grid layout for desktop */
-        .video-grid {
+        
+        /* Demo Section */
+        .demo {
+            background-color: var(--light);
+        }
+        
+        .demo-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .demo-video-container {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 3rem;
+            position: relative;
+            width: 900px;
+        }
+        
+        
+        .demo-video {
+            width: 100%;
             display: block;
         }
-
-        .grid-container {
+        
+        /* Testimonials */
+        .testimonials {
+            background-color: var(--light-gray);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .testimonials-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+        }
+        
+        .testimonials-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            gap: 30px;
+            margin-top: 50px;
         }
-
-        .grid-video video {
+        
+        .testimonial-card {
+            background-color: var(--light);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .testimonial-video {
             width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .testimonial-content {
+            padding: 25px;
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .testimonial-text::before {
+            content: '"';
+            font-size: 3rem;
+            color: var(--light-gray);
+            position: absolute;
+            top: -20px;
+            left: -10px;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .testimonial-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .author-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .author-name {
+            font-weight: 700;
+        }
+        
+        .author-title {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+        
+        /* Pricing */
+        .pricing {
+            background-color: var(--light);
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .pricing-card {
+            background-color: var(--light);
+            border-radius: 16px;
+            padding: 40px 30px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+        
+        .pricing-card.popular {
+            border: 2px solid var(--primary);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background-color: var(--primary);
+            color: white;
+            padding: 6px 20px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .pricing-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .pricing-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+        
+        .pricing-price span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--gray);
         }
 
-        /* Hide mobile sliders on desktop */
-        @media (min-width: 769px) {
-            .mobile-slider {
-                display: none;
+        .pricing-comment {
+            font-size: 16px;
+            color: #000000B3;
+            font-weight: normal;
+        }
+
+        .pricing-promo-comment {
+            margin-top: -0.5rem;
+            font-size: 0.875rem;
+            font-weight: 400;
+            line-height: 21px;
+            letter-spacing: -0.01em;
+            color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 2rem;
+            flex-grow: 1;
+        }
+        
+        .pricing-features li {
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .pricing-features li i {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        /* CTA */
+        .cta {
+            background: linear-gradient(135deg, var(--primary) 0%, #6A1B9A 100%);
+            color: white;
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+            top: -100px;
+            right: -100px;
+        }
+        
+        .cta::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            bottom: -100px;
+            left: -50px;
+        }
+        
+        .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cta-title {
+            font-size: 2.75rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .cta .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .cta .btn-outline {
+            color: white;
+            border-color: white;
+        }
+        
+        .cta .btn-outline:hover {
+            background-color: white;
+            color: var(--primary);
+        }
+        
+        /* Signup Form */
+        .signup-form {
+            display: flex;
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 80px 0 30px;
+        }
+        
+        .footer-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+        
+        .footer-links-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            gap: 98px;
+        }
+        
+        .footer-col {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1.5rem;
+            text-decoration: none;
+        }
+        
+        .footer-logo-img {
+            height: 36px;
+        }
+        
+        .footer-description {
+            opacity: 0.7;
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+            max-width: 300px;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .footer-social a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+        
+        .footer-social a:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .footer-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+        
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .footer-links li a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: var(--transition);
+            display: block;
+            text-transform: capitalize;
+        }
+        
+        .footer-links li a:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 30px;
+            text-align: center;
+            opacity: 0.7;
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .section {
+                padding: 80px 0;
+            }
+            
+            .section-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-title {
+                font-size: 2.75rem;
+            }
+
+            .demo-video-container {
+                max-width: 100%;
             }
         }
-
-        /* Hide desktop grid on mobile */
+        
         @media (max-width: 768px) {
-            .video-grid {
-                display: none;
+            .hero-image{
+                max-width: unset;
             }
-            .portfolio-header h2{
-                font-size: 24px;
-                width: 89%;
+            .section {
+                padding: 70px 0;
+            }
+            
+            .section-title {
+                font-size: 2.25rem;
+            }
+            
+            .hero {
+                padding: 140px 0 60px;
+            }
+            
+            .hero-title {
+                font-size: 2.25rem;
+            }
+            
+            .hero-content {
+                flex-direction: column;
+            }
+            
+            .hero-text {
+                padding-right: 0;
+                margin-bottom: 40px;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                background-color: var(--light);
+                flex-direction: column;
+                padding: 100px 30px 30px;
+                transition: var(--transition);
+                box-shadow: var(--shadow-lg);
+                z-index: 1000;
+            }
+            
+            .nav-links.active {
+                right: 0;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .cta .btn {
+                width: 100%;
+                /* max-width: 300px; */
+            }
+            
+            .signup-form {
+                flex-direction: column;
+            }
+            
+            .demo-video-container {
+                max-width: 100%;
+            }
+
+            .signup-form a {
+                width: unset !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .section {
+                padding: 60px 0;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-description {
+                max-width: unset;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .footer-grid {
+                display: block;
+            }
+            .footer-links-container {
+                display: grid;
+            }
+            .footer-branding {
+                margin-bottom: 98px;
             }
         }
     </style>
 </head>
-
 <body>
-    <div class="background">
-        <img src="{% static 'images/lines.svg' %}" class="lines" alt="" />
-        <!-- Ellipse Image 1 -->
-        <img src="{% static 'images/elipse.svg' %}" alt="" class="ellipse2" />
-        <!-- Ellipse Image 2 -->
-        <img src="{% static 'images/elipse.svg' %}" alt="" class="ellipse2" />
-    </div>
-    <header class="header">
-        <div class="container">
-            <a href="/" class="logo" style="padding: 20px;">
-                <img src="{% static 'images/logo-small.svg' %}" alt="Logo" />
+    <!-- Header -->
+    <header id="header">
+        <div class="container header-container">
+            <a href="#" class="logo">
+                <img src="{% static 'images/logo.svg' %}">
             </a>
-
-            <a href="/" class="logo-small">
-                <img src="{% static 'images/logo.svg' %}" alt="Logo" />
-            </a>
-
-            <!-- Desktop Links -->
-            <div class="links">
-                <div class="link">
-                    <a href="/#">Home</a>
-                    <a href="/#Portfolio">Portfolio</a>
-                    <a href="/#HowItWorks">Features</a>
-                    <a href="/#pricing">Pricing</a>
-                    <a href="/#contact">Contact</a>
-                </div>
-                <div class="line"></div>
-                <div class="buttons">
-                    <a href="{% url 'login' %}">Login</a>
-                    <a href="#pricing" class="getStarted">Get started</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Hamburger Icon -->
-        <label id="hamburger">
-            <img src="{% static 'images/hamburger.svg' %}" alt="menu"  class="hamburger" />
-        </label>
-
-        <!-- Mobile Menu -->
-        <div class="topbar" id="topbar" style="background: white; height: fit-content;">
-            <div class="hamburger-menu" id="menu">
-                <div class="topbar-grey"></div>
-                <div class="links-topbar">
-                    <a href="#" onclick="closeMenu()">Home</a>
-                    <a href="#Portfolio" onclick="closeMenu()">Portfolio</a>
-                    <a href="#HowItWorks" onclick="closeMenu()">Features</a>
-                    <a href="#pricing" onclick="closeMenu()">Pricing</a>
-                    <a href="#contact" onclick="closeMenu()">Contact</a>
-                    <hr class="separator" />
-                    <a href="accounts/login" onclick="closeMenu()">Login</a>
-                </div>
-            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#testimonials">Testimonials</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="{% url 'register' %}" class="btn btn-primary">Start Free</a></li>
+            </ul>
         </div>
     </header>
 
-    <div class="top">
-        <div class="typography">
-            <h1 class="h1hero">
-                Create <span class="highlight"> High-Converting Video Ads </span>Within An Hour – No
-                Video Editor Required
-            </h1>
-            <p class="phero">
-                Why leave your ad performance in someone else’s hands when you can do it yourself?<br />
-                Introducing VideoCrafter.io – the fastest, easiest way to create scroll-stopping video ads <br />
-                for Facebook, Instagram, YouTube, and TikTok – without needing a video editor.
-            </p>
-        </div>
-        <div class="heroButton">
-            <img src="{% static 'images/arrow.svg' %}" alt="arrow" class="arrow" />
-            <a href="#pricing">
-                <div class="getStarted" id="heroButton">
-                    Get Started
-                    <img src="{% static 'images/arrow.svg' %}" alt="arrow-right" />
-                </div>
-            </a>
-        </div>
-    </div>
-    <div class="placeholder">
-        <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/VideoCrafter+VSL.mp4" style="width: 100%;"  controls poster="{% static 'images/main_video_poster.jpg' %}"></video>
-    </div>
-    <div class="portfolio" id="Portfolio">
-        <div class="portfoliotext mtg">
-            <h2 class="for-marg">
-                Why We Built
-                <br />
-                <span class="highlight"> VideoCrafter.io</span>
-            </h2>
-            <p class="highlight-p for-margg">We Know How Frustrating It Can Be To Create High-Conversion Video Ads.</p>
-            <p class="highlight-p for-margin">Here's Why</p>
-        </div>
-        <div class="portfolio-grid">
-            <div class="portfolio-box">
-                <div class="portfolio-text">
-                    <div class="portfolio-head">
-                        <h1>1</h1>
-                        <div class="border"></div>
-                    </div>
-                    <div class="sub-text">
-                        <h1>Delays Are Costly</h1>
-                        <p>
-                            Waiting On Video Editors Can Take Days (Sometimes Weeks) - Slowing Down Your Campaigns And
-                            Hurting Your Bottom Line.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="portfolio-box">
-                <div class="portfolio-text">
-                    <div class="portfolio-head">
-                        <h1>2</h1>
-                        <div class="border"></div>
-                    </div>
-                    <div class="sub-text">
-                        <h1>Missed Deadlines Hurt</h1>
-                        <p>
-                            Editors often disappear mid-project, leaving you scrambling for solutions.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="portfolio-box">
-                <div class="portfolio-text">
-                    <div class="portfolio-head">
-                        <h1>3</h1>
-                        <div class="border"></div>
-                    </div>
-                    <div class="sub-text">
-                        <h1>Costs Add Up Fast</h1>
-                        <p>
-                            Hiring professionals for every ad is expensive – and revision fees only make it worse.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="portfolio-bottom-text">
-            <p>We were fed up relying on editors who couldn’t keep up, so we created VideoCrafter.io – a tool that puts
-                you in control.</p>
-        </div>
-    </div>
-<div class="video-showcase">
-        <div class="showcase-title">
-            <h2>
-                See What <br />
-                <span class="accent-text">VideoCrafter.io</span> Has Done
-            </h2>
-        </div>
-
-        <div class="video-layout">
-            <div class="video-row">
-                <div class="video-item">
-                    <video src="https://videocraftervideos.s3.us-east-1.amazonaws.com/homepagevid1.mp4"
-                        style="width: 100%;"
-                        poster="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%201.jpg" controls
-                        playsinline></video>
-                </div>
-                <div class="video-item">
-                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%201.mp4"
-                        style="width: 100%;"
-                        poster="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%203.jpg" controls
-                        playsinline></video>
-                </div>
-                <div class="video-item">
-                    <video src="https://videocraftervideos.s3.us-east-1.amazonaws.com/homepagevid2.mp4"
-                        style="width: 100%;"
-                        poster="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%202.jpg" controls
-                        playsinline></video>
-                </div>
-            </div>
-
-            <div class="video-stack last-clips">
-                <div class="video-item">
-                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%203.mp4"
-                        style="width: 100%;"
-                        poster="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%204.jpg" controls
-                        playsinline></video>
-                </div>
-                <div class="video-item">
-                    <video src="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%202.mp4"
-                        style="width: 100%;"
-                        poster="https://quickcampaignsvideo2.s3.eu-west-2.amazonaws.com/Vid%205.jpg" controls
-                        playsinline></video>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="howitworks" id="HowItWorks">
-        <!-- Static background images -->
-        <img src="{% static 'images/elipse.svg' %}" alt="" />
-        <img src="{% static 'images/elipse.svg' %}" alt="" />
-        <img src="{% static 'images/elipse.svg' %}" alt="" />
-        <img src="{% static 'images/elipse.svg' %}" alt="" />
-        <img src="{% static 'images/elipse.svg' %}" alt="" />
-        <!-- Heading -->
-        <div class="hiw-heading-text">
-            How <span class="highlight">VideoCrafter<span style="font-size: 16px;">.io</span></span>
-            <span style="color: #000000;" class="workk"> Works:</span>
-        </div>
-        <!-- Steps Container -->
-        <div class="hiw-container">
-            <!-- Step 1 -->
-            <div class="hiw-element">
-                <div class="hiw-element-text-container">
-                    <div class="hiw-element-heading">1. Pick Video Dimensions:</div>
-                    <div class="hiw-element-text">
-                        <i class="fa-solid fa-check" style="margin-right: 10px;"></i>
-                        Select the format that fits your platform:
-                    </div>
-                    <div class="dimensions-container">
-                        <div class="aspect-box">1:1</div>
-                        <div class="aspect-box">4:5</div>
-                        <div class="aspect-box">16:9</div>
-                        <div class="aspect-box tall">9:16</div>
-                    </div>
-                </div>
-                <div class="hiw-element-placeholder">
-                    <video src="https://videocraftervideos.s3.us-east-1.amazonaws.com/pick+dimentions.mp4" style="width: 100%;" 
-                        preload="auto" playsinline autoplay loop muted></video>
-                </div>
-                <div class="sep-border"></div>
-            </div>
-            <!-- Step 2 -->
-            <div class="hiw-element">
-                <div class="hiw-element-text-container">
-                    <div class="hiw-element-heading">2. Design Your Subtitle:</div>
-                    <div class="hiw-element-text">
-                        <i class="fa-solid fa-check" style="margin-right: 10px;"></i>
-                        Customize subtitles with font and subtitle box color and subtitle box roundness 
-                    </div>
-                </div>
-                <div class="hiw-element-placeholder">
-                    <video src="https://videocraftervideos.s3.us-east-1.amazonaws.com/customize+subtitle.mp4" style="width: 100%;" 
-                        preload="auto" playsinline autoplay loop muted></video>
-                </div>
-                <div class="sep-border"></div>
-            </div>
-            <!-- Step 3 -->
-            <div class="hiw-element">
-                <div class="hiw-element-text-container">
-                    <div class="hiw-element-heading">3.  Pull Script + Voice Over From Eleven Labs:</div>
-                    <div class="hiw-element-text">
-                        <i class="fa-solid fa-check" style="margin-right: 10px;"></i>
-                         Import your script and voiceover from Eleven Labs in one click — no copy-paste needed.
-                    </div>
-                </div>
-                <div class="hiw-element-placeholder">
-                    <video src="https://videocraftervideos.s3.us-east-1.amazonaws.com/pulling+script+from+uptodown.mp4" style="width: 100%;" 
-                        preload="auto" playsinline autoplay loop muted></video>
-                </div>
-                <div class="sep-border"></div>
-            </div>
-            <!-- Step 4 -->
-            <div class="hiw-element">
-                <div class="hiw-element-text-container">
-                    <div class="hiw-element-heading">4. Breakdown Script Into Slides:</div>
-                    <div class="hiw-element-text">
-                        <i class="fa-solid fa-check" style="margin-right: 10px;"></i>
-                       Break down your script for clean, engaging pacing. Each line = a subtitle
-                    </div>
-                </div>
-                <div class="hiw-element-placeholder">
-                    <video src="https://videocraftervideos.s3.us-east-1.amazonaws.com/breaking+down+scripts.mp4" style="width: 100%;" 
-                        preload="auto" playsinline autoplay loop muted></video>
-                </div>
-                <div class="sep-border"></div>
-            </div>
-            <!-- Step 5 -->
-            <div class="hiw-element">
-                <div class="hiw-element-text-container">
-                    <div class="hiw-element-heading">5. Highlight & Assign Your Clips:</div>
-                    <div class="hiw-element-text">
-                        <i class="fa-solid fa-check" style="margin-right: 10px;"></i>
-                        Highlight words and assign a video clip from your desktop or pre uploaded clips
-                    </div>
-                </div>
-                <div class="hiw-element-placeholder">
-                    <video src="https://videocraftervideos.s3.us-east-1.amazonaws.com/highlighting+the+background.mp4" style="width: 100%;" 
-                        preload="auto" playsinline autoplay loop muted></video>
-                </div>
-                <div class="sep-border"></div>
-            </div>
-            <!-- Step 6 -->
-            <div class="hiw-element">
-                <div class="hiw-element-text-container">
-                    <div class="hiw-element-heading">6. Add Your Background Music:</div>
-                    <div class="hiw-element-text">
-                        <i class="fa-solid fa-check" style="margin-right: 10px;"></i>
-                        Drop in background music that perfectly matches your voiceover and pacing.
-                    </div>
-                </div>
-                <div class="hiw-element-placeholder">
-                    <video src="https://videocraftervideos.s3.us-east-1.amazonaws.com/add+backgroudn+music.mp4" style="width: 100%;" 
-                        preload="auto" playsinline autoplay loop muted></video>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="portfolio main-eature-container" id="Portfolio">
-        <div class="portfoliotext">
-            <h2 class="marg">
-                Why <span class="highlight">VideoCrafter.io</span><span style="text-transform: capitalize;"> beats any
-                    video Editor</span>
-            </h2>
-        </div>
-        <div class="feature-container">
-            <div class="feature-card">
-                <div class="circle">1</div>
-                <div class="circle-border"></div>
-                <h3>Create Videos Fast</h3>
-                <p>Stop Wasting Time On Complex Tools And Endless Revisions. With VideoCrafter.io, You Can Create
-                    Professional, Eye-Catching Videos In Record Time.</p>
-            </div>
-            <div class="feature-card">
-                <div class="circle">2</div>
-                <div class="circle-border"></div>
-                <h3>No Missed Deadlines</h3>
-                <p>Tired Of Freelancers Vanishing When You Need Them Most? VideoCrafter.io Puts YOU In Control.</p>
-            </div>
-            <div class="feature-card">
-                <div class="circle">3</div>
-                <div class="circle-border"></div>
-                <h3>VA-Friendly</h3>
-                <p>Unlock The Full Potential Of Your Team By Equipping Them With VideoCrafter.io. Empower Your Virtual
-                    Assistants (VAs) To Handle Video Creation At A Fraction Of The Cost.</p>
-            </div>
-            <div class="feature-card">
-                <div class="circle">4</div>
-                <div class="circle-border"></div>
-                <h3>Control Your Ads</h3>
-                <p>Stop Wasting Time On Complex Tools And Endless Revisions. With VideoCrafter.io, You Can Create
-                    Professional, Eye-Catching Videos In Record Time.</p>
-            </div>
-        </div>
-        <div class="portfolio-bottom-text for-m">
-            <p class="for-marg-c" style="margin-bottom: 40px;">We Were Fed Up Relying On Editors Who Couldn't Keep Up,
-                So We Created VideoCrafter.io - A Tool That Puts You In Control.</p>
-        </div>
-        <div class="portfolio-border"></div>
-    </div>
-    <div class="tutorial-container" style="height: auto;">
-        <h1 class="tutorial-title">
-            <span class="title-bold">VideoCrafter</span>
-            <span class="title-highlight">Tutorial</span>
-        </h1>
-        <p class="tutorial-description">
-            In This Tutorial, We'll Walk You Through How To Use VideoCrafter.Io To Create
-            High-Converting Video Sales Letters With Ease.
-        </p>
-        <div class="placeholder">
-            <video src="https://videocraftervideos.s3.us-east-1.amazonaws.com/Video+Crafter+Tutorial.mov" style="width: 100%;"  controls></video>
-        </div>
-    </div>
-    <div class="pricing" id="pricing">
-        <div class="tutorial-border"></div>
-        <div class="top">
-            <p class="ptop-text">Pricing:</p>
-            <p class="ptop-text-mobile">Plans that <span class="highlight">scale</span> with business</p>
-            <p class="ptop-p">Simple. Transparent. Powerful.</p>
-            <p class="ptop-p-mobile">
-                Think about how much you’re currently paying your video editor. With VideoCrafter.io, you can create Videos in
-                minutes, saving both time and money.
-            </p>
-        </div>
-        <div class="middle">
-            <div class="p-cards-grid">
-                <div class="p-cards-grid-container">
-                    <div class="p-cards-grid-item">
-                        <span class="highlight g-head g-head-margin">Free Trial Plan</span>
-                        <div class="price">
-                            <span><span class="bold-size">Free</span></span>
-                            <br />
-                            <span class="price-promo">&nbsp;</span>
-                            <p class="under-free" style="margin-bottom: 0px;">Test The Waters Before You Commit.</p>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Create 1 Video Creative</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Upload and Match Video Clips</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">No Credit Card Required</span>
-                        </div>
-                        <a href="{% url 'register' %}" class="p-button">Get Started</a>
-                    </div>
-                    {% for plan in plans %}
-                       <div class="p-cards-grid-item mid">
-                           
-                           <div class="mp">
-                               <span class="highlight g-head">{{ plan.name }}</span>
-                               {% if forloop.counter == 1 %}
-                            <span class="hype">Most Popular</span>
-                            {% endif %}
-                        </div>
-                        <div class="price">
-                            <span><span class="bold-size">${{ plan.price_per_month }}</span> <span class="font"
-                                    style="color: rgba(0, 0, 0, 0.5); font-weight: bold;">/Month</span></span>
-                            <br />
-                            <span class="price-promo">Just ${{ plan.credits_price }} Per Video</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Create up to {{  plan.ad_variation_per_month }} Videos Per Month</span>
-                        </div>
-                        {% if forloop.counter == 1 %}
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Full Access to All Tools</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Upload and Match Video Clips</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Organize and Reuse Clips</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Background Music Control</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Priority Support</span>
-                        </div>
-                        {% else %}
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Everything in Growth Plan</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Upload and Match Video Clips</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Organize and Reuse Clips</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Background Music Control</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Advanced Clip Management</span>
-                        </div>
-                        <div class="benefits">
-                            <img src="{% static 'images/check.svg' %}" alt="check icon" />
-                            <span class="benefits-text">Dedicated Support</span>
-                        </div>
-                        {% endif %}
-                        <a href="{% url 'subscribe' plan.id %}" class="p-button">Get Started</a>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="cta" id="cta">
-        <img src="{% static 'images/elipse.svg' %}" alt="circle 1" class="cta-circle cc1" />
-        <img src="{% static 'images/elipse.svg' %}" alt="circle 2" class="cta-circle cc2" />
-        <img src="{% static 'images/elipse.svg' %}" alt="circle 3" class="cta-circle cc3" />
-        <img src="{% static 'images/elipse.svg' %}" alt="circle 4" class="cta-circle cc1" />
-        <img src="{% static 'images/elipse.svg' %}" alt="circle 5" class="cta-circle cc4" />
-        <img src="{% static 'images/elipse.svg' %}" alt="circle 6" class="cta-circle cc5" />
-        <img src="{% static 'images/elipse.svg' %}" alt="circle 7" class="cta-circle cc6" />
-        <img src="{% static 'images/elipse.svg' %}" alt="circle 8" class="cta-circle cc7" />
-        <img src="{% static 'images/elipse.svg' %}" alt="circle 9" class="cta-circle cc8" />
-        <div class="cta-content-wrapper for-disp">
-            <div class="cta-content">
-                <span class="cta-text">
-                    Try VideoCrafter.io FREE
-                    <br />
-                    No Credit Card Required
-                    <br />
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <span class="hero-badge">
+                    <i class="fas fa-bolt"></i>
+                    No editors needed
                 </span>
-                <a href="#pricing" class="cta-button">Sign Up for Free</a>
-            </div>
-            <p style="text-align: left;">
-                Get hands-on with VideoCrafter.io and experience the speed and
-                <br />
-                simplicity for yourself. Stop waiting. Start creating.
-            </p>
-        </div>
-        <div class="cta-main" style="background-color: white; z-index: 100;">
-            <div class="cta-box">
-                <h1>Try VideoCrafter.io FREE<br />No Credit Card Required</h1>
-                <p style="margin: 0 auto;">
-                    Get hands-on with VideoCrafter.io and experience the speed and simplicity for yourself. Stop
-                    waiting.
-                    Start creating.
-                </p>
-            </div>
-            <button class="cta-button">Get VideoCrafter Now</button>
-        </div>
-    </div>
-    <div id="earning" class="earning-section" style="display: none;">
-        <h1 class="earning-title">
-            Become a VideoCrafter.io Affiliate And
-            <br />
-            Earn 30% Recurring Commissions!
-        </h1>
-        <p class="earning-paragraph">
-            Join the VideoCrafter.io affiliate program and start earning 30% recurring commissions on every customer you
-            refer.
-            Build a steady stream of passive income by helping others create high-converting
-            Videos without relying on expensive editors!
-        </p>
-        <div class="cards-container">
-            <div class="card">
-                <span class="number">1</span>
-                <p class="title">Sign Up</p>
-                <p class="text">
-                    Click the sign-up button below to join our affiliate program and start earning commissions!
-                </p>
-            </div>
-            <div class="card">
-                <span class="number">2</span>
-                <p class="title">Share Link</p>
-                <p class="text">
-                    Promote VideoCrafter.io via your blog, website, or social media.
-                </p>
-            </div>
-            <div class="card">
-                <span class="number">3</span>
-                <p class="title">Earn Commissions</p>
-                <p class="text">
-                    Earn 30% of every payment made by your referred customers for as long as they stay with us.
-                </p>
-            </div>
-        </div>
-        <button>Sign Up Now</button>
-    </div>
-    <div class="contact-section-wrapper" id="contact">
-        <div class="contact-section">
-            <h1>Contact Us</h1>
-            <p>We’d love to hear from you. Please fill out this form.</p>
-            <form class="contact-form" id="contactForm" autocomplete="on">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="first-name">First name</label>
-                        <input type="text" id="first-name" name="first_name" placeholder="First name"
-                            autocomplete="given-name" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="last-name">Last name</label>
-                        <input type="text" id="last-name" name="last_name" placeholder="Last name"
-                            autocomplete="family-name" required />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" placeholder="you@company.com" autocomplete="email"
-                        required />
-                </div>
-                <div class="form-group">
-                    <label for="message">Message</label>
-                    <textarea id="message" name="message" placeholder="" required></textarea>
-                </div>
-                <button type="submit">Send Message</button>
-            </form>
-        </div>
-    </div>
-    <div class="footer-wrapper" style="height: auto;">
-        <footer class="footer">
-            <div class="footer-content">
-                <div class="footer-branding">
-                    <a href="/" class="logo" id="footer-logo">
-                        <img src="{% static 'images/footer-logo.svg' %}" alt="" />
+                <h1 class="hero-title">Create Scroll-Stopping Video Ads in Minutes</h1>
+                <p class="hero-subtitle">Highlight words → Assign clips → Export. Done. Automate cropping, subtitles, and voiceovers without hiring freelancers.</p>
+                <div class="hero-buttons">
+                    <a href="{% url 'register' %}" class="btn btn-primary">
+                        <i class="fas fa-play-circle"></i>
+                        Start Free Trial
                     </a>
-                    <p class="tagline">
-                        Revolutionary software that lets you create professional-grade Videos in just minutes, with no
-                        video editing skills required.
-                    </p>
+                    <a href="#how-it-works" class="btn btn-outline">
+                        <i class="fas fa-video"></i>
+                        See How It Works
+                    </a>
                 </div>
-                <div class="footer-links">
-                    <div class="footer-column">
-                        <h3>COMPANY</h3>
-                        <ul>
-                            <li><a href="/#HowItWorks">Features</a></li>
-                            <li><a href="/#Portfolio">Portfolio</a></li>
-                            <li><a href="/#pricing">Pricing</a></li>
-                            <li><a href="/#contact">Contact</a></li>
+                <div class="trust-badges">
+                    <div class="stars">
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                    </div>
+                    <p>Rated 5/5 by 500+ marketers worldwide</p>
+                </div>
+            </div>
+            <div class="hero-image">
+                <video autoplay loop muted playsinline poster="{% static 'images/giff+videocrafter - frame at 0m0s.jpg' %}">
+                    <source src="https://videocraftervideos.s3.us-east-1.amazonaws.com/giff+videocrafter.mov" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </section>
+
+    <!-- USP Section -->
+    <section class="section features" id="features">
+        <div class="container">
+            <h2 class="section-title text-center">Why VideoCrafter is Different</h2>
+            <p class="section-subtitle text-center">The easiest way to create professional video ads without technical skills or expensive editors</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <h3 class="feature-title">Edit in Any Language</h3>
+                    <p class="feature-description">Create ads in French, German, or any language without needing native editors. Your VAs can use Google Translate.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h3 class="feature-title">Reuse Your Clip Library</h3>
+                    <p class="feature-description">Organize clips into folders (like "Product Shots") and reuse them across projects with one click.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3 class="feature-title">AI Clip Suggestions</h3>
+                    <p class="feature-description">Stuck on what clip to use? Get AI-powered recommendations from Storyblocks and Pexels.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <h3 class="feature-title">Add Images to Videos</h3>
+                    <p class="feature-description">Easily incorporate images into your video ads. No need to rely on anyone else for creating complex animations.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-crop-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Auto Trim & Crop</h3>
+                    <p class="feature-description">Videos are automatically trimmed and cropped to your chosen dimension: 1:1, 4:5, 9:16, 16:9 - no manual work required.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-hand-pointer"></i>
+                    </div>
+                    <h3 class="feature-title">VA-Friendly Workflow</h3>
+                    <p class="feature-description">All it requires is highlighting words and assigning clips, which anyone can do. No technical skills needed.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section - Updated -->
+    <section class="section portfolio" id="portfolio">
+        <div class="container">
+            <h2 class="section-title text-center">What VideoCrafter Produces</h2>
+            <p class="section-subtitle text-center">Professional videos tailored for every platform</p>
+            
+            <div class="portfolio-grid">
+                <!-- 1:1 Aspect Ratio -->
+                <div class="portfolio-item" data-video="https://videocraftervideos.s3.us-east-1.amazonaws.com/1%3B1+video+home+page.mp4" data-dimension="1:1">
+                    <div class="portfolio-header">
+                        <div class="dimension-badge">
+                            <i class="fas fa-hashtag"></i>
+                            <span>1:1</span>
+                        </div>
+                        <div class="play-icon">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="portfolio-thumbnail-wrapper" style="position:relative; cursor:pointer;">
+                        <img src="{% static 'images/1.png' %}" class="portfolio-thumbnail" />
+                    </div>
+                    <div class="portfolio-info">
+                        <h3 class="platform-name">Facebook Feed</h3>
+                        <p class="platform-description">Safe & consistent everywhere</p>
+                    </div>
+                </div>
+                
+                <!-- 4:5 Aspect Ratio -->
+                <div class="portfolio-item" data-video="https://videocraftervideos.s3.us-east-1.amazonaws.com/homepagevid2.mp4" data-dimension="4:5">
+                    <div class="portfolio-header">
+                        <div class="dimension-badge">
+                            <i class="fas fa-hashtag"></i>
+                            <span>4:5</span>
+                        </div>
+                        <div class="play-icon">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="portfolio-thumbnail-wrapper" style="position:relative; cursor:pointer;">
+                        <img src="{% static 'images/2.png' %}" class="portfolio-thumbnail" />
+                    </div>
+                    <div class="portfolio-info">
+                        <h3 class="platform-name">Instagram Feed</h3>
+                        <p class="platform-description">Perfect square format for Instagram</p>
+                    </div>
+                </div>
+                
+                <!-- 16:9 Aspect Ratio -->
+                <div class="portfolio-item" data-video="https://videocraftervideos.s3.us-east-1.amazonaws.com/youtube+size+portfolio.mp4" data-dimension="16:9">
+                    <div class="portfolio-header">
+                        <div class="dimension-badge">
+                            <i class="fas fa-hashtag"></i>
+                            <span>16:9</span>
+                        </div>
+                        <div class="play-icon">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="portfolio-thumbnail-wrapper" style="position:relative; cursor:pointer;">
+                        <img src="{% static 'images/3.png' %}" class="portfolio-thumbnail" />
+                    </div>
+                    <div class="portfolio-info">
+                        <h3 class="platform-name">YouTube & Website</h3>
+                        <p class="platform-description">Standard widescreen for YouTube</p>
+                    </div>
+                </div>
+               
+            </div>
+        </div>
+    </section>
+    
+    <!-- Video Modal -->
+    <div class="video-modal" id="videoModal">
+        <div class="modal-content">
+            <div class="close-modal" id="closeModal">
+                <i class="fas fa-xmark"></i>
+            </div>
+            <div class="modal-dimension" id="modalDimension">16:9</div>
+            <video class="modal-video" id="modalVideo" controls>
+                <source src="#" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <!-- Demo Section -->
+    <section class="section demo" id="how-it-works">
+        <div class="container demo-container">
+            <h2 class="section-title text-center">How VideoCrafter Works</h2>
+            <p class="section-subtitle text-center">See how easy it is to create video ads in minutes instead of hours</p>
+            
+            <div class="demo-video-container">
+                <video controls class="demo-video" poster="{% static 'images/tutorial_poster.png' %}">
+                    <source src="https://videocraftervideos.s3.us-east-1.amazonaws.com/videocrafter+tutorial.mov" type="video/mp4">
+                </video>
+            </div>
+            
+            <div class="text-center">
+                <a href="{% url 'register' %}" class="btn btn-primary">
+                    <i class="fas fa-rocket"></i>
+                    Start Free Trial
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section testimonials" id="testimonials">
+        <div class="container testimonials-container">
+            <h2 class="section-title text-center">Trusted by Marketers Worldwide</h2>
+            <p class="section-subtitle text-center">Don't just take our word for it</p>
+            
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p class="testimonial-text">VideoCrafter saved us $3k/month on freelance editors. Now our interns can make high-converting ads in minutes.</p>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Sarah K." class="testimonial-avatar">
+                            <div class="author-info">
+                                <p class="author-name">Sarah K.</p>
+                                <p class="author-title">Marketing Director, EcomBrand</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p class="testimonial-text">The highlight-and-assign workflow is genius. We've 10x our ad production speed without quality loss.</p>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="James L." class="testimonial-avatar">
+                            <div class="author-info">
+                                <p class="author-name">James L.</p>
+                                <p class="author-title">Founder, GrowthAgency</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p class="testimonial-text">Being able to edit in multiple languages changed everything for our international campaigns.</p>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Maria G." class="testimonial-avatar">
+                            <div class="author-info">
+                                <p class="author-name">Maria G.</p>
+                                <p class="author-title">Global Marketing, TechStartup</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="section pricing" id="pricing">
+        <div class="container">
+            <h2 class="section-title text-center">Simple, Transparent Pricing</h2>
+            <p class="section-subtitle text-center">Start for free, upgrade when you're ready</p>
+            
+            <div class="pricing-grid">
+                <!-- Free Plan -->
+                <div class="pricing-card">
+                    <h3 class="pricing-title">Free Trial Plan</h3>
+                    <div class="pricing-price">Free
+                        <div class="pricing-comment"> 
+                            Test The Waters Before You Commit.
+                        </div>
+                    </div>
+                    
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Create 1 Video Creative</li>
+                        <li><i class="fas fa-check"></i> Upload and Match Video Clips</li>
+                        <li><i class="fas fa-check"></i> No Credit Card Required</li>
+                    </ul>
+                    
+                    <a href="{% url 'register' %}" class="btn btn-outline">Get Started</a>
+                </div>
+                
+                <!-- Dynamic Plans -->
+                {% for plan in plans %}
+                <div class="pricing-card {% if forloop.counter == 1 %}popular{% endif %}">
+                    {% if forloop.counter == 1 %}
+                    <div class="popular-badge">Most Popular</div>
+                    {% endif %}
+                    <h3 class="pricing-title">{{ plan.name }}</h3>
+                    <div class="pricing-price">${{ plan.price_per_month }} <span>/Month</span>
+                        <div class="pricing-promo-comment"> 
+                            Just ${{ plan.credits_price }} Per Video
+                        </div>
+                    </div>
+                    
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Create up to {{ plan.ad_variations_per_month }} Videos Per Month</li>
+                        {% if forloop.counter == 1 %}
+                        <li><i class="fas fa-check"></i> Full Access to All Tools</li>
+                        <li><i class="fas fa-check"></i> Upload and Match Video Clips</li>
+                        <li><i class="fas fa-check"></i> Organize and Reuse Clips</li>
+                        <li><i class="fas fa-check"></i> Background Music Control</li>
+                        <li><i class="fas fa-check"></i> Priority Support</li>
+                        {% else %}
+                        <li><i class="fas fa-check"></i> Everything in Growth Plan</li>
+                        <li><i class="fas fa-check"></i> Upload and Match Video Clips</li>
+                        <li><i class="fas fa-check"></i> Organize and Reuse Clips</li>
+                        <li><i class="fas fa-check"></i> Background Music Control</li>
+                        <li><i class="fas fa-check"></i> Advanced Clip Management</li>
+                        <li><i class="fas fa-check"></i> Dedicated Support</li>
+                        {% endif %}
+                    </ul>
+                    
+                    <a href="{% url 'subscribe' plan.id %}" class="btn {% if forloop.counter == 1 %}btn-primary{% else %}btn-outline{% endif %}">Get Started</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section - Updated -->
+    <section class="faq-section" id="faq">
+        <div class="container faq-container">
+            <div class="faq-header">
+                <h2 class="faq-title">Frequently Asked Questions</h2>
+                <p class="faq-subtitle">Everything you need to know about creating video ads with VideoCrafter</p>
+            </div>
+            
+            <div class="faq-grid">
+                <!-- FAQ Item 1 -->
+                <div class="faq-card">
+                    <div class="faq-question">
+                        <span>How is this different from Canva or other video editors?</span>
+                        <div class="faq-toggle">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>VideoCrafter automates the tedious parts of video editing (cropping, timing clips to voiceovers, syncing subtitles) that you'd have to do manually in other tools. You just highlight words and assign clips - we handle the rest. Plus, our auto-cropping to different dimensions is unmatched.</p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 2 -->
+                <div class="faq-card">
+                    <div class="faq-question">
+                        <span>Can I add images to my videos?</span>
+                        <div class="faq-toggle">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Absolutely! Our platform makes it incredibly easy to incorporate images into your video ads. Simply upload your images, and VideoCrafter will automatically animate them and integrate them seamlessly into your video timeline.</p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 3 -->
+                <div class="faq-card">
+                    <div class="faq-question">
+                        <span>Can I use my own voiceovers?</span>
+                        <div class="faq-toggle">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes! You can integrate with ElevenLabs for AI voiceovers. Our system will automatically sync your clips to the audio.</p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 4 -->
+                <div class="faq-card">
+                    <div class="faq-question">
+                        <span>What if I don't have video clips to use?</span>
+                        <div class="faq-toggle">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We provide AI-powered clip suggestions from Storyblocks and Pexels. Just click to download and add them to your project. You can also create videos entirely from your image library.</p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 5 -->
+                <div class="faq-card">
+                    <div class="faq-question">
+                        <span>Is there a limit to how many videos I can create?</span>
+                        <div class="faq-toggle">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>The free plan includes 1 export per month. Growth plans offer 25 exports per month. While the Pro plan offers 60 exports per month.</p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 6 -->
+                <div class="faq-card">
+                    <div class="faq-question">
+                        <span>How easy is it for virtual assistants to use?</span>
+                        <div class="faq-toggle">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>VideoCrafter was designed specifically for non-technical users. The highlight-and-assign workflow is incredibly intuitive. Teams have their trained VAs with no prior experience to create professional videos in under 60 minutes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section cta" id="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title text-center">Ready to Create Videos Faster?</h2>
+                <p class="cta-subtitle text-center">Join 1,000+ marketers who've replaced unreliable freelancers with VideoCrafter</p>
+                
+                <div class="signup-form">
+                    <a class="btn btn-primary" href="{% url 'register' %}">Start Free Trial</a>
+                </div>
+                
+                <p class="text-center" style="margin-top: 20px; opacity: 0.8;">No credit card required. Cancel anytime.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-branding">
+                    <a href="#" class="footer-logo">
+                        <img src="{% static 'images/footer-logo.svg' %}"/>
+                    </a>
+                    <p class="footer-description">Revolutionary software that lets you create professional-grade Videos in just minutes, with no video editing skills required.</p>
+                </div>
+                
+                <div class="footer-links-container">
+                    <div class="footer-col">
+                        <h4 class="footer-title">Company</h4>
+                        <ul class="footer-links">
+                            <li><a href="#features">Features</a></li>
+                            <li><a href="#pricing">Pricing</a></li>
+                            <li><a href="#portfolio">Portfolio</a></li>
+                            <li><a href="#contact">Contact</a></li>
                         </ul>
                     </div>
-                    <div class="footer-column">
-                        <h3>HELP</h3>
-                        <ul>
+                    
+                    <div class="footer-col">
+                        <h4 class="footer-title">Help</h4>
+                        <ul class="footer-links">
                             <li><a href="{% url 'terms_and_condition' %}">Terms & Conditions</a></li>
                             <li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
                             <li><a href="{% url 'refund' %}">Refund Policy</a></li>
@@ -744,25 +1703,146 @@
                     </div>
                 </div>
             </div>
-            <div class="copyright">
-                © Copyright 2025, All Rights Reserved by VideoCrafter.io
+            
+            <div class="footer-bottom">
+                <p>© 2025 VideoCrafter.io. All rights reserved.</p>
             </div>
-        </footer>
-    </div>
-    <script src="{% static 'js/before-login-header-toggle.js' %}"></script>
-    <script src="{% static 'js/landing.js' %}"></script>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinks = document.getElementById('navLinks');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            mobileMenuBtn.innerHTML = navLinks.classList.contains('active') 
+                ? '<i class="fas fa-times"></i>' 
+                : '<i class="fas fa-bars"></i>';
+        });
+        
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            });
+        });
+        
+        // FAQ Toggle
+        document.querySelectorAll('.faq-card').forEach(card => {
+            const question = card.querySelector('.faq-question');
+            const toggle = card.querySelector('.faq-toggle i');
+            
+            question.addEventListener('click', () => {
+                card.classList.toggle('active');
+                if (card.classList.contains('active')) {
+                    toggle.classList.remove('fa-plus');
+                    toggle.classList.add('fa-times');
+                } else {
+                    toggle.classList.remove('fa-times');
+                    toggle.classList.add('fa-plus');
+                }
+            });
+        });
+        
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Portfolio item click handler for modal logic
+        document.querySelectorAll('.portfolio-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const videoUrl = this.getAttribute('data-video');
+                const dimension = this.getAttribute('data-dimension') || '';
+                const modal = document.getElementById('videoModal');
+                const modalVideo = document.getElementById('modalVideo');
+                const modalDimension = document.getElementById('modalDimension');
+                modalVideo.pause();
+                modalVideo.querySelector('source').setAttribute('src', videoUrl);
+                modalVideo.load();
+                modalVideo.play();
+                modalDimension.textContent = dimension;
+                modal.classList.add('active');
+            });
+        });
+        // Close modal logic
+        document.getElementById('closeModal').addEventListener('click', function() {
+            const modal = document.getElementById('videoModal');
+            const modalVideo = document.getElementById('modalVideo');
+            modal.classList.remove('active');
+            modalVideo.pause();
+        });
+        // Optional: close modal when clicking outside modal-content
+        document.getElementById('videoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+                const modalVideo = document.getElementById('modalVideo');
+                modalVideo.pause();
+            }
+        });
+    </script>
+    <!-- WhatsApp Chat Button -->
+<a href="https://wa.me/447770218787?text=Hi%2C%20I%20need%20support" 
+   class="whatsapp-chat-button" 
+   target="_blank" 
+   title="Chat with us on WhatsApp">
+   <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="Chat on WhatsApp" width="60">
+</a>
+
+<style>
+.whatsapp-chat-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #25D366;
+  border-radius: 50%;
+  padding: 0.5em;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Icon image with responsive scaling */
+.whatsapp-chat-button img {
+  width: clamp(30px, 5vw, 48px);  /* Auto-scale based on screen width */
+  height: clamp(30px, 5vw, 48px);
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.whatsapp-chat-button:hover {
+  transform: scale(1.1);
+}
+</style>
+
 </body>
-<!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/67bde19ce1b723191240f344/1ikurij78';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
 </html>

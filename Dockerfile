@@ -52,6 +52,7 @@ WORKDIR /app
 # Install CUDA-specific packages
 COPY ./requirements.txt .
 RUN pip3 install numpy
+RUN pip3 install django-ratelimit
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY . .
