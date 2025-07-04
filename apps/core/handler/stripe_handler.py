@@ -52,7 +52,9 @@ class StripeHandler:
                 }],
                 mode="subscription",
                 success_url=success_url,
-                cancel_url=request.build_absolute_uri("/cancel/"),
+                cancel_url=request.build_absolute_uri("/"),
+                allow_promotion_codes=True,
+
                 metadata=metadata
             )
             

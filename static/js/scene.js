@@ -2471,7 +2471,9 @@ function closeModal() {
 }
 
 function toggleContent(header) {
-    const contentId = header.textContent.includes("Instructions") ? "instructions" : "tips";
+    const contentId = header.textContent.includes("How To Upload Files To The Asset Folde") ? "tutorial-video" : "tips";
+    console.log("Toggling content for:", contentId);
+    console.log(header.textContent);
     const content = document.getElementById(contentId);
     const span = header.querySelector("span");
     document.querySelectorAll(".section").forEach(section => {
@@ -2484,8 +2486,14 @@ function toggleContent(header) {
         span.classList.add("rotate");
         header.style.backgroundColor = "#6c25be";
         header.style.color = "#fff";
+        if (contentId === "tutorial-video") {
+            content.style.maxHeight = "1100px";
+        }
     } else {
         span.classList.remove("rotate");
+        if (contentId === "tutorial-video") {
+            content.style.maxHeight = "0px";
+        }
     }
 }
 

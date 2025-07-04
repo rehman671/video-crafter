@@ -40,7 +40,7 @@
 
 .section-content {
     background-color: #fff;
-    height: 720px;
+    height: 1100px;
     border-radius: 6px;
     max-height: 0;
     overflow: hidden;
@@ -52,7 +52,7 @@
 }
 
 .section-content.open {
-    max-height: 720px;
+    max-height: 1100px;
     padding: 15px;
     padding-bottom: 22px;
     border-radius: 6px;
@@ -505,4 +505,67 @@
     border-radius: 8px;
     border: 1px solid #00000080;
     overflow: hidden;
+}
+
+/* Add to your existing <style> section in the HTML head */
+
+/* Video container responsive fixes */
+.video-content {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.video-content video {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    display: block;
+    object-fit: contain; /* Prevents cutting */
+    border-radius: 8px;
+}
+
+/* Prevent horizontal overflow on zoom out */
+.body-container {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.card-container {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.card {
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* Responsive adjustments for zoom levels */
+@media screen and (max-width: 1200px) {
+    .video-content video {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .video-content {
+        padding: 0 10px;
+    }
+    
+    .video-content video {
+        width: 100%;
+        max-width: calc(100vw - 20px);
+    }
+}
+
+/* Handle zoom out scenarios */
+@media screen and (min-width: 1400px) {
+    .video-content {
+        max-width: 800px;
+        margin: 0 auto;
+    }
 }

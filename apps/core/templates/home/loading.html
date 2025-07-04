@@ -347,7 +347,7 @@
     </div>
   </div>
 
-  <script>
+<script>
     // Get video ID from URL
     const videoId = {{ video_id }};
     console.log("Loading video ID:", videoId);
@@ -357,39 +357,42 @@
       document.getElementById('error-message').style.display = "block";
     }
 
+    // Add flags to prevent race conditions
+    let processingComplete = false;
+    let redirecting = false;
     let checkStatusInterval;
     const percentText = document.getElementById('percent');
     const errorMessage = document.getElementById('error-message');
     const originalTitle = document.title || "Processing Video";
 
- function showCreditsPopup(currentApiKey = '', currentVoiceId = '', errorType = 'credits', errorMessage = '') {
-  const popup = document.getElementById('creditsPopup');
-  const apiKeyInput = document.getElementById('apiKey');
-  const voiceIdInput = document.getElementById('voiceId');
-  const title = document.querySelector('.credits-popup h2');
-  const message = document.querySelector('.credits-popup p');
-  
-  // Update popup content based on error type
-  if (errorType === 'payment_issue') {
-    title.textContent = 'Elevenlabs Error';
-    message.textContent = 'Your ElevenLabs subscription has a failed or incomplete payment. Please update your API key with an account that has an active subscription to continue.';
-  } else if (errorType === 'insufficient_credits') {
-    title.textContent = 'Insufficient Credits';
-    message.textContent = 'Your current ElevenLabs API doesn\'t have enough credits to generate the audio for this video. Please update your API key and Voice ID to continue.';
-  } else if (errorType === 'invalid_credentials') {
-    title.textContent = 'Invalid Credentials';
-    message.textContent = errorMessage || 'Your ElevenLabs credentials are invalid. Please check your API key and Voice ID.';
-  } else {
-    title.textContent = 'ElevenLabs Issue';
-    message.textContent = errorMessage || 'There\'s an issue with your ElevenLabs account. Please update your API key and Voice ID to continue.';
-  }
-  
-  // Pre-fill with current values
-  apiKeyInput.value = currentApiKey;
-  voiceIdInput.value = currentVoiceId;
-  
-  popup.style.display = 'flex';
-}
+    function showCreditsPopup(currentApiKey = '', currentVoiceId = '', errorType = 'credits', errorMessage = '') {
+      const popup = document.getElementById('creditsPopup');
+      const apiKeyInput = document.getElementById('apiKey');
+      const voiceIdInput = document.getElementById('voiceId');
+      const title = document.querySelector('.credits-popup h2');
+      const message = document.querySelector('.credits-popup p');
+      
+      // Update popup content based on error type
+      if (errorType === 'payment_issue') {
+        title.textContent = 'Elevenlabs Error';
+        message.textContent = 'Your ElevenLabs subscription has a failed or incomplete payment. Please update your API key with an account that has an active subscription to continue.';
+      } else if (errorType === 'insufficient_credits') {
+        title.textContent = 'Insufficient Credits';
+        message.textContent = 'Your current ElevenLabs API doesn\'t have enough credits to generate the audio for this video. Please update your API key and Voice ID to continue.';
+      } else if (errorType === 'invalid_credentials') {
+        title.textContent = 'Invalid Credentials';
+        message.textContent = errorMessage || 'Your ElevenLabs credentials are invalid. Please check your API key and Voice ID.';
+      } else {
+        title.textContent = 'ElevenLabs Issue';
+        message.textContent = errorMessage || 'There\'s an issue with your ElevenLabs account. Please update your API key and Voice ID to continue.';
+      }
+      
+      // Pre-fill with current values
+      apiKeyInput.value = currentApiKey;
+      voiceIdInput.value = currentVoiceId;
+      
+      popup.style.display = 'flex';
+    }
 
     function closeCreditsPopup() {
       const popup = document.getElementById('creditsPopup');
@@ -403,13 +406,13 @@
       const errorDiv = document.getElementById('popupError');
       const submitBtn = document.querySelector('.popup-btn-primary');
     
-    // Client-side validation
-    const validation = validateCredentials(apiKey, voiceId);
-    if (!validation.valid) {
-        document.getElementById('popupError').textContent = validation.message;
-        document.getElementById('popupError').style.display = 'block';
-        return;
-    }
+      // Client-side validation
+      const validation = validateCredentials(apiKey, voiceId);
+      if (!validation.valid) {
+          document.getElementById('popupError').textContent = validation.message;
+          document.getElementById('popupError').style.display = 'block';
+          return;
+      }
       
       if (!apiKey || !voiceId) {
         errorDiv.textContent = 'Please fill in both API Key and Voice ID';
@@ -445,7 +448,9 @@
           // Close popup and restart processing
           closeCreditsPopup();
           
-          // Reset processing UI
+          // Reset flags and UI
+          processingComplete = false;
+          redirecting = false;
           percentText.textContent = '0%';
           errorMessage.style.display = 'none';
           
@@ -467,6 +472,11 @@
     }
 
     function checkProcessingStatus() {
+      // Prevent multiple calls if already completed or redirecting
+      if (processingComplete || redirecting) {
+        return;
+      }
+
       fetch(`/videos/${videoId}/processing-status/`)
         .then(response => {
           if (!response.ok) {
@@ -485,8 +495,8 @@
           // Handle errors
           if (data.status === 'error') {
             clearInterval(checkStatusInterval);
+            processingComplete = true;
             
-            // Check if error is due to insufficient credits
             // Check different types of ElevenLabs errors
             const errorMsg = data.error_message || '';
 
@@ -508,9 +518,16 @@
           // Handle completion
           if (data.status === 'completed' || progress >= 100) {
             clearInterval(checkStatusInterval);
+            processingComplete = true;
+            redirecting = true;
+            
             console.log('Processing completed, redirecting to background music page');
             document.title = `Complete - ${originalTitle}`;
-            window.location.href = `/background-music/${videoId}/`;
+            
+            // Add a small delay to ensure the UI updates before redirect
+            setTimeout(() => {
+              window.location.href = `/background-music/${videoId}/`;
+            }, 500);
             return;
           }
           
@@ -521,9 +538,21 @@
         })
         .catch(error => {
           console.error('Error checking status:', error);
-          errorMessage.textContent = "Error checking status: " + error.message;
-          errorMessage.style.display = "block";
-          document.title = `Error - ${originalTitle}`;
+          
+          // Don't show error immediately - might be a temporary network issue
+          // Only show error after multiple failures
+          if (!window.statusCheckErrors) {
+            window.statusCheckErrors = 0;
+          }
+          window.statusCheckErrors++;
+          
+          if (window.statusCheckErrors >= 3) {
+            clearInterval(checkStatusInterval);
+            processingComplete = true;
+            errorMessage.textContent = "Error checking status: " + error.message;
+            errorMessage.style.display = "block";
+            document.title = `Error - ${originalTitle}`;
+          }
         });
     }
 
@@ -570,11 +599,43 @@
       return '';
     }
 
-    // Initialize processing when page loads
+    // Modified initialization
     document.addEventListener('DOMContentLoaded', function() {
       console.log("DOM loaded, starting video processing for ID:", videoId);
+      
+      // Reset flags
+      processingComplete = false;
+      redirecting = false;
+      window.statusCheckErrors = 0;
+      
       if (videoId) {
-        startVideoProcessing();
+        // Check if processing is already completed
+        fetch(`/videos/${videoId}/processing-status/`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'completed' || (data.progress && data.progress >= 100)) {
+              // Already completed, redirect immediately
+              console.log('Video already completed, redirecting...');
+              window.location.href = `/background-music/${videoId}/`;
+            } else {
+              // Start processing
+              startVideoProcessing();
+            }
+          })
+          .catch(error => {
+            console.error('Error checking initial status:', error);
+            // If we can't check status, try to start processing anyway
+            startVideoProcessing();
+          });
+      }
+    });
+
+    // Handle tab switching
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden && !processingComplete && !redirecting) {
+        // Tab became visible again, check status immediately
+        console.log('Tab became visible, checking status...');
+        checkProcessingStatus();
       }
     });
 
@@ -600,26 +661,25 @@
       }
     });
 
-
     function validateCredentials(apiKey, voiceId) {
-    // Basic validation
-    if (!apiKey || apiKey.length < 10) {
-        return { valid: false, message: 'API Key appears to be too short. Please check your ElevenLabs API key.' };
+      // Basic validation
+      if (!apiKey || apiKey.length < 10) {
+          return { valid: false, message: 'API Key appears to be too short. Please check your ElevenLabs API key.' };
+      }
+      
+      if (!voiceId || voiceId.length < 10) {
+          return { valid: false, message: 'Voice ID appears to be invalid. Please check your Voice ID.' };
+      }
+      
+      // Check if voice ID has the typical ElevenLabs format (alphanumeric, around 20 characters)
+      const voiceIdPattern = /^[a-zA-Z0-9]{15,25}$/;
+      if (!voiceIdPattern.test(voiceId)) {
+          return { valid: false, message: 'Voice ID format appears incorrect. It should be around 20 alphanumeric characters.' };
+      }
+      
+      return { valid: true };
     }
-    
-    if (!voiceId || voiceId.length < 10) {
-        return { valid: false, message: 'Voice ID appears to be invalid. Please check your Voice ID.' };
-    }
-    
-    // Check if voice ID has the typical ElevenLabs format (alphanumeric, around 20 characters)
-    const voiceIdPattern = /^[a-zA-Z0-9]{15,25}$/;
-    if (!voiceIdPattern.test(voiceId)) {
-        return { valid: false, message: 'Voice ID format appears incorrect. It should be around 20 alphanumeric characters.' };
-    }
-    
-    return { valid: true };
-}
-  </script>
+</script>
 </body>
  <!-- WhatsApp Chat Button -->
 <a href="https://wa.me/447770218787?text=Hi%2C%20I%20need%20support" 

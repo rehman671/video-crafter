@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <link rel="stylesheet" href="{% static 'styles/style.css' %}">
     <link rel="stylesheet" href="{% static 'styles/music.css' %}">
     <link rel="stylesheet" href="{% static 'styles/fonts.css' %}">
@@ -985,22 +985,49 @@ mark{
         <div>
             <div class="grid-container2">
                 <div class="section">
-                    <div class="section-header">Instructions <span>▶</span></div>
-                    <div class="section-content" id="instructions">
-                        <div class="bor" style="border:1px solid #cccccc"></div>
-                      <h3>Step 1: Select Your ElevenLabs Voiceover</h3>
-<p>Choose from your previously generated ElevenLabs voiceovers. The text will be automatically split into subtitle boxes. For example:</p>
-<div class="highlight">
-    <p>If your voiceover says, "Hello, my name is Steve," this will be automatically converted into
-        subtitle boxes that you can then assign video clips to.</p>
+    <div class="section-header">How To Upload Files To The Asset Folder<span>▶</span></div>
+    <div class="section-content" id="tutorial-video">
+        <div class="bor" style="border:1px solid #cccccc;margin-bottom:1rem"></div>
+                        <div class="tips-background"
+                            style="background-color:#f0f0f0;padding:4px 20px 20px 20px;line-height:162%">
+                            <h3>Step 1</h3>
+                            <p><strong>Create a main folder:</strong></p>
+                            <p>On your computer, create one main folder (e.g., MyVideoAssets). This folder will contain
+                                all your subfolders and video clips.</p>
+                            <h4>Add Subfolders Inside The Main Folder:</h4>
+                            <p>Within the main folder, create subfolders to categorize your videos. For example:</p>
+                            <ul>
+                                <li>Back Pain Clips</li>
+                                <li>Fitness Clips</li>
+                                <li>Testimonials</li>
+                            </ul>
+                            <h4>Add Video Files To Each Subfolder:</h4>
+                            <p>Inside each subfolder, add the relevant video clips. For example:</p>
+                            <ul class="ul-cl">
+                                <li>Back Pain Clips<span style="color:#333"></span> <span class="vid">Clip1.mp4,
+                                        Clip2.mp4</span></li>
+                                <li>Fitness Clips<span style="color:#333"></span> <span class="vid">Workout1.mp4,
+                                        Workout2.mp4</span></li>
+                            </ul>
+                            <h3>Step 2</h3>
+                            <p><strong>Upload to VideoCrafter.io:</strong></p>
+                            <ul>
+                                <li>Go to the "Upload To Your Asset Folder" section.</li>
+                                <li>Click "Choose File" and select the main folder (not individual subfolders).</li>
+                                <li>Click "Upload And Process" to start the upload.</li>
+                            </ul>
+        <div class="bor" style="border:1px solid #cccccc"></div>
+       <div class="video-content">
+<video controls preload="metadata" style="width: 100%; max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); object-fit: contain;">
+    <source src="https://videocraftervideos.s3.us-east-1.amazonaws.com/0703(1).mov" type="video/quicktime">
+    <source src="https://videocraftervideos.s3.us-east-1.amazonaws.com/0703(1).mov" type="video/mp4">
+    <p>Your browser does not support this video format. <a href="https://videocraftervideos.s3.us-east-1.amazonaws.com/0703(1).mov" target="_blank">Click here to download</a></p>
+</video>
 </div>
-<h3>Step 2: Highlight And Assign Clips</h3>
-<p class="highlight-words">Highlight words:</p>
-<p>Simply highlight the words in your script that you want to match with a video clip and assign
-    a video clip.</p><a href="{% static 'public/videos/dummy.mp4' %}">Watch Video Tutorial</a>
-                    </div>
-                </div>
-                <div class="section">
+    </div>
+</div>
+
+                {% comment %} <div class="section">
                     <div class="section-header">How To Upload Files To The Asset Folder<span>▶</span></div>
                     <div class="section-content" id="tips">
                         <div class="bor" style="border:1px solid #cccccc;margin-bottom:1rem"></div>
@@ -1034,7 +1061,7 @@ mark{
                             </ul>
                         </div><a href="{% static 'public/videos/dummy.mp4' %}">Watch Video Tutorial</a>
                     </div>
-                </div>
+                </div> {% endcomment %}
             </div>
         </div>
         <div class="lead-container lead-details" style="max-width:96%;margin:0 auto">

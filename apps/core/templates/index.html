@@ -1143,21 +1143,24 @@
                 flex-direction: column;
             }
             
-            .nav-links {
-                position: fixed;
-                margin-left:20px;
-                top: 0;
-                right: -100%;
-                width: 280px;
-                height: 100vh;
-                background-color: var(--light);
-                flex-direction: column;
-                padding: 100px 30px 30px;
-                transition: var(--transition);
-                box-shadow: var(--shadow-lg);
-                z-index: 1000;
-            }
-            
+             .nav-links {
+        position: fixed;
+        margin-left:20px;
+        top: 0;
+        right: -100%;
+        width: 320px;
+        height: 100vh;
+        background-color: var(--light);
+        flex-direction: column;
+        padding: 100px 30px 30px;
+        transition: var(--transition);
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+    }
+               .nav-links .btn {
+        white-space: nowrap;
+        min-width: auto;
+    }
             .nav-links.active {
                 right: 0;
             }
@@ -1250,9 +1253,9 @@ border-left: 1px solid rgba(114, 114, 114, 0.2);
                 <li><a href="#testimonials">Testimonials</a></li>
                 <li><a href="#pricing">Pricing</a></li>
                 <li><a href="#faq">FAQ</a></li>
+               <li> <div class="vl" style="margin-right:10px;"></div></li>
                 <li>
-                    <div class="vl" style="margin-right:10px;"></div>
-                    <a style="width:139px;" href="{% url 'register' %}" class="btn btn-primary">Start Free</a> <a href="{% url 'login' %}" style="margin-left:5px;" class="btn btn-outline">
+                    <a style="width:139px;" href="{% url 'register' %}" class="btn btn-primary">Start Free</a><a href="{% url 'login' %}" style="margin-left:5px;" class="btn btn-outline">
                         Login
                     </a></li>
             </ul>
