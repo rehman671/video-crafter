@@ -1071,6 +1071,7 @@ mark{
                         <th class="slide-first" style="font-size:1.4rem">Subtitle</th>
                         <th style="font-size:1.4rem">Subtitle Text</th>
                         <!-- <th class="slide-last">Edit</th> -->
+                        <th class="slide-last">Transition</th>
                         <th class="slide-last">Undo</th>
                     </tr>
                 </thead>
@@ -1818,15 +1819,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Debug output of clips from Django
         let clips = [];
+        let backend_transitions = [];
         {% for clip in clips %}
                 clips.push({
-                    id: {{ clip.id|default:"0" }},
+                    id: {{ clip.id|default:"null" }},
                     text: "{{ clip.text|escapejs }}".trim(),
                     sequence: {{ clip.sequence|default:"0" }},
+                    transition_id: {{ clip.transition.id|default:"null" }},
                 });
             console.log("Clip: {{ clip.id|default:'0' }} - {{ clip.text|escapejs }}");
         {% endfor %}
-        loadScript(clips, true); // true indicates we want to replace existing clips
+        {% for transition in transitions %}
+                backend_transitions.push({
+                    id: {{ transition.id|default:"0" }},
+                    name: "{{ transition.name|escapejs }}",
+                });
+            console.log("Transition: {{ transition.id|default:'0' }} - {{ transition.name|escapejs }}");
+        {% endfor %}
+        window.backend_transitions = backend_transitions; // Make transitions available globally
+        console.log("Loaded transitions:", window.backend_transitions);
+        loadScript(clips,  true); // true indicates we want to replace existing clips
 
 
         // Pass subclips data directly from Django to JavaScript

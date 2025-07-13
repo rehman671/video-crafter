@@ -357,7 +357,7 @@ def generate_audio_file(video, user_id):
 #         print(f"Error generating audio file: {str(e)}")
 #         return False
     
-def generate_srt_file(video, user_id):
+def generate_srt_file(video:Video, user_id):
     """Generate SRT file from text and audio"""
     try:
         # Check if audio file exists
@@ -378,28 +378,28 @@ def generate_srt_file(video, user_id):
             temp_audio_path = temp_audio.name
         
         # Get text content
-        clips = Clips.objects.filter(video=video).order_by("sequence")
-        if not clips.exists():
-            if not video.text_file:
-                raise ValueError(f"Video #{video.id} doesn't have text content.")
+        # clips = Clips.objects.filter(video=video).order_by("sequence")
+        # if not clips.exists():
+        #     if not video.text_file:
+        #         raise ValueError(f"Video #{video.id} doesn't have text content.")
                 
-            # Read text using storage API instead of direct file access
-            with default_storage.open(video.text_file.name, 'rb') as file:
-                raw_data = file.read()
-                # Detect encoding
-                encoding_result = chardet.detect(raw_data)
-                encoding = encoding_result["encoding"]
-                # Decode text using detected encoding
-                text = raw_data.decode(encoding)
-        else:
-            text = ""
-            for clip in clips:
-                text += clip.text + "\n"
+        #     # Read text using storage API instead of direct file access
+        #     with default_storage.open(video.text_file.name, 'rb') as file:
+        #         raw_data = file.read()
+        #         # Detect encoding
+        #         encoding_result = chardet.detect(raw_data)
+        #         encoding = encoding_result["encoding"]
+        #         # Decode text using detected encoding
+        #         text = raw_data.decode(encoding)
+        # else:
+        #     text = ""
+        #     for clip in clips:
+        #         text += clip.text.strip() + " "
                 
         # Split text into words and join with newlines
-        words = text.split()
-        text_one_word_per_line = "\n".join(words)
-        
+        # words = text.split()
+        # text_one_word_per_line = "\n".join(words)
+
         # Create a temp output JSON file
         tmp_json = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
         tmp_json.close()
@@ -407,18 +407,20 @@ def generate_srt_file(video, user_id):
         
         # Generate SRT file from text and audio
         aligner = ElevenLabsTextAlignment(AppVariables.objects.get(key="ELEVENLABS_ALIGNMENT_KEY").value)
-        srt_path = aligner.align_text_with_audio(
-            script=text_one_word_per_line,
+        srt_path, api_response  = aligner.align_text_with_audio(
+            script=video.content,
             output_json_path=json_path,
             audio_path=temp_audio_path,  # Use the temporary audio file
         )
         
         # Save the SRT file to the model
+        video.elevenlabs_alignment_response = json.loads(api_response)
+        video.save()
         if srt_path and os.path.exists(srt_path):
             with open(srt_path, "rb") as srt_file:
                 file_name = f"video_{video.id}_subtitles.srt"
                 video.srt_file.save(file_name, ContentFile(srt_file.read()), save=True)
-                
+
                 # Clean up temp files
                 os.unlink(temp_audio_path)
                 os.unlink(json_path)

@@ -37,14 +37,14 @@ class ElevenLabsTextAlignment:
             str: Preprocessed text
         """
 
-        text = re.sub(r'\s[^\w\s]+\s', ' ', text)
-        # Remove symbols preceded by space at end (e.g. "word !")
-        text = re.sub(r'\s[^\w\s]+$', '', text)
-        # Remove symbols followed by space at start (optional, e.g. "! hello")
-        text = re.sub(r'^[^\w\s]+\s', '', text)
-        text = text.replace("-", " ")  # Replace double hyphens with space
-        # Remove extra whitespace
-        text = ' '.join(text.lower().split())
+        # text = re.sub(r'\s[^\w\s]+\s', ' ', text)
+        # # Remove symbols preceded by space at end (e.g. "word !")
+        # text = re.sub(r'\s[^\w\s]+$', '', text)
+        # # Remove symbols followed by space at start (optional, e.g. "! hello")
+        # text = re.sub(r'^[^\w\s]+\s', '', text)
+        # text = text.replace("-", " ")  # Replace double hyphens with space
+        # # Remove extra whitespace
+        # text = ' '.join(text.lower().split())
 
         # Ensure text ends with punctuation for better alignment
         # if text and text[-1] not in '.!?':
@@ -108,7 +108,7 @@ class ElevenLabsTextAlignment:
                 print(f"📊 Audio duration: {duration:.2f} seconds")
             
             # Try ElevenLabs first
-            alignment_data = self._perform_elevenlabs_alignment(audio_path, processed_script)
+            alignment_data , response = self._perform_elevenlabs_alignment(audio_path, processed_script)
             
             if alignment_data:
                 # ElevenLabs successful - convert to Aeneas format
@@ -119,7 +119,7 @@ class ElevenLabsTextAlignment:
                     json.dump(aeneas_format, f, indent=1, ensure_ascii=False)
                 
                 print(f"✅ ElevenLabs alignment saved to: {output_json_path}")
-                return output_json_path
+                return output_json_path, response
             else:
                 # ElevenLabs failed - fall back to Aeneas
                 print("⚠️ ElevenLabs alignment failed, trying Aeneas fallback...")
@@ -209,7 +209,7 @@ class ElevenLabsTextAlignment:
                     })
                 
                 print(f"✅ Received {len(processed_words)} word alignments from ElevenLabs")
-                return processed_words
+                return processed_words , response.content
                 
             except requests.exceptions.RequestException as e:
                 if attempt == max_retries - 1:

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from .constants import RESOLUTIONS
+from apps.core.models import Transitions
 
 class Video(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -27,6 +28,7 @@ class Video(models.Model):
     history_preview_html = models.TextField(null=True, blank=True)  # HTML content for previewing history
     split_positions = models.TextField(null=True, blank=True)  # JSON string to store split positions
     preview_text = models.TextField(null=True, blank=True)  # Text content for previewing history
+    elevenlabs_alignment_response = models.JSONField(null=True, blank=True)  # Store ElevenLabs alignment response  
     class Meta:
         ordering = ["-created_at"]
 
@@ -41,6 +43,8 @@ class Clips(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     sequence = models.PositiveIntegerField(default=0)  # Sequence number for ordering clips
     is_changed = models.BooleanField(default=False)  # Flag to indicate if the clip has been changed
+    transition = models.ForeignKey(Transitions, on_delete=models.CASCADE, null=True, blank=True, related_name='clips')
+
 
     class Meta:
         ordering = ["sequence", "start_time"]
@@ -62,7 +66,6 @@ class Clips(models.Model):
         # Ensure start_time has a default value if it's None - this is crucial
         if self.start_time is None:
             self.start_time = 0
-        
         # Call the parent save method
         super().save(force_insert, force_update, using, update_fields)
     
@@ -75,6 +78,10 @@ class Subclip(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_image = models.BooleanField(default=False)  # Flag to indicate if the subclip is an image
+    transition = models.ForeignKey(Transitions, on_delete=models.CASCADE, null=True, blank=True, related_name='subclips')
+    set_transition = models.BooleanField(default=False)  # Flag to indicate if a transition is set
+    transition_start_time = models.FloatField(null=True, blank=True)  # Start time for the transition
+    transition_end_time = models.FloatField(null=True, blank=True)  # End time for the transition
 
     
     class Meta:

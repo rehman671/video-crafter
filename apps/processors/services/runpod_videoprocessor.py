@@ -11,10 +11,13 @@ from apps.processors.utils import generate_signed_url, generate_signed_url_for_u
 from apps.processors.models import Video, Clips, Subclip, BackgroundMusic, VideoLogs
 
 class RunPodVideoProcessor:
-    def __init__(self, video_id, api_key=None, endpoint_id=None):
+    def __init__(self, video_id, api_key=None, endpoint_id=None, is_testing = False):
         self.video_id = video_id
         self.api_key = api_key or settings.RUNPOD_API_KEY
-        self.endpoint_id = endpoint_id or settings.RUNPOD_ENDPOINT_ID
+        if not is_testing:
+            self.endpoint_id = endpoint_id or settings.RUNPOD_ENDPOINT_ID
+        else:
+            self.endpoint_id = settings.RUNPOD_TEST_ENDPOINT_ID
         self.api_url = f"https://api.runpod.ai/v2/{self.endpoint_id}/run"
         
     def _download_to_temp(self, s3_path):
@@ -206,6 +209,7 @@ class RunPodVideoProcessor:
                 "text": clip.text.replace("'", "").replace('"',''),  # Remove single quotes from text
                 "sequence": clip.sequence,
                 "is_changed": clip.is_changed,
+                "transition": clip.transition.slug if clip.transition else None,
             }
             
             if clip.video_file:
@@ -222,6 +226,8 @@ class RunPodVideoProcessor:
                         "end_time": subclip.end_time,
                         "text": subclip.text.replace("'", "").replace('"',''),  # Remove single quotes from text
                         "is_image": subclip.is_image,  # Include is_image flag
+                        "transition": subclip.transition.slug if subclip.transition else None,
+
                     }
                     if subclip.video_file:
                         subclip_info["video_file"] = subclip.video_file.name

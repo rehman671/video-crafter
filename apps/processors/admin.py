@@ -118,8 +118,8 @@ class ClipsAdmin(admin.ModelAdmin):
     
 @admin.register(Subclip)
 class SubclipAdmin(admin.ModelAdmin):
-    list_display = ['id', 'clip', 'video_id', 'start_time', 'end_time', 'text', 'video_file', 'created_at']
-    list_filter = ['clip__video', 'created_at', 'clip__video__user']
+    list_display = ['id', 'clip','transition', 'video_id', 'start_time', 'end_time', 'text', 'video_file', 'created_at']
+    list_filter = ['clip__video','transition', 'created_at', 'clip__video__user']
     search_fields = ['text', 'video_file']
     
     def video_id(self, obj):
@@ -154,20 +154,28 @@ class VideoLogsAdmin(admin.ModelAdmin):
             if obj.log_file:
                 log_url = generate_signed_url(obj.log_file.name)
                 if log_url:
-                    # Get first 500 characters from remote log file
                     response = requests.get(log_url)
                     if response.status_code == 200:
                         content = response.text
-                        # Format the content in a pre tag with styling 
+                        # Add copy button and container with unique ID based on log ID
                         formatted_content = format_html(
-                            '<div style="max-height: 400px; overflow-y: auto;">'
+                            '<div>'
+                            '<button onclick="copyText(\'log_{}\')" '
+                            'style="margin-bottom: 10px; padding: 5px 10px; cursor: pointer;">'
+                            'Copy All</button>'
+                            '<div id="log_{}" style="max-height: 400px; overflow-y: auto;">'
                             '<pre style="background-color: #f5f5f5; padding: 10px; '
                             'border: 1px solid #ddd; border-radius: 4px; '
-                            'font-family: monospace; white-space: pre-wrap;">{}</pre>',
-                            content, 
+                            'font-family: monospace; white-space: pre-wrap;">{}</pre>'
+                            '</div>'
+                            '<script>'
+                            'function copyText(elementId) {{'
+                            '  const text = document.getElementById(elementId).innerText;'
+                            '  navigator.clipboard.writeText(text);'
+                            '}}'
+                            '</script>',
+                            obj.id, obj.id, content
                         )
-                            # log_url
-                            # '<a href="{}" target="_blank">View Full Log</a></div>',
                         return formatted_content
                     return "Could not fetch log file"
             return "No log file available"

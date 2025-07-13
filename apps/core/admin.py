@@ -58,4 +58,3 @@ class TransitionsAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug')
     ordering = ('name',)
     fields = ('name', 'duration', 'slug')
-    readonly_fields = ('slug', )

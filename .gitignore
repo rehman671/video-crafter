@@ -2,3 +2,4 @@ media/
 .env
 *.json
 *.xml
+*.db

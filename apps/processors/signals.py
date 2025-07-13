@@ -1,4 +1,4 @@
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
 import json
 import os
@@ -369,17 +369,224 @@ logger = logging.getLogger(__name__)
 #             instance.end_time = instance.start_time + 0.5
 #             print(f"Adjusted end time to ensure duration > 0: {instance.start_time} -> {instance.end_time}")
 
+import json
+import re
+import logging
+from typing import Dict, List, Tuple, Optional, Any
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+
+logger = logging.getLogger(__name__)
+
+def clean_text_for_alignment(text: str) -> str:
+    """
+    Clean text for better alignment by removing punctuation and normalizing whitespace.
+    """
+    if not text:
+        return ""
+    
+    # Remove punctuation and extra whitespace, convert to lowercase
+    cleaned = re.sub(r'[^\w\s]', '', text.lower())
+    cleaned = re.sub(r'\s+', ' ', cleaned)
+    return cleaned.strip()
+
+def find_word_sequence_in_srt(target_words: List[str], srt_data: Dict[str, Any]) -> Optional[Tuple[int, int, float, float]]:
+    """
+    Find a word sequence in SRT data and return fragment indices and timing.
+    
+    Args:
+        target_words: List of words to find
+        srt_data: SRT data dictionary
+        
+    Returns:
+        Tuple of (start_fragment_idx, end_fragment_idx, start_time, end_time) or None
+    """
+    if not target_words or not srt_data.get('fragments'):
+        return None
+    
+    fragments = srt_data['fragments']
+    
+    # Build a complete word list with fragment references
+    all_words = []
+    for frag_idx, fragment in enumerate(fragments):
+        fragment_words = []
+        for line in fragment.get('lines', []):
+            fragment_words.extend(clean_text_for_alignment(line).split())
+        
+        if fragment_words:
+            fragment_begin = float(fragment.get('begin', 0))
+            fragment_end = float(fragment.get('end', 0))
+            word_duration = (fragment_end - fragment_begin) / len(fragment_words)
+            
+            for word_idx, word in enumerate(fragment_words):
+                word_start = fragment_begin + (word_idx * word_duration)
+                word_end = fragment_begin + ((word_idx + 1) * word_duration)
+                
+                all_words.append({
+                    'word': word,
+                    'fragment_idx': frag_idx,
+                    'start_time': word_start,
+                    'end_time': word_end,
+                    'fragment_begin': fragment_begin,
+                    'fragment_end': fragment_end
+                })
+    
+    # Find the target word sequence
+    sequence_length = len(target_words)
+    
+    for i in range(len(all_words) - sequence_length + 1):
+        # Check if sequence matches
+        if all([all_words[i + j]['word'] == target_words[j] for j in range(sequence_length)]):
+            # Found the sequence
+            start_word = all_words[i]
+            end_word = all_words[i + sequence_length - 1]
+            
+            return (
+                start_word['fragment_idx'],
+                end_word['fragment_idx'],
+                start_word['start_time'],
+                end_word['end_time']
+            )
+    
+    return None
+
+def find_previous_word_end_time(subclip_text: str, srt_data: Dict[str, Any]) -> float:
+    """
+    Find the end time of the word immediately before the subclip text starts.
+    """
+    if not subclip_text or not srt_data.get('fragments'):
+        return 0.0
+    
+    target_words = clean_text_for_alignment(subclip_text).split()
+    if not target_words:
+        return 0.0
+    
+    fragments = srt_data['fragments']
+    
+    # Build complete word list
+    all_words = []
+    for frag_idx, fragment in enumerate(fragments):
+        fragment_words = []
+        for line in fragment.get('lines', []):
+            fragment_words.extend(clean_text_for_alignment(line).split())
+        
+        if fragment_words:
+            fragment_begin = float(fragment.get('begin', 0))
+            fragment_end = float(fragment.get('end', 0))
+            word_duration = (fragment_end - fragment_begin) / len(fragment_words)
+            
+            for word_idx, word in enumerate(fragment_words):
+                word_start = fragment_begin + (word_idx * word_duration)
+                word_end = fragment_begin + ((word_idx + 1) * word_duration)
+                
+                all_words.append({
+                    'word': word,
+                    'end_time': word_end
+                })
+    
+    # Find the target sequence and get previous word's end time
+    sequence_length = len(target_words)
+    
+    for i in range(len(all_words) - sequence_length + 1):
+        if all([all_words[i + j]['word'] == target_words[j] for j in range(sequence_length)]):
+            # Found the sequence, return previous word's end time
+            if i > 0:
+                return all_words[i - 1]['end_time']
+            else:
+                return 0.0  # No previous word
+    
+    return 0.0
+
+def calculate_subclip_timing_with_fuzzy_matching(subclip_text: str, srt_data: Dict[str, Any], previous_word_end_time: float = 0.0) -> Tuple[Optional[float], Optional[float]]:
+    """
+    Calculate subclip timing with fuzzy matching fallback.
+    
+    Returns:
+        Tuple of (start_time, end_time) or (None, None) if no match found
+    """
+    if not subclip_text or not srt_data.get('fragments'):
+        return None, None
+    
+    target_words = clean_text_for_alignment(subclip_text).split()
+    if not target_words:
+        return None, None
+    
+    fragments = srt_data['fragments']
+    
+    # Strategy 1: Exact sequence matching
+    result = find_word_sequence_in_srt(target_words, srt_data)
+    if result:
+        start_frag_idx, end_frag_idx, word_start_time, word_end_time = result
+        return previous_word_end_time, word_end_time
+    
+    # Strategy 2: Sliding window matching (try smaller chunks)
+    max_window_size = min(len(target_words), 5)
+    best_match = None
+    best_score = 0
+    
+    for window_size in range(max_window_size, 0, -1):
+        for i in range(len(target_words) - window_size + 1):
+            window_words = target_words[i:i + window_size]
+            result = find_word_sequence_in_srt(window_words, srt_data)
+            
+            if result:
+                score = window_size * 10 + (len(target_words) - i)  # Prefer larger windows and earlier positions
+                if score > best_score:
+                    best_score = score
+                    start_frag_idx, end_frag_idx, word_start_time, word_end_time = result
+                    
+                    # Estimate end time based on full text length
+                    estimated_duration = len(target_words) / len(window_words) * (word_end_time - word_start_time)
+                    estimated_end_time = word_start_time + estimated_duration
+                    
+                    # Clamp to reasonable bounds
+                    max_possible_end = max([float(f.get('end', 0)) for f in fragments])
+                    estimated_end_time = min(estimated_end_time, max_possible_end)
+                    
+                    best_match = (previous_word_end_time, estimated_end_time)
+    
+    if best_match:
+        return best_match
+    
+    # Strategy 3: Fragment-based partial matching
+    matching_fragments = []
+    subclip_text_clean = clean_text_for_alignment(subclip_text)
+    
+    for fragment in fragments:
+        fragment_text = ' '.join(fragment.get('lines', [])).lower()
+        fragment_text_clean = clean_text_for_alignment(fragment_text)
+        
+        # Check for partial matches
+        if (fragment_text_clean in subclip_text_clean or 
+            subclip_text_clean in fragment_text_clean or
+            any(word in fragment_text_clean.split() for word in target_words[:3])):  # Check first 3 words
+            matching_fragments.append(fragment)
+    
+    if matching_fragments:
+        # Sort by start time
+        matching_fragments.sort(key=lambda x: float(x.get('begin', 0)))
+        end_time = float(matching_fragments[-1].get('end', 0))
+        return previous_word_end_time, end_time
+    
+    return None, None
 
 @receiver(pre_save, sender=Subclip)
-def configure_subclip(sender, instance:Subclip, **kwargs):
+def configure_subclip(sender, instance: Subclip, **kwargs):
     """
     Calculate start and end times for a subclip based on its text content.
-    The end time will be the start time of the next fragment when available.
+    The start time will be the end time of the previous word when available.
     The first subclip of a video will always have a start time of zero.
     """
-    # Check if this is the first subclip for this clip
+    logger.info(f"Processing subclip: {instance.text[:50]}...")
+    
+    # Handle edge case: empty or None text
+    if not instance.text or not instance.text.strip():
+        logger.warning("Subclip has empty text, skipping timing calculation")
+        return
+    
+    # Determine if this is the first subclip
     is_first_subclip = False
-    if instance.clip.sequence == 1:
+    if instance.clip and instance.clip.sequence == 1:
         try:
             # Get the first word from the clip's text/content
             clip_first_word = instance.clip.text.strip().split()[0] if instance.clip.text else ""
@@ -387,168 +594,113 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
             # Get the first word from this subclip's text/content
             subclip_first_word = instance.text.strip().split()[0] if instance.text else ""
             
-            # Check if the first words match
+            # Check if the first words match (case-insensitive)
             if clip_first_word and subclip_first_word and clip_first_word.lower() == subclip_first_word.lower():
                 is_first_subclip = True
+                logger.info("Identified as first subclip")
                 
-        except (IndexError, AttributeError):
-            # Handle cases where text might be empty or None
+        except (IndexError, AttributeError) as e:
+            logger.warning(f"Error determining first subclip: {e}")
             is_first_subclip = False
-                
-        # Check if this is an existing instance being updated
-        if instance.pk:
-            try:
-                original = Subclip.objects.get(pk=instance.pk)
-                # If text changed, reset timings to recalculate
-                if original.text != instance.text:
-                    instance.start_time = None
-                    instance.end_time = None
-            except Subclip.DoesNotExist:
-                pass
     
-    # Set start_time to 0 for first subclip and skip SRT processing for start_time
-    if is_first_subclip is True:
-        instance.start_time = 0
-        
-    # Process the SRT file to find matching fragments
-    clip = instance.clip        
-    video = clip.video
-    if not video.srt_file:
+    # Handle updates to existing instances
+    if instance.pk:
+        try:
+            original = Subclip.objects.get(pk=instance.pk)
+            # If text changed, reset timings to recalculate
+            if original.text != instance.text:
+                instance.start_time = None
+                instance.end_time = None
+                logger.info("Text changed, resetting timings for recalculation")
+        except Subclip.DoesNotExist:
+            logger.warning("Original subclip not found during update")
+    
+    # Set start_time to 0 for first subclip
+    if is_first_subclip:
+        instance.start_time = 0.0
+        logger.info("Set start_time to 0 for first subclip")
+    
+    # Validate required objects exist
+    if not instance.clip:
+        logger.error("Subclip has no associated clip")
+        return
+    
+    if not instance.clip.video:
+        logger.error("Clip has no associated video")
+        return
+    
+    if not instance.clip.video.srt_file:
+        logger.error("Video has no SRT file")
         return
     
     try:
         # Load the SRT JSON content
-        with video.srt_file.open('r') as srt_file:
+        with instance.clip.video.srt_file.open('r') as srt_file:
             srt_data = json.load(srt_file)
-        threshold = (
-            Subclip.objects
-            .filter(clip__sequence__lt=instance.clip.sequence, clip__video=instance.clip.video)
-            .order_by('clip__sequence')
-            .last()
-            .end_time
-            if Subclip.objects.filter(clip__sequence__lt=instance.clip.sequence, clip__video=instance.clip.video).exists()
-            else 0
+        
+        # Validate SRT data structure
+        if not isinstance(srt_data, dict) or 'fragments' not in srt_data:
+            logger.error("Invalid SRT data structure")
+            return
+        
+        if not srt_data['fragments']:
+            logger.error("SRT data has no fragments")
+            return
+        
+        # Get the end time of the previous word (for start time calculation)
+        previous_word_end_time = 0.0
+        if not is_first_subclip:
+            previous_word_end_time = find_previous_word_end_time(instance.text, srt_data)
+            logger.info(f"Previous word end time: {previous_word_end_time}")
+        
+        # Calculate timing using improved algorithm
+        start_time, end_time = calculate_subclip_timing_with_fuzzy_matching(
+            instance.text, 
+            srt_data, 
+            previous_word_end_time
         )
-        # Convert threshold to float if needed
-        threshold = 0 if threshold is None else threshold
-        threshold = float(threshold)
-
-        # Filter fragments after the threshold
-        filtered_fragments = [
-            fragment for fragment in srt_data['fragments']
-            if float(fragment['begin']) >= threshold
-    ]
-
-        # Get all fragments sorted by begin time
-        all_fragments = sorted(filtered_fragments, key=lambda x: float(x.get('begin', 0)))
-
-        print(f"Total fragments in SRT: {len(all_fragments)}")
         
-        # Get subclip text in lowercase for comparison
-        subclip_text = clean_text_for_alignment(instance.text)
-        # subclip_text = instance.text.lower().strip()
-        
-        # Concatenate all fragment texts to form a transcript
-        full_transcript = ""
-        fragment_positions = []  # Keep track of which fragment each position belongs to
-        
-        for i, fragment in enumerate(all_fragments):
-            fragment_text = ' '.join(fragment.get('lines', [])).lower()
-            fragment_positions.extend([i] * (len(fragment_text) + 1))  # +1 for the space
-            full_transcript += fragment_text + " "
-            
-        full_transcript = full_transcript.strip()
-        
-        # If transcript is longer than our positions mapping, trim the positions
-        if len(fragment_positions) > len(full_transcript):
-            fragment_positions = fragment_positions[:len(full_transcript)]
-        
-
-        # Find the subclip text in the transcript
-        if subclip_text in full_transcript:
-            # Find the start and end positions
-            start_pos = full_transcript.find(subclip_text)
-            end_pos = start_pos + len(subclip_text) - 1
-            
-            # Get the corresponding fragments
-            if 0 <= start_pos < len(fragment_positions) and 0 <= end_pos < len(fragment_positions):
-                start_fragment_index = fragment_positions[start_pos]
-                end_fragment_index = fragment_positions[end_pos]
-                
-                # Set the start time only if this is not the first subclip
-                if not is_first_subclip:
-                    start_fragment = all_fragments[start_fragment_index]
-                    instance.start_time = float(start_fragment.get('begin', 0))
-                    print(f"Start fragment: {start_fragment.get('lines')} at {instance.start_time}")
-                
-                # Set the end time
-                end_fragment = all_fragments[end_fragment_index]
-                end_fragment_id = end_fragment.get('id')
-                print(f"End fragment ID: {end_fragment_id}, text: {end_fragment.get('lines')}")
-                
-                # Find the next fragment that actually starts after this one ends
-                end_fragment_end_time = float(end_fragment.get('end', 0))
-                next_fragment = None
-                
-                for i in range(end_fragment_index + 1, len(all_fragments)):
-                    potential_next = all_fragments[i]
-                    if float(potential_next.get('begin', 0)) >= end_fragment_end_time:
-                        next_fragment = potential_next
-                        break
-                
-                if next_fragment:
-                    # Use the start time of the next fragment that starts after this one ends
-                    instance.end_time = float(next_fragment.get('begin', 0))
-                    print( float(next_fragment.get('begin', 0)))
-                    print(f"End time set to next fragment start: {instance.end_time}, ID: {next_fragment.get('id')}, text: {next_fragment.get('lines')}")
-                else:
-                    # Use the end time of the current fragment
-                    instance.end_time = end_fragment_end_time
-                    print(f"No next fragment after this one ends, using current end: {instance.end_time}")
-                
-                return
-        
-        # Fallback method - try partial matching
-        print("Exact match not found, trying partial matching...")
-        matching_fragments = []
-        
-        for fragment in all_fragments:
-            fragment_text = ' '.join(fragment.get('lines', [])).lower()
-            
-            # Check if the fragment text is in the subclip or vice versa
-            if fragment_text in subclip_text or subclip_text in fragment_text:
-                matching_fragments.append(fragment)
-        
-        if matching_fragments:
-            # Sort matching fragments by start time
-            matching_fragments.sort(key=lambda x: float(x.get('begin', 0)))
-            
-            # Set start time to the first matching fragment only if not the first subclip
+        if start_time is not None and end_time is not None:
+            # Apply timing with validation
             if not is_first_subclip:
-                instance.start_time = float(matching_fragments[0].get('begin', 0))
+                instance.start_time = max(0.0, start_time)  # Ensure non-negative
             
-            # Get the last matching fragment's index in the full list
-            last_match = matching_fragments[-1]
-            last_match_index = -1
+            instance.end_time = max(instance.start_time if instance.start_time else 0.0, end_time)  # Ensure end > start
             
-            for i, fragment in enumerate(all_fragments):
-                if fragment.get('id') == last_match.get('id'):
-                    last_match_index = i
-                    break
+            logger.info(f"Successfully calculated timing: start={instance.start_time}, end={instance.end_time}")
             
-            # Set end time
-            if last_match_index + 1 < len(all_fragments):
-                # Use start time of next fragment
-                next_fragment = all_fragments[last_match_index + 1]
-                instance.end_time = float(next_fragment.get('begin', 0))
-                print(f"Partial match: using next fragment start: {instance.end_time}")
-            else:
-                # Use end time of last matching fragment
-                instance.end_time = float(last_match.get('end', 0))
-                print(f"Partial match: no next fragment, using last fragment end: {instance.end_time}")
-    except (json.JSONDecodeError, IOError, ValueError) as e:
-        logger.error(f"Error processing SRT file: {e}")
-
+            # Validate timing makes sense
+            if instance.start_time is not None and instance.end_time is not None:
+                if instance.end_time <= instance.start_time:
+                    logger.warning(f"Invalid timing: end_time ({instance.end_time}) <= start_time ({instance.start_time})")
+                    # Add small buffer to end time
+                    instance.end_time = instance.start_time + 0.1
+                    
+                # Check if timing is reasonable (not too long)
+                duration = instance.end_time - (instance.start_time or 0.0)
+                max_reasonable_duration = len(instance.text.split()) * 0.5  # 0.5 seconds per word max
+                if duration > max_reasonable_duration:
+                    logger.warning(f"Duration seems too long: {duration}s for {len(instance.text.split())} words")
+        else:
+            logger.error(f"Failed to calculate timing for subclip: {instance.text[:50]}...")
+            
+            # Fallback: use very basic timing estimation
+            if not is_first_subclip and previous_word_end_time > 0:
+                instance.start_time = previous_word_end_time
+                # Estimate end time based on word count (0.3 seconds per word)
+                estimated_duration = len(instance.text.split()) * 0.3
+                instance.end_time = instance.start_time + estimated_duration
+                logger.info(f"Applied fallback timing: start={instance.start_time}, end={instance.end_time}")
+            
+    except json.JSONDecodeError as e:
+        logger.error(f"Error parsing SRT JSON: {e}")
+    except IOError as e:
+        logger.error(f"Error reading SRT file: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error processing SRT file: {e}")
+        # Don't raise the exception to avoid breaking the save process
+        
+    logger.info(f"Finished processing subclip: start={instance.start_time}, end={instance.end_time}")
 
 # @receiver(post_save, sender=Clips)
 # def assign_black_video_to_clip(sender, instance:Clips, created, **__):
@@ -678,196 +830,125 @@ def configure_subclip(sender, instance:Subclip, **kwargs):
 @receiver(pre_save, sender=Clips)
 def configure_subclip_from_clips(sender, instance: Clips, **kwargs):
     """
-    Calculate start and end times for a clip based on its text content.
-    The end time will be the start time of the next fragment when available.
-    The first clip of a video will always have a start time of zero.
+    Calculate start and end times for a subclip based on its text content.
+    The start time will be the end time of the previous word when available.
+    The first subclip of a video will always have a start time of zero.
     """
-    # Check if this is the first clip for this video
-    is_first_clip = False
-    if instance.sequence == 1:
-        try:
-            # Get all clips for this video, ordered by sequence
-            existing_clips = Clips.objects.filter(video=instance.video).order_by('sequence')
-            
-            # If this is a new clip (no pk) and there are no other clips, it's the first one
-            if not instance.pk and not existing_clips.exists():
-                is_first_clip = True
-            # If this is updating an existing clip, check if it was the first one
-            elif instance.pk and existing_clips.first() and existing_clips.first().pk == instance.pk:
-                is_first_clip = True
-        except:
-            # If any error occurs during this check, we'll proceed with regular processing
-            pass
-            
-    # Check if this is an existing instance being updated
-    if instance.pk:
-        try:
-            original = Clips.objects.get(pk=instance.pk)
-            # If text changed, reset timings to recalculate
-            if original.text != instance.text:
-                instance.start_time = None
-                instance.end_time = None
-        except Clips.DoesNotExist:
-            pass
+    logger.info(f"Processing subclip: {instance.text[:50]}...")
     
-    # Set start_time to 0 for first clip and skip SRT processing for start_time
-    if is_first_clip:
-        instance.start_time = 0
-        
-    # Process the SRT file to find matching fragments
-    video = instance.video
-    if not video.srt_file:
+    # Handle edge case: empty or None text
+    if not instance.text or not instance.text.strip():
+        logger.warning("Subclip has empty text, skipping timing calculation")
+        return
+    
+    # Determine if this is the first subclip
+    is_first_subclip = False
+    if instance and instance.sequence == 1:
+        try:
+            # Get the first word from the clip's text/content
+            clip_first_word = instance.text.strip().split()[0] if instance.text else ""
+            
+          
+            
+            # Check if the first words match (case-insensitive)
+            if clip_first_word:
+                is_first_subclip = True
+                logger.info("Identified as first subclip")
+                
+        except (IndexError, AttributeError) as e:
+            logger.warning(f"Error determining first subclip: {e}")
+            is_first_subclip = False
+    
+    # Handle updates to existing instances
+    instance.start_time = None
+    instance.end_time = None
+    
+    # Set start_time to 0 for first subclip
+    if is_first_subclip:
+        instance.start_time = 0.0
+        logger.info("Set start_time to 0 for first subclip")
+    
+    # Validate required objects exist
+    if not instance:
+        logger.error("Subclip has no associated clip")
+        return
+    
+    if not instance.video:
+        logger.error("Clip has no associated video")
+        return
+
+    if not instance.video.srt_file:
+        logger.error("Video has no SRT file")
         return
     
     try:
         # Load the SRT JSON content
-        print(f"Processing video ID: {video.id}")
-        with video.srt_file.open('r') as srt_file:
+        with instance.video.srt_file.open('r') as srt_file:
             srt_data = json.load(srt_file)
         
-        # Calculate threshold based on previous clips
-        threshold = (
-            Clips.objects
-            .filter(sequence__lt=instance.sequence, video=instance.video)
-            .order_by('sequence')
-            .last()
-            .end_time
-            if Clips.objects.filter(sequence__lt=instance.sequence, video=instance.video).exists()
-            else 0
+        # Validate SRT data structure
+        if not isinstance(srt_data, dict) or 'fragments' not in srt_data:
+            logger.error("Invalid SRT data structure")
+            return
+        
+        if not srt_data['fragments']:
+            logger.error("SRT data has no fragments")
+            return
+        
+        # Get the end time of the previous word (for start time calculation)
+        previous_word_end_time = 0.0
+        if not is_first_subclip:
+            previous_word_end_time = find_previous_word_end_time(instance.text, srt_data)
+            logger.info(f"Previous word end time: {previous_word_end_time}")
+        
+        # Calculate timing using improved algorithm
+        start_time, end_time = calculate_subclip_timing_with_fuzzy_matching(
+            instance.text, 
+            srt_data, 
+            previous_word_end_time
         )
-        print(f"Threshold for clip: {threshold}")
         
-        # Convert threshold to float if needed
-        if threshold is None:
-            threshold = 0.0
+        if start_time is not None and end_time is not None:
+            # Apply timing with validation
+            if not is_first_subclip:
+                instance.start_time = max(0.0, start_time)  # Ensure non-negative
+            
+            instance.end_time = max(instance.start_time if instance.start_time else 0.0, end_time)  # Ensure end > start
+            
+            logger.info(f"Successfully calculated timing: start={instance.start_time}, end={instance.end_time}")
+            
+            # Validate timing makes sense
+            if instance.start_time is not None and instance.end_time is not None:
+                if instance.end_time <= instance.start_time:
+                    logger.warning(f"Invalid timing: end_time ({instance.end_time}) <= start_time ({instance.start_time})")
+                    # Add small buffer to end time
+                    instance.end_time = instance.start_time + 0.1
+                    
+                # Check if timing is reasonable (not too long)
+                duration = instance.end_time - (instance.start_time or 0.0)
+                max_reasonable_duration = len(instance.text.split()) * 0.5  # 0.5 seconds per word max
+                if duration > max_reasonable_duration:
+                    logger.warning(f"Duration seems too long: {duration}s for {len(instance.text.split())} words")
         else:
-            threshold = float(threshold)
-                
-        # Filter fragments after the threshold
-        filtered_fragments = [
-            fragment for fragment in srt_data['fragments']
-            if float(fragment['begin']) >= threshold
-        ]
-
-        # Get all fragments sorted by begin time
-        all_fragments = sorted(filtered_fragments, key=lambda x: float(x.get('begin', 0)))
-
-        print(f"Total fragments in SRT after threshold: {len(all_fragments)}")
-        
-        # Get clip text in lowercase for comparison
-        clip_text = clean_text_for_alignment(instance.text)
-        # clip_text = instance.text.lower().strip()
-        
-        # Concatenate all fragment texts to form a transcript
-        full_transcript = ""
-        fragment_positions = []  # Keep track of which fragment each position belongs to
-        
-        for i, fragment in enumerate(all_fragments):
-            fragment_text = ' '.join(fragment.get('lines', [])).lower()
-            fragment_positions.extend([i] * (len(fragment_text) + 1))  # +1 for the space
-            full_transcript += fragment_text + " "
+            logger.error(f"Failed to calculate timing for subclip: {instance.text[:50]}...")
             
-        full_transcript = full_transcript.strip()
+            # Fallback: use very basic timing estimation
+            if not is_first_subclip and previous_word_end_time > 0:
+                instance.start_time = previous_word_end_time
+                # Estimate end time based on word count (0.3 seconds per word)
+                estimated_duration = len(instance.text.split()) * 0.3
+                instance.end_time = instance.start_time + estimated_duration
+                logger.info(f"Applied fallback timing: start={instance.start_time}, end={instance.end_time}")
+            
+    except json.JSONDecodeError as e:
+        logger.error(f"Error parsing SRT JSON: {e}")
+    except IOError as e:
+        logger.error(f"Error reading SRT file: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error processing SRT file: {e}")
+        # Don't raise the exception to avoid breaking the save process
         
-        # If transcript is longer than our positions mapping, trim the positions
-        if len(fragment_positions) > len(full_transcript):
-            fragment_positions = fragment_positions[:len(full_transcript)]
-
-        # Find the clip text in the transcript
-        if clip_text in full_transcript:
-            # Find the start and end positions
-            start_pos = full_transcript.find(clip_text)
-            end_pos = start_pos + len(clip_text) - 1
-            
-            # Get the corresponding fragments
-            if 0 <= start_pos < len(fragment_positions) and 0 <= end_pos < len(fragment_positions):
-                start_fragment_index = fragment_positions[start_pos]
-                end_fragment_index = fragment_positions[end_pos]
-                
-                # Set the start time only if this is not the first clip
-                if not is_first_clip:
-                    start_fragment = all_fragments[start_fragment_index]
-                    instance.start_time = float(start_fragment.get('begin', 0))
-                    print(f"Start fragment: {start_fragment.get('lines')} at {instance.start_time}")
-                
-                # Set the end time
-                end_fragment = all_fragments[end_fragment_index]
-                end_fragment_id = end_fragment.get('id')
-                print(f"End fragment ID: {end_fragment_id}, text: {end_fragment.get('lines')}")
-                
-                # Find the next fragment that actually starts after this one ends
-                end_fragment_end_time = float(end_fragment.get('end', 0))
-                next_fragment = None
-                
-                for i in range(end_fragment_index + 1, len(all_fragments)):
-                    potential_next = all_fragments[i]
-                    if float(potential_next.get('begin', 0)) >= end_fragment_end_time:
-                        next_fragment = potential_next
-                        break
-                
-                if next_fragment:
-                    # Use the start time of the next fragment that starts after this one ends
-                    instance.end_time = float(next_fragment.get('begin', 0))
-                    print(f"End time set to next fragment start: {instance.end_time}")
-                    print(f"Next fragment ID: {next_fragment.get('id')}, text: {next_fragment.get('lines')}")
-                else:
-                    # Use the end time of the current fragment
-                    instance.end_time = end_fragment_end_time
-                    print(f"No next fragment after this one ends, using current end: {instance.end_time}")
-                
-                return
-        
-        # Fallback method - try partial matching
-        print("Exact match not found, trying partial matching...")
-        matching_fragments = []
-        
-        for fragment in all_fragments:
-            fragment_text = ' '.join(fragment.get('lines', [])).lower()
-            
-            # Check if the fragment text is in the clip text or vice versa
-            if fragment_text in clip_text or clip_text in fragment_text:
-                matching_fragments.append(fragment)
-        
-        if matching_fragments:
-            # Sort matching fragments by start time
-            matching_fragments.sort(key=lambda x: float(x.get('begin', 0)))
-            
-            # Set start time to the first matching fragment only if not the first clip
-            if not is_first_clip:
-                instance.start_time = float(matching_fragments[0].get('begin', 0))
-                print(f"Partial match start time: {instance.start_time}")
-            
-            # Get the last matching fragment's index in the full list
-            last_match = matching_fragments[-1]
-            last_match_index = -1
-            
-            for i, fragment in enumerate(all_fragments):
-                if fragment.get('id') == last_match.get('id'):
-                    last_match_index = i
-                    break
-            
-            # Set end time
-            if last_match_index + 1 < len(all_fragments):
-                # Use start time of next fragment
-                next_fragment = all_fragments[last_match_index + 1]
-                instance.end_time = float(next_fragment.get('begin', 0))
-                print(f"Partial match: using next fragment start: {instance.end_time}")
-            else:
-                # Use end time of last matching fragment
-                instance.end_time = float(last_match.get('end', 0))
-                print(f"Partial match: no next fragment, using last fragment end: {instance.end_time}")
-        else:
-            print("No matching fragments found")
-            
-    except (json.JSONDecodeError, IOError, ValueError) as e:
-        logger.error(f"Error processing SRT file: {e}")
-        
-    # Ensure end time is always after start time
-    if instance.start_time is not None and instance.end_time is not None:
-        if instance.end_time <= instance.start_time:
-            # Add a minimum duration of 0.5 seconds
-            instance.end_time = instance.start_time + 0.5
-            print(f"Adjusted end time to ensure duration > 0: {instance.start_time} -> {instance.end_time}")
+    logger.info(f"Finished processing subclip: start={instance.start_time}, end={instance.end_time}")
 
 # @receiver(pre_save, sender=Clips)
 # def configure_subclip_from_clips(sender, instance:Clips, **kwargs):
@@ -1164,3 +1245,28 @@ def check_subclip_exists(sender, instance:Subclip, **kwargs):
                 except ValueError:
                     # First word not found in clip text, continue checking 
                     continue
+
+
+
+# @receiver(post_delete, sender=Subclip)
+# def delete_subclip_file(sender, instance:Subclip, **kwargs):
+#     # Delete subclip video file if it exists
+#     if instance.video_file:
+#         try:
+#             # Print stack trace
+#             logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+#             logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+#             logger.info("Deleting subclip file, stack trace:")
+#             logger.info(''.join(traceback.format_stack()))
+#             logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+#             logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+            
+#             # Delete the file
+#             instance.video_file.delete(save=False)
+#         except Exception as e:
+#             logger.error(f"Error deleting subclip file: {e}")
+
+
+@receiver(post_save, sender=Clips)
+def update_transition(sender, instance:Clips, **kwargs):
+    Subclip.objects.filter(clip=instance).update(transition=instance.transition)

@@ -2,7 +2,7 @@ import uuid
 import stripe
 import json
 import os
-
+from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
@@ -20,7 +20,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 
-from apps.core.models import Plan, TempSubscription, Subscription, BillingInfo, Font
+from apps.core.models import Plan, TempSubscription, Subscription, BillingInfo, Font, Transitions
 from apps.core.handler.stripe_handler import StripeHandler
 from apps.core.decorators import check_subscription_credits
 
@@ -444,13 +444,14 @@ def scene_view(request, video_id):
             subclip_objects.extend(clip_subclips)
         
         context = {
-            'video': video,
-            'fonts': Font.objects.all(),
-            'clips': clips,
-            'subclips': subclip_objects,
-            'asset_folders': user_folder_structure,
-            'user_subscription': Subscription.objects.filter(user=request.user).first(),
-        }
+    'video': video,
+    'fonts': Font.objects.all(),
+    'clips': clips,
+    'subclips': subclip_objects,
+    'asset_folders': user_folder_structure,
+    'user_subscription': Subscription.objects.filter(user=request.user).first(),
+    'transitions': Transitions.objects.all().order_by('name'),  # ADD this line
+}
         
         return render(request, "home/scene.html", context)
     
@@ -2306,3 +2307,48 @@ def upload_to_folder(request):
         logger.error(f"Upload to folder error: {str(e)}")
     
     return redirect('asset_library')
+
+
+@login_required(login_url='login')
+@require_http_methods(["POST"])
+def update_clip_transition(request):
+    """
+    Update the transition for a specific clip
+    """
+    try:
+        data = json.loads(request.body)
+        clip_id = data.get('clip_id')
+        transition_id = data.get('transition_id')
+        
+        # Get the clip
+        clip = Clips.objects.get(id=clip_id, video__user=request.user)
+        
+        # Update the transition
+        if transition_id and transition_id != '':
+            transition = Transitions.objects.get(id=transition_id)
+            clip.transition = transition
+        else:
+            clip.transition = None
+            
+        clip.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Transition updated successfully'
+        })
+        
+    except Clips.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Clip not found'
+        })
+    except Transitions.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Transition not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })

@@ -7,7 +7,8 @@ from apps.core.views import (
     upgrade_plan, asset_view, delete_asset, rename_asset, verify_email,
     register_view, register, password_reset_request, password_reset_confirm, loading_view, proxy_video_download,
     cancel_subscription, speed_up_video, affiliate_program, refund, privacy, terms_and_condition,bulk_delete_assets,
-upload_to_folder
+upload_to_folder, update_clip_transition
+
 )
 
 urlpatterns = [
@@ -56,6 +57,7 @@ path('download-video/<int:video_id>/', proxy_video_download, name='proxy_video_d
         # ADD these two lines to your urlpatterns list:
 path("bulk-delete-assets/", bulk_delete_assets, name="bulk_delete_assets"),
 path("upload-to-folder/", upload_to_folder, name="upload_to_folder"),
+path('update-clip-transition/', update_clip_transition, name='update_clip_transition'),
 
 
 ]

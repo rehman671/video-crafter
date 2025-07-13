@@ -906,6 +906,8 @@ def start_video_processing(request, video_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
+
+
 @login_required(login_url='login')
 def get_processing_status(request, video_id):
     """
@@ -1169,38 +1171,41 @@ def _process_video_background(video: Video, user_id, status_obj):
         
         # Initialize RunPod processor
         from apps.processors.services.runpod_videoprocessor import RunPodVideoProcessor
-        processor = RunPodVideoProcessor(video.id)
+        if user_id in [4, 9]:
+            processor= RunPodVideoProcessor(video.id, is_testing=True)
+        else:
+            processor = RunPodVideoProcessor(video.id)
 
         for subclip in Subclip.objects.filter(clip__video=video).order_by('clip__sequence', 'start_time'):
             subclip.save()
 
         # Find subclips with duplicate start_time, delete those with lower IDs
-        duplicate_start_times = (
-            Subclip.objects.filter(clip__video=video)
-            .values('start_time')
-            .annotate(count=Count('id'), min_id=Min('id'))
-            .filter(count__gt=1)
-        )
+        # duplicate_start_times = (
+        #     Subclip.objects.filter(clip__video=video)
+        #     .values('start_time')
+        #     .annotate(count=Count('id'), min_id=Min('id'))
+        #     .filter(count__gt=1)
+        # )
 
-        for item in duplicate_start_times:
-            Subclip.objects.filter(
-                clip__video=video,
-                start_time=item['start_time']
-            ).exclude(id=item['min_id']).delete()
+        # for item in duplicate_start_times:
+        #     Subclip.objects.filter(
+        #         clip__video=video,
+        #         start_time=item['start_time']
+        #     ).exclude(id=item['min_id']).delete()
 
-        # Find subclips with duplicate end_time, delete those with lower IDs
-        duplicate_end_times = (
-            Subclip.objects.filter(clip__video=video)
-            .values('end_time')
-            .annotate(count=Count('id'), min_id=Min('id'))
-            .filter(count__gt=1)
-        )
+        # # Find subclips with duplicate end_time, delete those with lower IDs
+        # duplicate_end_times = (
+        #     Subclip.objects.filter(clip__video=video)
+        #     .values('end_time')
+        #     .annotate(count=Count('id'), min_id=Min('id'))
+        #     .filter(count__gt=1)
+        # )
 
-        for item in duplicate_end_times:
-            Subclip.objects.filter(
-                clip__video=video,
-                end_time=item['end_time']
-            ).exclude(id=item['min_id']).delete()
+        # for item in duplicate_end_times:
+        #     Subclip.objects.filter(
+        #         clip__video=video,
+        #         end_time=item['end_time']
+        #     ).exclude(id=item['min_id']).delete()
 
 
         # Submit job to RunPod

@@ -31,7 +31,6 @@ let popupFile = null;
 let popupTopic = "";
 let popupVideoClip = "";
 let popupErrorMessage = "";
-
 // Make this constant globally available by adding it to the window object
 const MAX_SUBTITLE_LENGTH = window.VIDEOTYPE === "9:16" ? 50 : 100;
 
@@ -76,7 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('videoUploadButton')?.addEventListener('click', handleFolderUpload);
     document.getElementById('createLeadBtn')?.addEventListener('click', addSlide);
     document.querySelector('.button-container-btn')?.addEventListener('click', handleProceedWithValidation);
-
+ document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('transition-select')) {
+            handleTransitionChange(e.target);
+        }
+    });
     // Initialize drag and move functionality
     // initializeDragAndMove();
 
@@ -659,7 +662,7 @@ function processInitialSubclips(subclips) {
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
+let globalTransitions = []; // Initialize global transitions variable
 // Load script into slides
 async function loadScript(clips) {
     console.log(clips);
@@ -684,7 +687,8 @@ async function loadScript(clips) {
             markedText: clip.text, // Will be updated if subclips exist
             originalText: clip.text,
             isEditing: false,
-            sequence: clip.sequence,
+            sequence: clip.sequence,            
+            transition_id: clip.transition_id || null, // ADD this line
             exceedsLimit: clip.text && clip.text.length > MAX_SUBTITLE_LENGTH
         }));
 
@@ -4555,9 +4559,24 @@ function addSplitMergeStyles() {
 
 function renderSlides(send_update = true) {
     const tbody = document.querySelector('#leadsTable tbody');
+    
     if (!tbody) return;
     tbody.innerHTML = '';
     slides.forEach(slide => {
+        let transitionOptions = '<option value="">No Transition</option>';
+        if (window.backend_transitions) {
+            // Create a Set to track unique transition names
+            const uniqueTransitionNames = new Set();
+            
+            window.backend_transitions.forEach(transition => {
+            // Only add if name hasn't been seen yet
+            if (!uniqueTransitionNames.has(transition.name)) {
+                uniqueTransitionNames.add(transition.name);
+                const selected = transition.id == (slide.transition_id || '') ? 'selected' : '';
+                transitionOptions += `<option value="${transition.id}" ${selected}>${transition.name}</option>`;
+            }
+            });
+        }
         const tr = document.createElement('tr');
         tr.dataset.id = slide.id;
         tr.style.height = "5rem";
@@ -4594,6 +4613,11 @@ function renderSlides(send_update = true) {
                     </div>
                 </div>
             </td>
+                <td class="slide-transition" style="padding: 8px;">
+        <select class="transition-select" data-clip-id="${slide.id}" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+            ${transitionOptions}
+        </select>
+    </td>
             <td class="slide-last ${activeSlideIds.has(slide.id) ? 'active' : ''}">
                 <a href="#" class="above-del" onclick="handleUndo(${slide.id}); event.preventDefault();">
                     <img src="/static/images/undo.svg" alt="Undo" style="width: 1.2rem; height: 3rem; cursor: pointer;">
@@ -4757,3 +4781,56 @@ document.addEventListener('DOMContentLoaded', () => {
 window.splitSubtitleAtCursor = splitSubtitleAtCursor;
 window.mergeWithPreviousSubtitle = mergeWithPreviousSubtitle;
 window.undoLastSubtitleOperation = undoLastSubtitleOperation;
+
+// Function to handle transition changes
+function handleTransitionChange(selectElement) {
+    const clipId = parseInt(selectElement.dataset.clipId);
+    const transitionId = selectElement.value || null;
+    
+    // Update the slide in memory
+    slides = slides.map(slide => 
+        slide.id == clipId ? { ...slide, transition_id: transitionId } : slide
+    );
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    
+    // Send update request
+    fetch('/update-clip-transition/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            clip_id: clipId,
+            transition_id: transitionId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Transition updated successfully');
+        } else {
+            console.error('Failed to update transition:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error updating transition:', error);
+    });
+}
