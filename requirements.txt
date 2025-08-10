@@ -68,6 +68,7 @@ modal
 pilmoji
 emoji
 regex
+# aeneas>=1.7.3
 celery
 redis
 django-redis

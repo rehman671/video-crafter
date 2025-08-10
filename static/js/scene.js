@@ -80,6 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
             handleTransitionChange(e.target);
         }
     });
+ document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('sound-effect-select')) {
+            handleSoundChange(e.target);
+        }
+    });
     // Initialize drag and move functionality
     // initializeDragAndMove();
 
@@ -689,6 +694,7 @@ async function loadScript(clips) {
             isEditing: false,
             sequence: clip.sequence,            
             transition_id: clip.transition_id || null, // ADD this line
+            sound_effect_id: clip.sound_effect_id || null, // ADD this line
             exceedsLimit: clip.text && clip.text.length > MAX_SUBTITLE_LENGTH
         }));
 
@@ -4564,6 +4570,7 @@ function renderSlides(send_update = true) {
     tbody.innerHTML = '';
     slides.forEach(slide => {
         let transitionOptions = '<option value="">No Transition</option>';
+        let soundEffectOptions = '<option value="">No Sound Effect</option>';
         if (window.backend_transitions) {
             // Create a Set to track unique transition names
             const uniqueTransitionNames = new Set();
@@ -4575,6 +4582,18 @@ function renderSlides(send_update = true) {
                 const selected = transition.id == (slide.transition_id || '') ? 'selected' : '';
                 transitionOptions += `<option value="${transition.id}" ${selected}>${transition.name}</option>`;
             }
+            });
+        }
+       if (window.backend_sound_effects) {
+            // Create a Set to track unique sound effect names
+            const uniqueSoundEffectNames = new Set();
+            window.backend_sound_effects.forEach(sound => {
+                // Only add if name hasn't been seen yet
+                if (!uniqueSoundEffectNames.has(sound.name)) {
+                    uniqueSoundEffectNames.add(sound.name);
+                    const selected = sound.id == (slide.sound_effect_id || '') ? 'selected' : '';
+                    soundEffectOptions += `<option value="${sound.id}" ${selected}>${sound.name} ▶</option>`;
+                }
             });
         }
         const tr = document.createElement('tr');
@@ -4618,6 +4637,12 @@ function renderSlides(send_update = true) {
             ${transitionOptions}
         </select>
     </td>
+
+      <td class="slide-sound-effect" style="padding: 8px;">
+            <select class="sound-effect-select" data-clip-id="${slide.id}" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+                ${soundEffectOptions}
+            </select>
+    </td>
             <td class="slide-last ${activeSlideIds.has(slide.id) ? 'active' : ''}">
                 <a href="#" class="above-del" onclick="handleUndo(${slide.id}); event.preventDefault();">
                     <img src="/static/images/undo.svg" alt="Undo" style="width: 1.2rem; height: 3rem; cursor: pointer;">
@@ -4625,7 +4650,14 @@ function renderSlides(send_update = true) {
             </td>
         `;
         tbody.appendChild(tr);
-
+        // Add play button event listener
+        // const playButton = tr.querySelector('.play-sound-btn');
+        // if (playButton) {
+        //     playButton.addEventListener('click', (e) => {
+        //         e.preventDefault();
+        //         playSoundEffect(slide.id);
+        //     });
+        // }
         if (!slide.isEditing) {
             const highlightable = document.getElementById(`highlightable_${slide.id}`);
             
@@ -4832,5 +4864,187 @@ function handleTransitionChange(selectElement) {
     })
     .catch(error => {
         console.error('Error updating transition:', error);
+    });
+}
+
+function handleSoundChange(selectElement) {
+    const clipId = parseInt(selectElement.dataset.clipId);
+    const soundEffectId = selectElement.value || null;
+    
+    // Update the slide in memory
+    slides = slides.map(slide => 
+        slide.id == clipId ? { ...slide, sound_effect_id: soundEffectId } : slide
+    );
+    
+    // Play the sound effect when selected
+    if (soundEffectId) {
+        playSoundEffectById(soundEffectId);
+    }
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    
+    // Send update request
+    fetch('/update-clip-sound-effect/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            clip_id: clipId,
+            sound_effect_id: soundEffectId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Sound effect updated successfully');
+        } else {
+            console.error('Failed to update sound effect:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error updating sound effect:', error);
+    });
+}
+
+function playSoundEffect(clipId) {
+    const selectElement = document.querySelector(`.sound-effect-select[data-clip-id="${clipId}"]`);
+    const playButton = document.querySelector(`.play-sound-btn[data-clip-id="${clipId}"]`);
+    
+    if (!selectElement || !selectElement.value) {
+        console.log('No sound effect selected');
+        return;
+    }
+    
+    const soundEffectId = selectElement.value;
+    console.log('Playing sound effect ID:', soundEffectId);
+    
+    // Find the sound effect file URL
+    const soundEffect = window.backend_sound_effects.find(se => se.id == soundEffectId);
+    console.log('Found sound effect:', soundEffect);
+    
+    if (!soundEffect || !soundEffect.file) {
+        console.error('Sound effect file not found');
+        return;
+    }
+    
+    const audioUrl = soundEffect.file;
+    console.log('Audio URL:', audioUrl);
+    
+    // Stop any currently playing audio
+    if (window.currentAudio) {
+        window.currentAudio.pause();
+        window.currentAudio = null;
+        
+        // Reset all play buttons
+        document.querySelectorAll('.play-sound-btn').forEach(btn => {
+            btn.textContent = '▶';
+            btn.classList.remove('playing');
+        });
+    }
+    
+    // Create audio element
+    const audio = new Audio(audioUrl);
+    window.currentAudio = audio;
+    
+    // Update button state
+    playButton.textContent = '⏸';
+    playButton.classList.add('playing');
+    
+    function resetPlayButton() {
+        playButton.textContent = '▶';
+        playButton.classList.remove('playing');
+        window.currentAudio = null;
+    }
+    
+    audio.addEventListener('ended', resetPlayButton);
+    audio.addEventListener('error', (e) => {
+        console.error('Audio error:', e);
+        resetPlayButton();
+        alert('Failed to play sound effect.');
+    });
+    
+    // Start playing
+    audio.play().catch(error => {
+        console.error('Play failed:', error);
+        resetPlayButton();
+        alert('Failed to play sound effect.');
+    });
+}
+function debugS3SoundFiles() {
+    console.log('=== S3 Sound Effects Debug ===');
+    window.backend_sound_effects.forEach(se => {
+        console.log(`ID: ${se.id}, Name: ${se.name}`);
+        console.log(`S3 URL: ${se.file}`);
+        
+        if (se.file) {
+            const isS3 = se.file.includes('amazonaws.com');
+            const isHttps = se.file.startsWith('https://');
+            console.log(`Is S3 URL: ${isS3}, Is HTTPS: ${isHttps}`);
+        }
+        console.log('---');
+    });
+}
+// Call this after sound effects are loaded
+setTimeout(debugS3SoundFiles, 1000);
+
+
+function playSoundEffectById(soundEffectId) {
+    console.log('Playing sound effect ID:', soundEffectId);
+    
+    // Find the sound effect file URL
+    const soundEffect = window.backend_sound_effects.find(se => se.id == soundEffectId);
+    console.log('Found sound effect:', soundEffect);
+    
+    if (!soundEffect || !soundEffect.file) {
+        console.error('Sound effect file not found');
+        return;
+    }
+    
+    const audioUrl = soundEffect.file;
+    console.log('Audio URL:', audioUrl);
+    
+    // Stop any currently playing audio
+    if (window.currentAudio) {
+        window.currentAudio.pause();
+        window.currentAudio = null;
+    }
+    
+    // Create audio element
+    const audio = new Audio(audioUrl);
+    window.currentAudio = audio;
+    
+    audio.addEventListener('ended', () => {
+        window.currentAudio = null;
+    });
+    
+    audio.addEventListener('error', (e) => {
+        console.error('Audio error:', e);
+        window.currentAudio = null;
+        alert('Failed to play sound effect.');
+    });
+    
+    // Start playing
+    audio.play().catch(error => {
+        console.error('Play failed:', error);
+        window.currentAudio = null;
+        alert('Failed to play sound effect.');
     });
 }

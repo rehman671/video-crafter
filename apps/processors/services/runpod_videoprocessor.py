@@ -210,6 +210,7 @@ class RunPodVideoProcessor:
                 "sequence": clip.sequence,
                 "is_changed": clip.is_changed,
                 "transition": clip.transition.slug if clip.transition else None,
+                "sound_effect": generate_signed_url_for_upload(clip.sound_effect.audio_file.name) if clip.sound_effect and hasattr(clip.sound_effect, 'audio_file') else None
             }
             
             if clip.video_file:

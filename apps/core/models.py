@@ -192,3 +192,12 @@ class Transitions(models.Model):
 
     def __str__(self):
         return self.name
+
+class SoundEffects(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.CharField(max_length=100, unique=True)
+    audio_file = models.FileField(upload_to='soundeffects/')
+
+    def __str__(self):
+        return self.name
+    

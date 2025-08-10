@@ -78,8 +78,8 @@ RUN python3.10 manage.py add_fonts || true
 RUN ldconfig
 
 # Add GPU check script
-COPY ./check_gpu.sh /app/check_gpu.sh
-RUN chmod +x /app/check_gpu.sh
+# COPY ./check_gpu.sh /app/check_gpu.sh
+# RUN chmod +x /app/check_gpu.sh
 
 # Expose port
 EXPOSE 8000

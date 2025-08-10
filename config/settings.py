@@ -32,7 +32,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-*gn_a!jnk_sk3tl$p3@%+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.environ.get('DEBUG', 1)))
 
-ALLOWED_HOSTS = ['videocrafter.io', 'www.videocrafter.io', ]
+ALLOWED_HOSTS = ['videocrafter.io', 'www.videocrafter.io', 'localhost']
 
 
 # Application definition
@@ -242,6 +242,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://www.videocrafter.io',
     'https://videocrafter.io',
     'https://www.videocrafter.io'
+
 ]
 
 # Session security

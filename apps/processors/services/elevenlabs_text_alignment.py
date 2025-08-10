@@ -6,7 +6,11 @@ import io
 import time
 from typing import Dict, Any, List, Optional
 import re
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class ElevenLabsTextAlignment:
     """
@@ -22,7 +26,11 @@ class ElevenLabsTextAlignment:
             api_key (str): Your ElevenLabs API key
             base_url (str): ElevenLabs API base URL
         """
-        self.api_key = api_key
+        # self.api_key = api_key
+        self.api_key = "sk_b4828141183ab0384c70e6927867a2ca2b94ad8bd6a6e214"
+        logger.info("Initializing ElevenLabsTextAlignment service")
+        logger.info(f"Using ElevenLabs API base URL: {base_url}")
+        logger.warning(f"⚠️⚠️⚠️⚠️⚠️Using ElevenLabs API key: {api_key}")
         self.base_url = base_url
         self.headers = {"xi-api-key": api_key}
     

@@ -3,6 +3,7 @@ import stripe
 import json
 import os
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.cache import cache_control
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
@@ -20,7 +21,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 
-from apps.core.models import Plan, TempSubscription, Subscription, BillingInfo, Font, Transitions
+from apps.core.models import Plan, TempSubscription, Subscription, BillingInfo, Font, Transitions, SoundEffects
 from apps.core.handler.stripe_handler import StripeHandler
 from apps.core.decorators import check_subscription_credits
 
@@ -37,6 +38,7 @@ from apps.processors.utils import generate_signed_url, generate_signed_url_for_u
 from apps.core.utils import process_video_speed
 # ADD these imports to your existing imports:
 from django.http import JsonResponse
+from django.db.models import F
 import json
 import logging
 from django_ratelimit.decorators import ratelimit
@@ -443,16 +445,23 @@ def scene_view(request, video_id):
             clip_subclips = Subclip.objects.filter(clip=clip)
             subclip_objects.extend(clip_subclips)
         
+        # Get and process sound effects
+        sound_effects = SoundEffects.objects.all().order_by('name')
+        for effect in sound_effects:
+            if effect.audio_file:
+                effect.audio_url = generate_signed_url(effect.audio_file.name)
+
         context = {
-    'video': video,
-    'fonts': Font.objects.all(),
-    'clips': clips,
-    'subclips': subclip_objects,
-    'asset_folders': user_folder_structure,
-    'user_subscription': Subscription.objects.filter(user=request.user).first(),
-    'transitions': Transitions.objects.all().order_by('name'),  # ADD this line
-}
-        
+            'video': video,
+            'fonts': Font.objects.all(),
+            'clips': clips,
+            'subclips': subclip_objects,
+            'asset_folders': user_folder_structure,
+            'user_subscription': Subscription.objects.filter(user=request.user).first(),
+            'transitions': Transitions.objects.all().order_by('name'),
+            'sound_effects': sound_effects,
+        }
+            
         return render(request, "home/scene.html", context)
     
     except Video.DoesNotExist:
@@ -1658,7 +1667,7 @@ def register(request):
     return render(request, "register.html")
 
 
-@ratelimit(key='ip', rate='5/12h', block=True)
+# @ratelimit(key='ip', rate='5/12h', block=True)
 def register_view(request):
     if getattr(request, 'limited', False):
         raise PermissionDenied("Too many signups from your IP. Try again later.")
@@ -1718,8 +1727,10 @@ def register_view(request):
                 'site_name': 'VideoCrafter.io',
                 'logo_url': request.build_absolute_uri('/static/images/logo.png')
             }
+            logger.info(context)
             email_subject = "Verify Your Email Address"
             email_body = render_to_string('auth/email_template.html', context)
+            print(context)
             print(request.build_absolute_uri('/static/images/logo.png'))
             send_mail(
                 email_subject,
@@ -2352,3 +2363,85 @@ def update_clip_transition(request):
             'success': False,
             'error': str(e)
         })
+    
+@login_required(login_url='login')
+@require_http_methods(["POST"])
+def update_clip_sound_effect(request):
+    """
+    Update the sound effect for a specific clip
+    """
+    try:
+        data = json.loads(request.body)
+        clip_id = data.get('clip_id')
+        sound_effect_id = data.get('sound_effect_id')
+        
+        # Get the clip
+        clip = Clips.objects.get(id=clip_id, video__user=request.user)
+        
+        # Update the sound effect
+        if sound_effect_id and sound_effect_id != '':
+            sound_effect = SoundEffects.objects.get(id=sound_effect_id)
+            clip.sound_effect = sound_effect
+        else:
+            clip.sound_effect = None
+
+        clip.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Sound effect updated successfully'
+        })
+        
+    except Clips.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Clip not found'
+        })
+    except SoundEffects.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Sound effect not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+    
+
+
+@cache_control(max_age=3600)  # Cache for 1 hour
+def serve_sound_effect(request, sound_effect_id):
+    try:
+        sound_effect = SoundEffects.objects.get(id=sound_effect_id)
+        
+        # Get the signed URL from S3
+        s3_url = generate_signed_url_for_upload(sound_effect.audio_file.name)
+        
+        # Fetch the file content from S3
+        response = requests.get(s3_url, timeout=10)
+        response.raise_for_status()
+        
+        # Determine content type based on file extension
+        filename = sound_effect.audio_file.name.lower()
+        if filename.endswith('.mp3'):
+            content_type = 'audio/mpeg'
+        elif filename.endswith('.wav'):
+            content_type = 'audio/wav'
+        elif filename.endswith('.ogg'):
+            content_type = 'audio/ogg'
+        else:
+            content_type = 'audio/mpeg'  # Default
+        
+        # Create Django response
+        django_response = HttpResponse(response.content, content_type=content_type)
+        django_response['Content-Length'] = len(response.content)
+        django_response['Accept-Ranges'] = 'bytes'
+        django_response['Cache-Control'] = 'public, max-age=3600'
+        
+        return django_response
+        
+    except SoundEffects.DoesNotExist:
+        raise Http404("Sound effect not found")
+    except requests.RequestException as e:
+        return HttpResponse(f"Error fetching audio: {str(e)}", status=500)

@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from .constants import RESOLUTIONS
-from apps.core.models import Transitions
+from apps.core.models import Transitions, SoundEffects
 
 class Video(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -44,6 +44,7 @@ class Clips(models.Model):
     sequence = models.PositiveIntegerField(default=0)  # Sequence number for ordering clips
     is_changed = models.BooleanField(default=False)  # Flag to indicate if the clip has been changed
     transition = models.ForeignKey(Transitions, on_delete=models.CASCADE, null=True, blank=True, related_name='clips')
+    sound_effect = models.ForeignKey(SoundEffects,  on_delete=models.CASCADE, null=True, blank=True, related_name='clips')
 
 
     class Meta:

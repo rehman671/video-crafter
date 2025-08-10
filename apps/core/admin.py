@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Font, Plan, Subscription, BillingInfo, TempSubscription, UserAsset, AppVariables, Transitions
+from .models import Font, Plan, Subscription, BillingInfo, TempSubscription, UserAsset, AppVariables, Transitions, SoundEffects
 
 # Register your models here.
 @admin.register(Font)
@@ -58,3 +58,10 @@ class TransitionsAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug')
     ordering = ('name',)
     fields = ('name', 'duration', 'slug')
+
+
+@admin.register(SoundEffects)
+class SoundEffectsAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'audio_file')
+    search_fields = ('name', 'slug')
+    ordering = ('name',)

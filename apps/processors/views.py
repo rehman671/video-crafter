@@ -1171,10 +1171,10 @@ def _process_video_background(video: Video, user_id, status_obj):
         
         # Initialize RunPod processor
         from apps.processors.services.runpod_videoprocessor import RunPodVideoProcessor
-        if user_id in [4, 9]:
-            processor= RunPodVideoProcessor(video.id, is_testing=True)
-        else:
-            processor = RunPodVideoProcessor(video.id)
+        # if user_id in [4, 9]:
+        processor= RunPodVideoProcessor(video.id, is_testing=True)
+        # else:
+        #     processor = RunPodVideoProcessor(video.id)
 
         for subclip in Subclip.objects.filter(clip__video=video).order_by('clip__sequence', 'start_time'):
             subclip.save()
@@ -1209,10 +1209,10 @@ def _process_video_background(video: Video, user_id, status_obj):
 
 
         # Submit job to RunPod
-        if is_text_changed is False and video.output:
-            result = processor.replace_subclips(video)
-        else:
-            result = processor.process_video(video)
+        # if is_text_changed is False and video.output:
+        #     result = processor.replace_subclips(video)
+        # else:
+        result = processor.process_video(video)
         
         if not result["success"]:
             status_obj.status = 'error'
