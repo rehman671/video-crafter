@@ -333,7 +333,7 @@ def preview(request):
             'subtitle_box_color': request.POST.get('subtitle_box_color', '#000000'),
             'font_size1': request.POST.get('font_size1', '22'),
             'box_radius': request.POST.get('box_radius', '26'),
-            'box_opacity': request.POST.get('box_opacity', '100')
+            'box_opacity': request.POST.get('box_opacity_enabled', '0')
         }
         print("=====================")
         print(request.POST)
@@ -357,7 +357,7 @@ def preview(request):
             subtitle_box_color = form_data['subtitle_box_color']
             font_size = int(form_data['font_size1'])
             box_radius = form_data['box_radius']
-            box_opacity = form_data['box_opacity']
+            box_opacity = 65 if form_data['box_opacity'] == '1' else 100
 
             elv_handler = ElevenLabsHandler(api_key=elevenlabs_api_key)
             try:
