@@ -10,7 +10,7 @@ let dimensionStyles = {
     '16:9': { fontColor: '#ffffff', bgColor: '#000000' },
     '9:16': { fontColor: '#000000', bgColor: '#ffffff' }
 };
-let isProcessing = false;
+let subtitleOpacityEnabled = false; // true = 65% opacity, false = 100% opacitylet isProcessing = false;
 let processingDots = 0;
 let fontSizeDerived = 44;
 let selectedFont = '';
@@ -214,10 +214,17 @@ function updateResolutionSettings(selectedResolution) {
         previewText.style.fontFamily = 'tiktokfont';
         tiktokPreview.style.fontFamily = 'tiktokfont';
         document.querySelectorAll('.text-wrapper2-span').forEach(span => {
-            span.style.fontFamily = 'tiktokfont';
-            span.style.color = dimensionStyles['9:16'].fontColor;
-            span.style.backgroundColor = dimensionStyles['9:16'].bgColor;
-        });
+    span.style.fontFamily = 'tiktokfont';
+    span.style.color = dimensionStyles['9:16'].fontColor;
+    // Apply background color with opacity
+// Apply background color with opacity
+const opacityValue = subtitleOpacityEnabled ? 65 : 100;
+const bgColor = dimensionStyles['9:16'].bgColor;
+const rgb = hexToRgb(bgColor);
+if (rgb) {
+    span.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacityValue / 100})`;
+}
+});
         previewBackground.style.display = 'none';
         tiktokPreview.style.display = 'flex';
         fontSelectLabel.style.display = 'none';
@@ -251,10 +258,17 @@ function updateResolutionSettings(selectedResolution) {
     document.getElementById('font_size').value = fontSizeDerived;
     previewBox.style.margin = '0 auto';
 
-    if (previewBackground) {
-        previewBackground.style.borderRadius = `${borderRadius}px`;
+  if (previewBackground) {
+    previewBackground.style.borderRadius = `${borderRadius}px`;
+    // Apply background color with opacity
+    const opacityValue = subtitleOpacityEnabled ? 65 : 100;
+    const bgColor = dimensionStyles[selectedResolution].bgColor;
+    const rgb = hexToRgb(bgColor);
+    if (rgb) {
+        previewBackground.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacityValue / 100})`;
     }
-    updateSliderBackground('subtitleBorderRadiusSlider', borderRadius, 0, 26);
+}
+updateSliderBackground('subtitleBorderRadiusSlider', borderRadius, 0, 26);
 
     const fontColor = dimensionStyles[selectedResolution].fontColor;
     const bgColor = dimensionStyles[selectedResolution].bgColor;
@@ -318,12 +332,11 @@ function handleBorderRadiusChange(event) {
 // Attach listeners
 document.getElementById('mySlider').addEventListener('input', handleFontSizeChange);
 document.getElementById('subtitleBorderRadiusSlider').addEventListener('input', handleBorderRadiusChange);
-
-// On page load (to sync initial states)
+document.getElementById('subtitleOpacityCheckbox').addEventListener('change', handleOpacityCheckboxChange);// On page load (to sync initial states)
 window.addEventListener('DOMContentLoaded', () => {
     handleFontSizeChange({ target: document.getElementById('mySlider') });
     handleBorderRadiusChange({ target: document.getElementById('subtitleBorderRadiusSlider') });
-});
+handleOpacityCheckboxChange({ target: document.getElementById('subtitleOpacityCheckbox') });});
 function handleTopicChange(event) {
     const selectedTopic = event.target.value;
     console.log("Topic selected:", selectedTopic);
@@ -558,19 +571,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function handleColor2Change(e) {
-        const color = e.target.value;
-        if (isValidHex(color)) {
-            dimensionStyles[resolution].bgColor = color;
-            colortext2.value = color;
-            colorBox2.style.backgroundColor = color;
-            previewBackground.style.backgroundColor = color;
-            if (resolution === '9:16') {
-                tiktokSpans.forEach(span => span.style.backgroundColor = color);
-            }
-        }
-    }
+function handleColor2Change(e) {
+    const color = e.target.value;
+    if (isValidHex(color)) {
+        dimensionStyles[resolution].bgColor = color;
+        colortext2.value = color;
+        colorBox2.style.backgroundColor = color;
+        
+        // Apply background color with current opacity
+       // Apply background color with current opacity
+const opacityValue = subtitleOpacityEnabled ? 65 : 100;
+const rgb = hexToRgb(color);
+if (rgb) {
+    previewBackground.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacityValue / 100})`;
+}
 
+if (resolution === '9:16') {
+    const rgb = hexToRgb(color);
+    if (rgb) {
+        tiktokSpans.forEach(span => {
+            span.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacityValue / 100})`;
+        });
+    }
+}
+    }
+}
     colorPicker1.addEventListener('input', handleColor1Change);
     colorPicker2.addEventListener('input', handleColor2Change);
     colortext1.addEventListener('input', handleColor1Change);
@@ -592,3 +617,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+function handleOpacityCheckboxChange(event) {
+    subtitleOpacityEnabled = event.target.checked;
+    
+    // Set opacity: 65 if checked, 100 if unchecked
+    const opacityValue = subtitleOpacityEnabled ? 65 : 100;
+    
+    // Convert 0-100 to 0-255 for RGBA
+    const alphaValue = opacityValue / 100;
+    
+    // Apply to preview elements - only background, not text
+    const previewBackground = document.getElementById('previewBackground');
+    if (previewBackground) {
+        // Get current background color and apply opacity
+        const currentBgColor = dimensionStyles[resolution].bgColor;
+        const rgb = hexToRgb(currentBgColor);
+        if (rgb) {
+            previewBackground.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alphaValue})`;
+        }
+    }
+    
+    // For 9:16 preview - only background opacity
+    if (resolution === '9:16') {
+        const currentBgColor = dimensionStyles['9:16'].bgColor;
+        const rgb = hexToRgb(currentBgColor);
+        if (rgb) {
+            document.querySelectorAll('.text-wrapper2-span').forEach(span => {
+                span.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alphaValue})`;
+            });
+        }
+    }
+}

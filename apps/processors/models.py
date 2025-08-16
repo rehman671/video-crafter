@@ -21,6 +21,7 @@ class Video(models.Model):
     elevenlabs_api_key = models.CharField(max_length=100, blank=True, null=True)
     voice_id = models.CharField(max_length=50, blank=True, null=True)
     subtitle_box_color = models.CharField(max_length=20, default="#000000")
+    subtitle_box_alpha = models.PositiveIntegerField(default=100)
     output_with_bg = models.FileField(upload_to="output_bg/", null=True, blank=True)
     output_with_watermark = models.FileField(upload_to="output_watermark/", null=True, blank=True)
     output_with_bg_watermark = models.FileField(upload_to="output_bg_watermark/", null=True, blank=True)

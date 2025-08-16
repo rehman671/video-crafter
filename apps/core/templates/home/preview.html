@@ -39,6 +39,9 @@
             cursor: pointer;
             margin-left: 15px;
         }
+   input[type=checkbox] {
+  accent-color: #864AF9;
+}
     </style>
 </head>
 
@@ -261,6 +264,12 @@
                     </div>
                     <input name="subtitle_box_color_text"  id="colortext2" type="text" class="focusdefault" placeholder="#000000" value="#000000">
                 </div>
+            <div class="checkbox-container" style="display: block; margin-bottom: 20px;">
+    <div class="checkbox-container-sub" style="display: flex; align-items: center; gap: 12px;">
+        <input type="checkbox" id="subtitleOpacityCheckbox" name="box_opacity_enabled" value="1" style="width: 18px; height: 18px; cursor: pointer;">
+        <label for="subtitleOpacityCheckbox" class="box-roundness-text" style="display: block; cursor: pointer; margin: 0;">Enable Subtitle Box Transparency</label>
+    </div>
+</div>
                 <div class="Font-Size-text" style="display: flex;">
                     <div class="Font-Size-text-heading">Font Size: <span id="recommended-font-size">(Recommended Font
                             Size: 22)</span></div><span id="SliderValue">22</span>
@@ -378,6 +387,19 @@
                 document.getElementById('previewBackground').style.borderRadius = `${boxRadiusVal}px`;
                 updateSliderBackground('subtitleBorderRadiusSlider', boxRadiusVal, 0, 26);
             }
+            // Set opacity
+            // Set opacity checkbox
+if ("{{ form_data.box_opacity_enabled }}") {
+    subtitleOpacityEnabled = "{{ form_data.box_opacity_enabled }}" === "1";
+    document.getElementById('subtitleOpacityCheckbox').checked = subtitleOpacityEnabled;
+    // Apply background opacity without affecting text
+    const opacityValue = subtitleOpacityEnabled ? 65 : 100;
+    const bgColor = dimensionStyles["{{ form_data.resolution }}"].bgColor;
+    const rgb = hexToRgb(bgColor);
+    if (rgb) {
+        document.getElementById('previewBackground').style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacityValue / 100})`;
+    }
+}
         {% endif %}
     });
         const tiktokImage_url = "{% static 'images/tiktok.png' %}";

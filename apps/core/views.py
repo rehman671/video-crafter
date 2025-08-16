@@ -332,7 +332,8 @@ def preview(request):
             'font_color': request.POST.get('font_color', '#ffffff'),
             'subtitle_box_color': request.POST.get('subtitle_box_color', '#000000'),
             'font_size1': request.POST.get('font_size1', '22'),
-            'box_radius': request.POST.get('box_radius', '26')
+            'box_radius': request.POST.get('box_radius', '26'),
+            'box_opacity': request.POST.get('box_opacity', '100')
         }
         print("=====================")
         print(request.POST)
@@ -356,7 +357,8 @@ def preview(request):
             subtitle_box_color = form_data['subtitle_box_color']
             font_size = int(form_data['font_size1'])
             box_radius = form_data['box_radius']
-            
+            box_opacity = form_data['box_opacity']
+
             elv_handler = ElevenLabsHandler(api_key=elevenlabs_api_key)
             try:
                 elv_handler._verify_api_key()
@@ -376,7 +378,8 @@ def preview(request):
                 font_color=font_color,
                 subtitle_box_color=subtitle_box_color,
                 font_size=font_size,
-                box_roundness=box_radius
+                box_roundness=box_radius,
+                subtitle_box_alpha=box_opacity
             )
             return redirect("scene_view", video_id=video.id)
         except Exception as e:

@@ -101,6 +101,7 @@ class RunPodVideoProcessor:
             "font_color": video.font_color,
             "subtitle_box_color": video.subtitle_box_color,
             "box_roundness": video.box_roundness,
+            "box_opacity": video.subtitle_box_alpha
         }
         
         # Check for background music
@@ -251,6 +252,8 @@ class RunPodVideoProcessor:
             "font_color": video.font_color,
             "subtitle_box_color": video.subtitle_box_color,
             "box_roundness": video.box_roundness,
+                        "box_opacity": video.subtitle_box_alpha
+
         }
         
         # Add file paths
