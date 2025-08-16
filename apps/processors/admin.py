@@ -110,8 +110,8 @@ class VideoAdmin(admin.ModelAdmin):
 @admin.register(Clips)
 class ClipsAdmin(admin.ModelAdmin):
     form = ClipsForm
-    list_display = ['id', 'video', "is_changed",'start_time', 'end_time', 'text', 'created_at']
-    list_filter = ['video', 'created_at']
+    list_display = ['id', 'video', "is_changed",'start_time', 'end_time', 'text', 'transition', 'created_at']
+    list_filter = ['video', 'created_at', "transition"]
     search_fields = ['text']
     inlines = [SubclipInline]
     

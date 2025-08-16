@@ -43,8 +43,8 @@ class Clips(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     sequence = models.PositiveIntegerField(default=0)  # Sequence number for ordering clips
     is_changed = models.BooleanField(default=False)  # Flag to indicate if the clip has been changed
-    transition = models.ForeignKey(Transitions, on_delete=models.CASCADE, null=True, blank=True, related_name='clips')
-    sound_effect = models.ForeignKey(SoundEffects,  on_delete=models.CASCADE, null=True, blank=True, related_name='clips')
+    transition = models.ForeignKey(Transitions, on_delete=models.SET_NULL, null=True, blank=True, related_name='clips')
+    sound_effect = models.ForeignKey(SoundEffects,  on_delete=models.SET_NULL, null=True, blank=True, related_name='clips')
 
 
     class Meta:
