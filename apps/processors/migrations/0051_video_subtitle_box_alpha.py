@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('processors', '0049_clips_sound_effect'),
+        ('processors', '0050_alter_clips_sound_effect_alter_clips_transition'),
     ]
 
     operations = [

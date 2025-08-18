@@ -2336,7 +2336,7 @@ def update_clip_transition(request):
         
         # Get the clip
         clip = Clips.objects.get(id=clip_id, video__user=request.user)
-        
+        clip.is_changed = True
         # Update the transition
         if transition_id and transition_id != '':
             transition = Transitions.objects.get(id=transition_id)
@@ -2380,7 +2380,7 @@ def update_clip_sound_effect(request):
         
         # Get the clip
         clip = Clips.objects.get(id=clip_id, video__user=request.user)
-        
+        clip.is_changed = True
         # Update the sound effect
         if sound_effect_id and sound_effect_id != '':
             sound_effect = SoundEffects.objects.get(id=sound_effect_id)

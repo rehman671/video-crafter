@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Font, Plan, Subscription, BillingInfo, TempSubscription, UserAsset, AppVariables, Transitions, SoundEffects
-
+from django.utils.html import format_html
+from apps.processors.utils import generate_signed_url_for_upload
 # Register your models here.
 @admin.register(Font)
 class FontAdmin(admin.ModelAdmin):
@@ -65,3 +66,17 @@ class SoundEffectsAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'audio_file')
     search_fields = ('name', 'slug')
     ordering = ('name',)
+    fields = ('name', 'slug', 'audio_file', 'audio_player')
+    readonly_fields = ('audio_player',)
+
+    @admin.display
+    def audio_player(self, obj):
+        if obj.audio_file:
+            file_url = generate_signed_url_for_upload(obj.audio_file.name)
+            return format_html(
+                '<audio controls><source src="{}" type="audio/mpeg"></audio>'
+                '<br><a href="{}" download>Download</a>',
+                file_url, file_url
+            )
+        return "-"
+    audio_player.short_description = 'Audio File'
